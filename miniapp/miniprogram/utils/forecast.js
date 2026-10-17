@@ -35,6 +35,7 @@ function number(value,label,min,max,integer=false,optional=false) {
 }
 function recovery(cost,pension) { return pension && D(pension).gt(0)?cost.div(pension).ceil().toNumber():null; }
 function forecast(r,now) {
+  const regionId=r.regionId||'440100',local=require('./city-policies').requireEmployee(regionId,r.dataAsOf),legacy=!!local.legacy;
   const today=now||new Date(), current=today.getFullYear()*12+today.getMonth();
   const b=month(r.birthMonth,'出生年月','birthMonth'),first=month(r.firstInsuredMonth,'首次参保年月','firstInsuredMonth'),asof=month(r.dataAsOf,'数据截至月份','dataAsOf');
   const ret=retirement(r.birthMonth,r.category),retMonth=month(ret.month);
@@ -49,7 +50,7 @@ function forecast(r,now) {
   if(r.historicalRights) throw Error('有视同缴费或特殊历史权益，请由社保核算，此工具暂不适用');
   const principal=number(r.principal,'已划入个人账户金额',0,100000000);
   const interest=number(r.interest,'账户利息',0,100000000,false,true)||D(0);
-  const limits=contributionRange(r.dataAsOf);
+  const limits=contributionRange(r.dataAsOf,regionId);
   const currentBase=number(r.currentBase,'缴费基数',limits.min,limits.max,false,true)||D(limits.min);
   const historic=number(r.historicalIndex,'平均缴费指数','.0001',10,false,true)||D('.6');
   const pause=number(r.pauseMonths==null?0:r.pauseMonths,'暂停月数',0,480,true);
@@ -58,7 +59,9 @@ function forecast(r,now) {
   if(!['FLEXIBLE','EMPLOYEE'].includes(type)) throw Error('缴费身份无效');
   const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
   if(!plans.includes(r.plan)) throw Error('请选择缴费方案');
-  const parameter=policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0];
+  const parameter=legacy?policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0]:{status:'OFFICIAL',year:local.year,pensionBase:local.pensionBase};
+  const referenceNote=legacy?'':'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
+  const localBasic=(base,index,months)=>legacy?basic(base,index,months):D(base).mul(D(1).plus(index)).div(2).mul(months).div(12).mul('.01');
   const target=minimum(Math.floor(retMonth/12)), gap=Math.max(0,target-paid);
   const rate=type==='FLEXIBLE'?'.20':'.08';
   const scenarios=plans.map(plan=>{
@@ -66,21 +69,22 @@ function forecast(r,now) {
     const future=plan==='CUSTOM'?custom:plan==='MINIMUM_STOP'?gap:Math.max(0,retMonth-asof-pause,gap);
     const total=paid+future,last=future?asof+pause+future:asof,eligible=Math.max(last,retMonth),age=eligible-b;
     const lo=Math.floor(age/12),hi=Math.ceil(age/12), qualified=total>=target;
-    const index=total?historic.mul(paid).plus(D('.6').mul(base).div(5510).mul(future)).div(total):historic;
+    const futureIndex=legacy?D('.6').mul(base).div(5510):base.div(local.indexWage);
+    const index=total?historic.mul(paid).plus(futureIndex.mul(future)).div(total):historic;
     const credit=base.mul('.08').mul(future),account=principal.plus(interest).plus(credit);
     const payment=future?base.mul(rate):D(0),cost=payment.mul(future);
     const common={plan,futureMonths:future,totalMonths:total,minimumMonths:target,lastPaymentMonth:date(last),qualified,shortMonths:Math.max(0,target-total),monthlyBase:money(base),monthlyPersonalPayment:money(payment),futurePersonalCost:money(cost),futureAccountCredit:money(credit),account:money(account)};
     if(lo<40||hi>70) return {...common,qualified:false,unsupported:true,error:'领取年龄超出40—70岁支持范围',totalLow:null,totalHigh:null};
-    const bs=basic(parameter.pensionBase,index,total),low=account.div(policy.accountMonths[lo]),high=account.div(policy.accountMonths[hi]);
+    const bs=localBasic(parameter.pensionBase,index,total),low=account.div(policy.accountMonths[lo]),high=account.div(policy.accountMonths[hi]);
     const tl=qualified?bs.plus(low):null,th=qualified?bs.plus(high):null;
     let il=null,ih=null;
     if(qualified&&paid>=target) {
-      const prior=basic(parameter.pensionBase,historic,paid);
+      const prior=localBasic(parameter.pensionBase,historic,paid);
       il=bs.minus(prior).plus(credit.div(policy.accountMonths[lo]));
       ih=bs.minus(prior).plus(credit.div(policy.accountMonths[hi]));
     }
     return {...common,receiptMonth:qualified?date(eligible+1):null,index:index.toFixed(4),basic:money(bs),personalLow:money(low),personalHigh:money(high),totalLow:money(tl),totalHigh:money(th),divisorRange:lo!==hi,recoveryMonthsFast:recovery(cost,th),recoveryMonthsSlow:recovery(cost,tl),incrementalLow:money(il),incrementalHigh:money(ih),incrementalRecoveryFast:recovery(cost,ih),incrementalRecoverySlow:recovery(cost,il)};
   });
-  return {retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
+  return {regionId,region:require('./city-policies').city(regionId).name,referenceNote,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
 }
 module.exports={forecast,retirement,minimum,basic,policy};

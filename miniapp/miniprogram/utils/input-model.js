@@ -2,7 +2,7 @@ const Decimal=require('../vendor/decimal');
 const policy=require('./policy-data');
 function serial(value){const m=String(value||'').trim().match(/^(\d{4})-(\d{1,2})$/);if(!m)return null;const y=Number(m[1]),n=Number(m[2]);return y>=1900&&y<=2100&&n>=1&&n<=12?y*12+n-1:null;}
 function continuousMonths(first,last){const a=serial(first),b=serial(last);return a===null||b===null||b<a?null:b-a+1;}
-function contributionRange(asof){const n=serial(asof),ranges=policy.contributionRanges;return {...ranges.filter(r=>n!==null&&serial(r.effectiveFrom)<=n).slice(-1)[0]||ranges[0]};}
+function contributionRange(asof,regionId){if(regionId&&regionId!=='440100'){const p=require('./city-policies').requireEmployee(regionId,asof);return {min:p.min,max:p.max,effectiveFrom:p.effectiveFrom,regionId};}const n=serial(asof),ranges=policy.contributionRanges;return {...ranges.filter(r=>n!==null&&serial(r.effectiveFrom)<=n).slice(-1)[0]||ranges[0]};}
 function resolveBase(mode,value,range){
  if(mode==='MINIMUM')return {base:String(range.min),note:'按最低档计算；单位在职须按实际申报工资缴费。'};
  if(!/^\d+(\.\d{1,2})?$/.test(String(value))||new Decimal(value).lte(0))throw Error('请输入大于0的金额，最多两位小数');

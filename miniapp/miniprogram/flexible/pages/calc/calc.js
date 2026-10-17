@@ -1,3 +1,4 @@
+const cities=require('../../../utils/city-policies');
 const session=require('../../../utils/session');
 const brand=require('../../../utils/brand');
 const {forecast,retirement,minimum}=require('../../../utils/forecast');
@@ -8,12 +9,13 @@ const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
 const planLabels=['照这个金额交到退休','最低档交到退休','最低档交够年限就停','自己选还交多久'];
 const duration=n=>(Math.floor(n/12)?Math.floor(n/12)+'年':'')+(n%12?n%12+'个月':'')||(n===0?'0个月':'—');
 const show=s=>({...s,name:planLabels[plans.indexOf(s.plan)],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),years:duration(s.futureMonths),recovery:s.recoveryMonthsSlow==null?'—':duration(s.recoveryMonthsSlow)});
-function defaults(){const bounds=dates();return {dateBounds:bounds,accountOpen:false,paymentOpen:false,advanced:false,compare:false,result:null,error:'',categoryIndex:0,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],planLabels,planIndex:0,accountMode:'estimate',historyModeIndex:0,baseModeIndex:0,baseModeLabels:['最低档','自填每月养老缴费','自填缴费基数'],baseInput:'',form:{birthMonth:bounds.defaultBirth,category:'MALE',firstInsuredMonth:suggestedFirst(bounds.defaultBirth,bounds.todayMonth),dataAsOf:bounds.todayMonth,unitYears:10,unitMonths:0,flexYears:2,flexMonths:0,unitPayment:'',flexPayment:'',principal:'',historicalIndex:'',historicalRights:false,pauseMonths:0,customMonths:60,plan:'CURRENT',contributionType:'FLEXIBLE',interest:0}};}
+function defaults(){const bounds=dates();return {dateBounds:bounds,accountOpen:false,paymentOpen:false,advanced:false,compare:false,result:null,error:'',categoryIndex:0,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],planLabels,planIndex:0,accountMode:'estimate',historyModeIndex:0,baseModeIndex:0,baseModeLabels:['最低档','自填每月养老缴费','自填缴费基数'],baseInput:'',form:{regionId:'440100',birthMonth:bounds.defaultBirth,category:'MALE',firstInsuredMonth:suggestedFirst(bounds.defaultBirth,bounds.todayMonth),dataAsOf:bounds.todayMonth,unitYears:10,unitMonths:0,flexYears:2,flexMonths:0,unitPayment:'',flexPayment:'',principal:'',historicalIndex:'',historicalRights:false,pauseMonths:0,customMonths:60,plan:'CURRENT',contributionType:'FLEXIBLE',interest:0}};}
 Page({
  data:defaults(),
  onLoad(){const saved=session.load('flexible');this.setData(saved||defaults());this.setData({dateBounds:dates()});this.refresh();},
+ regionChanged(e){const id=e.detail.regionId;if(!cities.city(id))return;this.setData({'form.regionId':id,'form.historicalIndex':'',result:null,error:'',compare:false,baseInput:'',baseModeIndex:0});this.refresh();session.save('flexible',this.data);},
  onUnload(){session.save('flexible',this.data);},
- refresh(){const f=this.data.form,limits=contributionRange(f.dataAsOf);let h=null,principal='',accountError='',historyError='',base='',baseError='';
+ refresh(){const f=this.data.form,local=cities.capability(f.regionId||'440100','employee');this.setData({regionReady:!!local&&local.status==='READY'});if(local&&!local.legacy&&f.dataAsOf<local.effectiveFrom){this.setData({result:null,error:'已录入规则从'+local.effectiveFrom+'起使用，请在更多设置修改截至月份'});}if(!local||local.status!=='READY'){this.setData({result:null,baseError:local&&local.reason||'地区暂未开放',futurePayment:'',accountSummary:''});return;}const limits=contributionRange(local.effectiveFrom&&f.dataAsOf<local.effectiveFrom?local.effectiveFrom:f.dataAsOf,f.regionId);let h=null,principal='',accountError='',historyError='',base='',baseError='';
   try{h=inputs.history(f);}catch(e){historyError=e.message;}
   try{if(h)principal=this.data.accountMode==='known'?inputs.amount(f.principal,'查询到的账户余额',true).toFixed(2):inputs.estimate(f,h,limits.min,this.data.historyModeIndex===1);}catch(e){accountError=e.message;}
   try{base=inputs.futureBase(this.data.baseModeIndex,this.data.baseInput,limits);}catch(e){baseError=e.message;}
@@ -44,7 +46,7 @@ Page({
  choosePlan(e){const p=e.currentTarget.dataset.plan,s=this.data.result.scenarios.find(x=>x.plan===p);if(!s)return;this.setData({'form.plan':p,planIndex:plans.indexOf(p),'result.chosen':s});this.refresh();session.save('flexible',this.data);wx.pageScrollTo({scrollTop:0,duration:200});},
  edit(){this.setData({result:null,error:'',compare:false});session.save('flexible',this.data);wx.pageScrollTo({scrollTop:0,duration:0});},
  reset(){this.setData(defaults());this.refresh();session.save('flexible',this.data);wx.pageScrollTo({scrollTop:0,duration:0});},
- info(e){const texts={history:'单位和灵活就业的职工养老年限可以累计。同一个月只能算一次；不要填医保、居民养老或重复缴费年限。没有交过的那一项填0。',category:'女性退休类别受原身份、岗位和参保经历影响，不能只凭现在是灵活就业就选原50岁或原55岁。请按社保确认的类别选择。',account:'粤省事 → 社保·就业 → 养老 → 参保缴费状态查询 → 职工社保。单位和灵活就业使用同一个个人账户；查到含利息的余额可直接填，不要把累计缴费总额当余额。',rules:'广州灵活就业可在缴费基数上下限内自选，自己承担20%，其中基数的8%进入个人账户。通常不能补交过去断缴年限；到龄不够年限需按规定继续交。退休地、延缴资格和特殊补缴请向社保确认。'};wx.showModal({title:'怎么填？',content:texts[e.currentTarget.dataset.key]||'',showCancel:false});},
- policy(){wx.navigateTo({url:'/pages/policy/policy?id=flexible-rules'});},
+ info(e){if((this.data.form.regionId||'440100')!=='440100'&&e.currentTarget.dataset.key==='account'){wx.showModal({title:'账户金额去哪查？',content:'可在电子社保卡、国家社会保险公共服务平台或当地人社服务中查询养老保险个人权益记录。填写个人账户金额，不是单位与个人累计缴费总额。使用含利息的余额时，不要再重复添加利息。',showCancel:false});return;}const texts={history:'单位和灵活就业的职工养老年限可以累计。同一个月只能算一次；不要填医保、居民养老或重复缴费年限。没有交过的那一项填0。',category:'女性退休类别受原身份、岗位和参保经历影响，不能只凭现在是灵活就业就选原50岁或原55岁。请按社保确认的类别选择。',account:'粤省事 → 社保·就业 → 养老 → 参保缴费状态查询 → 职工社保。单位和灵活就业使用同一个个人账户；查到含利息的余额可直接填，不要把累计缴费总额当余额。',rules:'本页已开放地区的灵活就业可在缴费基数上下限内自选，自己承担20%，其中基数的8%进入个人账户。通常不能补交过去断缴年限；到龄不够年限需按规定继续交。退休地、延缴资格和特殊补缴请向社保确认。'};wx.showModal({title:'怎么填？',content:texts[e.currentTarget.dataset.key]||'',showCancel:false});},
+ policy(){wx.navigateTo({url:'/pages/policy/policy?city='+(this.data.form.regionId||'440100')+'&kind=flexible'});},
  onShareAppMessage(){return {title:brand.name+' · 灵活就业养老',path:'/flexible/pages/calc/calc'};}
 });

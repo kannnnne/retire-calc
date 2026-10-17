@@ -4,7 +4,11 @@
 
 ## 运行
 
-微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行503项检查。随包decimal.js 10.6.0（MIT）。
+微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行520项检查。随包decimal.js 10.6.0（MIT）。
+
+## 地区扩展（2.2.0开发体验版）
+
+三类入口共用省市选择。当前可计算广州、北京、上海普通情景；深圳、成都、杭州、西安已登记但规则未核实完整，明确阻断计算，不能宣传七城均已开放。各地区年度参数、条件、来源及尚缺事项见[多城市核对表](docs/multi-city.md)。2.2.0已于2026-10-17 15:26通过开发工具GUI上传并覆盖已选体验版，未送审或正式发布。
 
 ## 功能
 

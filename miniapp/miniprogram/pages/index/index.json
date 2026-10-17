@@ -2,6 +2,7 @@
   "navigationBarTitleText": "退休算盘",
   "enablePullDownRefresh": false,
   "usingComponents": {
-    "tool-nav": "/components/tool-nav/index"
+    "tool-nav": "/components/tool-nav/index",
+    "region-picker": "/components/region-picker/index"
   }
 }
