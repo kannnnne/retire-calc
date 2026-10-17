@@ -60,7 +60,7 @@ function forecast(r,now) {
   if(!['FLEXIBLE','EMPLOYEE'].includes(type)) throw Error('缴费身份无效');
   const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
   if(!plans.includes(r.plan)) throw Error('请选择缴费方案');
-  const parameter=legacy?policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0]:{status:'OFFICIAL',year:local.year,pensionBase:local.pensionBase};
+  const parameter=legacy?policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0]:{status:local.parameterStatus||'OFFICIAL',year:local.year,pensionBase:local.pensionBase};
   const referenceNote=legacy?'':local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
   const localBasic=(base,index,months)=>{
     if(legacy||local.rule==='GUANGDONG')return basic(base,index,months);

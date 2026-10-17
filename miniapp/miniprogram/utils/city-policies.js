@@ -10,9 +10,9 @@ const cities=[
  {id:'110100',name:'北京市',provinceId:'110000',province:'北京市',employee:{status:'READY',min:7270,max:36348,effectiveFrom:'2026-07',pensionBase:12049,year:2025,indexWage:12116,sources:bjEmployee},resident:{status:'READY',rule:'BEIJING_ORDINARY',base:998,baseYear:2025,tiers:[1000,2000,4000,6000,9000],subsidies:[60,90,120,150,150],continuous:true,subsidyLimitYears:15,sources:bjResident}},
  {id:'310100',name:'上海市',provinceId:'310000',province:'上海市',employee:{status:'READY',min:7546,max:37731,effectiveFrom:'2026-08',pensionBase:12577,year:2026,indexWage:12577,sources:shEmployee},resident:{status:'READY',rule:'SHANGHAI_ORDINARY',base:1555,baseYear:2025,tiers:[800,1300,1700,2300,3300,5300,7300],subsidies:[270,400,450,525,575,675,730],extraYear:20,sources:shResident}},
  {id:'440300',name:'深圳市',provinceId:'440000',province:'广东省',employee:{...pending('深圳户籍与非深圳户籍费率不同，省级统筹指数口径及地方补充待遇仍在核对，暂不生成领取金额。'),sources:[source('gd-2026-range','广东2026年职工养老缴费范围','https://guangdong.chinatax.gov.cn/gdsw/mmsw_gkwj/2026-10/13/content_87b090a21cbb45a3b8adb477f596793a.shtml','2026年1月起全省企业下限统一5510元，7月起5521—27603元，不再划分片区。'),source('sz-flex','深圳灵活就业参保缴费说明','https://hrss.sz.gov.cn/szsi/sbjxxgk/gzdt/content/post_12956467.html','深户21%、非深户20%，不能统一按20%计算。'),source('sz-base','深圳2025年养老金计发基数','https://hrss.sz.gov.cn/zmhd/cjwt/cjwt/shbz/content/post_12493488.html','2025年计发基数11293元，不能使用广州9493元。')]},resident:{...pending('深圳基础养老金与本市户籍年限有关，完整现行标准仍在核对，暂不套用广州数据。'),sources:[source('sz-resident','深圳居民养老参保登记','https://hrss.sz.gov.cn/szsi/zxbs/zdyw/gpywcj/jmylbxcbdj/','九档个人年缴180至4800元；补贴和领取条件按深圳规定执行。')]}},
- {id:'510100',name:'成都市',provinceId:'510000',province:'四川省',employee:{...pending('四川普通养老金计发基数的官方年度文件尚待核实，暂不采用网上流传数值。'),sources:[]},resident:{...pending('成都有单独的缴费比例、个人账户记入与基础养老金公式，还需区分城镇和农村，暂不套用其他城市算法。'),sources:[source('cd-resident-rule','成都城乡居民养老保险试行办法','https://www.cdzgh.com/index.php?a=show&c=index&catid=24&id=1870&m=content','成府发〔2009〕58号。个人账户按缴费基数8%建立，基础养老金另有计发办法；不是全部自缴金额直接除以139。')]}},
- {id:'330100',name:'杭州市',provinceId:'330000',province:'浙江省',employee:{...pending('浙江2026年度参数及计发口径仍在核对，暂不把2025标准冒充2026标准。'),sources:[source('hz-employee-range','浙江2025年度养老缴费标准','https://zhejiang.chinatax.gov.cn/art/2025/12/11/art_13314_645797.html','2025年上下限4986—25299元；这不是2026年度标准。')]},resident:{...pending('杭州市区与桐庐、淳安、建德的标准不能混用，正核对各地基础养老金与补缴条件。'),sources:[source('hz-resident-tier','杭州居民中高缴费档次调整','https://zfgb.hangzhou.gov.cn/11/104220263/t101220263044/530346.shtml','2026年调整2000、3000、5000、7000元档及补贴；适用范围须核对区县，不能覆盖所有杭州地区。')]}},
- {id:'610100',name:'西安市',provinceId:'610000',province:'陕西省',employee:{...pending('陕西年度计发基数的官方通知仍在核对，暂不采用网上流传数值。'),sources:[]},resident:{...pending('已核对十档年缴标准，历史补缴资格、补缴档次及本市完整待遇标准仍需核对。'),sources:[source('xa-resident-tier','西安居民养老缴费档次答复','https://xasjj.xa.gov.cn/zmhd/hygq/2056556360067239937.html','2026年答复列十档300、500、800、1000、1500、2000、3000、4000、5000、6000元及相应补贴。')]}}
+ {id:'510100',name:'成都市',provinceId:'510000',province:'四川省'},
+ {id:'330100',name:'杭州市',provinceId:'330000',province:'浙江省'},
+ {id:'610100',name:'西安市',provinceId:'610000',province:'陕西省'}
 ];
 const provincial=require('./province-policies');
 for(const entry of provincial.municipalities){
@@ -28,6 +28,14 @@ for(const entry of provincial.municipalities){
   resident.sources=[...provincial.gdResidentSources,...previous.resident.sources];
  }
  const record={...entry,employee,resident};if(previous)Object.assign(previous,record);else cities.push(record);
+}
+const extended=require('./extended-policies');
+for(const c of cities){
+ const province=extended.provinceReferences[c.provinceId]||{},override=extended.cityOverrides[c.id]||{};
+ for(const kind of ['employee','resident']){
+  if(override[kind])c[kind]={...override[kind],scope:'CITY_REFERENCE',policyProvinceId:c.provinceId};
+  else if((!c[kind]||c[kind].status==='PENDING')&&province[kind])c[kind]={...province[kind],scope:'PROVINCE_REFERENCE',policyProvinceId:c.provinceId};
+ }
 }
 function city(id){return cities.find(c=>c.id===id)||null;}
 function capability(id,kind){const c=city(id);return c?c[kind==='flexible'?'employee':kind]:null;}
