@@ -17,6 +17,12 @@
       "pages": [
         "pages/calc/calc"
       ]
+    },
+    {
+      "root": "flexible",
+      "pages": [
+        "pages/calc/calc"
+      ]
     }
   ],
   "window": {

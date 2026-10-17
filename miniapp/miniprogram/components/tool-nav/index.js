@@ -1,1 +1,3 @@
-Component({properties:{active:String},methods:{go(e){const key=e.currentTarget.dataset.key;const urls={home:'/pages/home/home',employee:'/pages/index/index',resident:'/resident/pages/calc/calc'};if(key===this.properties.active||!urls[key])return;wx.redirectTo({url:urls[key]});}}});
+const {icon}=require('../../utils/tool-icons');
+const items=[['home','首页'],['employee','职工养老'],['flexible','灵活就业'],['resident','居民养老']].map(([key,label])=>({key,label,icon:icon(key,'#66758b'),selectedIcon:icon(key)}));
+Component({data:{items},properties:{active:String},methods:{go(e){const key=e.currentTarget.dataset.key;const urls={home:'/pages/home/home',employee:'/pages/index/index',flexible:'/flexible/pages/calc/calc',resident:'/resident/pages/calc/calc'};if(key===this.properties.active||!urls[key])return;wx.redirectTo({url:urls[key]});}}});

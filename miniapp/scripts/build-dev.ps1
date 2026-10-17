@@ -20,10 +20,10 @@ Push-Location $projectDir
 try {
     & $nodeExe --test 'tests/*.test.js'
     if ($LASTEXITCODE -ne 0) { throw '测试失败，停止编译及上传。' }
-    $templates = @(Get-ChildItem miniprogram -Recurse -Filter '*.wxml' | ForEach-Object { $_.FullName })
+    $templates = @(Get-ChildItem miniprogram -Recurse -Filter '*.wxml' | ForEach-Object { $_.FullName.Replace($projectDir + '\', '').Replace('\', '/') })
     & (Join-Path $compilerDir 'wcc.exe') -o (Join-Path $buildDir 'wxml-checked.js') @templates
     if ($LASTEXITCODE -ne 0) { throw 'WXML编译失败，停止上传。' }
-    $styles = @(Get-ChildItem miniprogram -Recurse -Filter '*.wxss' | ForEach-Object { $_.FullName })
+    $styles = @(Get-ChildItem miniprogram -Recurse -Filter '*.wxss' | ForEach-Object { $_.FullName.Replace($projectDir + '\', '').Replace('\', '/') })
     & (Join-Path $compilerDir 'wcsc.exe') -o (Join-Path $buildDir 'wxss-checked.js') @styles
     if ($LASTEXITCODE -ne 0) { throw 'WXSS编译失败，停止上传。' }
     $buildTime = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'

@@ -14,6 +14,7 @@ foreach ($folder in @('miniprogram', 'scripts', 'tests')) {
 }
 $files += Get-ChildItem -LiteralPath (Join-Path $sourceRoot 'docs') -Filter '*.md' -File | ForEach-Object { [IO.Path]::GetRelativePath($sourceRoot, $_.FullName) }
 $files += 'branding\avatar-v1.png'
+$files += @('branding\avatar-v2-blue-abacus.png', 'branding\identity.md')
 foreach ($relative in $files) {
     $destination = Join-Path $destinationRoot $relative
     New-Item -ItemType Directory -Force -Path (Split-Path $destination -Parent) | Out-Null

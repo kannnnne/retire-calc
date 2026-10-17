@@ -1,0 +1,2 @@
+@import "../../../pages/index/index.wxss";
+.duration-input{gap:12rpx}.duration-input input{width:56rpx;min-width:0;text-align:center;flex:1}.duration-input text{flex:none}.history-total{width:100%;display:flex;justify-content:space-between;align-items:center;min-height:88rpx;padding:12rpx 0;font-size:26rpx;color:var(--muted);text-align:left}.history-total text:last-child{color:var(--brand)}.history-total::after{border:0}

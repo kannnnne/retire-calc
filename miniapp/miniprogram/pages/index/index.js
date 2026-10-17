@@ -37,6 +37,7 @@ Page({
  help(e){wx.navigateTo({url:'/guide/pages/help/help?section='+(e.currentTarget.dataset.section||'guide')});},
  parameterInfo(){wx.showModal({title:'平均工资有什么影响？',content:'基础养老金与计发基数有关。广州本工具自动采用已录入的'+referenceParameter.year+'年官方计发基数'+referenceParameter.pensionBase+'元/月，不需要你填写。它不是你的工资，也不是最低缴费基数。历史缴费指数另需各年度规定的平均工资，不能用这一个数推算；未知指数仍按0.6估算。未来年度参数可能改变。出处见首页“使用说明与隐私”中的“怎么算的”。',showCancel:false});},
  info(e){const texts={index:'平均缴费指数反映各年缴费工资相对当地规定平均工资的比例。正式值由社保核定，不能仅用当前工资算出来。未知时按0.6估算，可查询个人权益记录或咨询12333。',principal:'粤省事 → 社保·就业 → 养老 → 参保缴费状态查询 → 职工社保。填写个人缴费（划入个人账户）总额与单位划入个账金额之和。利息另填，避免重复计入。',base:'缴费基数是计算养老保险费用的工资数，不是公司或个人缴费金额。单月在职养老保险个人扣款÷8%可以反推；不要填医保、公积金、社保合计或补缴金额。工资估算优先用上年度税前月平均工资（含奖金等），当前工资、到手工资不等于申报基数。最低档只是计算选项；单位应依法申报。灵活就业可在上下限内选择。',months:'连续缴费月数=截至月−首次参保月+1，首尾月份都计入。例如2016年7月至2026年9月是123个月；中间停交2个月则为121个月。月份跨度不能证明实际到账，若有断缴、欠费或跨地记录，请按养老保险查询记录填写。',recovery:'后续自付总额÷每月总养老金，从领取后开始算。含已有权益，不等同投资回报。只有当前已满足门槛时，才额外显示按新增待遇计算的回收时间。',category:'女性原50/55岁类别与岗位、身份和参保经历有关。不能只凭当前是否灵活就业选择，有疑问请向社保确认。'};wx.showModal({title:'怎么填？',content:texts[e.currentTarget.dataset.key]||'',showCancel:false});},
+ openFlexible(){wx.redirectTo({url:'/flexible/pages/calc/calc'});},
  onShareAppMessage(){return {title:brand.name+' · 职工养老',path:'/pages/index/index'};}
 });
 

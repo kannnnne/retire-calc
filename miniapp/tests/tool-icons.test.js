@@ -1,0 +1,4 @@
+const test=require('node:test');const assert=require('node:assert/strict');
+const {icon}=require('../miniprogram/utils/tool-icons');const tools=require('../miniprogram/utils/tools');
+test('三个养老入口图形不同，普通与选中同形异色，无字体和远程依赖',()=>{const ids=['employee','flexible','resident'];assert.equal(new Set(ids.map(id=>icon(id))).size,3);for(const id of ['home',...ids]){const active=decodeURIComponent(icon(id).split(',')[1]),normal=decodeURIComponent(icon(id,'#66758b').split(',')[1]);assert.match(active,/viewBox="0 0 32 32"/);assert.equal(normal.replace('#66758b','#2463eb'),active);assert.doesNotMatch(active,/<(image|text|script)|href=/);}});
+test('独立工具注册路由互不覆盖，职工入口明确单位在职',()=>{assert.equal(tools.length,3);assert.equal(new Set(tools.map(t=>t.path)).size,3);assert.match(tools.find(t=>t.id==='employee').subtitle,/单位/);assert.equal(tools.find(t=>t.id==='flexible').path,'/flexible/pages/calc/calc');});
