@@ -1,0 +1,2 @@
+const documents=require('../../utils/policy-documents');
+Page({data:{documents:[]},onLoad(q={}){const selected=documents.filter(d=>d.id===q.id);this.setData({documents:selected.length?selected:documents});},copy(e){const d=documents.find(x=>x.id===e.currentTarget.dataset.id);if(!d)return;wx.setClipboardData({data:d.url,success(){wx.showModal({title:'官网链接已复制',content:'请打开手机浏览器，在地址栏粘贴链接查看完整原文。',showCancel:false});},fail(){wx.showModal({title:'没有复制成功',content:'可以长按页面上的网址复制，再到手机浏览器打开。',showCancel:false});}});}});

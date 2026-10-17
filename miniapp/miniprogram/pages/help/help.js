@@ -1,0 +1,1 @@
+Page({policies(){wx.navigateTo({url:'/pages/policy/policy'});},open(e){wx.navigateTo({url:'/guide/pages/help/help?section='+e.currentTarget.dataset.section});},resident(){wx.showModal({title:'居民养老数据怎么查',content:'广东：粤省事搜索城乡居民养老保险，或广东人社公共服务的城乡居保查询打印入口，查询个人权益单、缴费信息和账户储存额。请核对险种，不用职工养老账户金额代替。居民账户储存额通常已含补贴和利息，不要重复加。广西可向参保地社保经办机构查询。居民养老目前只支持广州普通参保情况。',showCancel:false});}});

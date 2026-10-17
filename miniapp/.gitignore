@@ -1,0 +1,7 @@
+node_modules/
+project.private.config.json
+output/
+*.log
+.DS_Store
+docs/wechat-*.html
+docs/wechat-*.txt

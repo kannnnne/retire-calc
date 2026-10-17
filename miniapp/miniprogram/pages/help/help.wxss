@@ -1,0 +1,1 @@
+.card{padding:0 24rpx}.tutorial{margin-top:0;background:#fff;min-height:112rpx;display:flex;align-items:center;border-bottom:1rpx solid var(--line);border-radius:0;padding:22rpx 0;color:var(--ink)}

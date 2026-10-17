@@ -1,0 +1,7 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const {continuousMonths,contributionRange,resolveBase}=require('../miniprogram/utils/input-model');
+test('连续月数含首尾，跨年、同月、反序与缺失',()=>{assert.equal(continuousMonths('2016-7','2026-09'),123);assert.equal(continuousMonths('2025-12','2026-01'),2);assert.equal(continuousMonths('2026-09','2026-09'),1);assert.equal(continuousMonths('2026-10','2026-09'),null);assert.equal(continuousMonths('','2026-09'),null);assert.equal(continuousMonths('2026-13','2026-09'),null);});
+test('2026七月缴费基数上下限切换，不更改计发基数',()=>{assert.equal(contributionRange('2026-06').min,5510);assert.equal(contributionRange('2026-07').min,5521);assert.equal(contributionRange('2026-09').max,27603);});
+const limits=contributionRange('2026-09');
+test('最低档无需输入，工资上下限夹取，养老个人扣款反推',()=>{assert.equal(resolveBase('MINIMUM','',limits).base,'5521');assert.equal(resolveBase('SALARY','4000',limits).base,'5521.00');assert.equal(resolveBase('SALARY','8000',limits).base,'8000.00');assert.equal(resolveBase('SALARY','60000',limits).base,'27603.00');assert.equal(resolveBase('DEDUCTION','640',limits).base,'8000.00');assert.equal(resolveBase('DEDUCTION','441.68',limits).base,'5521.00');});
+test('反推金额不能静默夹取社保合计，空值、负数、过多小数及越界拒绝',()=>{for(const [mode,value] of [['DEDUCTION','300'],['DEDUCTION','3000'],['DIRECT','5510'],['DIRECT','30000'],['SALARY',''],['SALARY','0'],['SALARY','-1'],['SALARY','8000.001']])assert.throws(()=>resolveBase(mode,value,limits));});

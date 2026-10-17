@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/index/index",
+    "pages/help/help",
+    "pages/policy/policy"
+  ],
+  "subPackages": [
+    {
+      "root": "guide",
+      "pages": [
+        "pages/help/help"
+      ]
+    },
+    {
+      "root": "resident",
+      "pages": [
+        "pages/calc/calc"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTitleText": "退休算盘",
+    "navigationBarBackgroundColor": "#f5f7fa",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7fa"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

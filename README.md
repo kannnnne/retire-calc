@@ -1,5 +1,7 @@
 # 穗 · 退休账本
 
+微信小程序 **退休算盘** 源码在 [miniapp/](miniapp/README.md)，可独立导入微信开发者工具，纯本地计算，无需部署服务器。该目录保留小程序源码、测试和开发文档；下文是旧 Java 网页版及 Windows 便携版的运行方式。
+
 广州企业职工养老金与个人续交规划小工具，含Windows便携版。Java17+ / Spring Boot3.5.6 / 原生HTML、CSS、ES modules，前端无需构建。
 
 ## 运行

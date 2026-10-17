@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const {calculate}=require('../miniprogram/resident/utils/calculate');
+const f=(p={})=>({regionId:'440100',birth:'1968-10',asOf:'2026-10',years:'4',balance:'',pastAnnual:'300',tier:360,budget:'',usedSubsidy:'',eligible:'yes',never:false,paidThisYear:'yes',extended:'unknown',transition:'no',...p});
+test('58岁已交4年：60岁6年，正常再交6年，65岁补5年',()=>{const r=calculate(f()).chosen;assert.equal(r.timeline.paidAt60,6);assert.equal(r.timeline.missingAt60,9);assert.equal(r.timeline.normalYears,6);assert.equal(r.timeline.normalCost,'2160.00');assert.equal(r.lumpYears,5);assert.equal(r.lumpCost,'1800.00');assert.equal(r.timeline.lumpMonth,'2033-10');assert.equal(r.total,'3960.00');assert.equal(r.receiptYear,2033);assert.equal(r.timeline.receivingAge,65);});
+test('今年未交不能算进已有年数，未来年缴与补缴金额分开',()=>{const r=calculate(f({paidThisYear:'no'})).chosen;assert.equal(r.timeline.normalYears,7);assert.equal(r.lumpYears,4);assert.equal(r.timeline.paidAt60,7);assert.equal(Number(r.timeline.normalCost)+Number(r.lumpCost),Number(r.total));});
+test('满15年不制造补缴日期任务，全部档次金额恒等',()=>{const r=calculate(f({years:'15'}));for(const s of r.scenarios){assert.equal(s.lumpYears,0);assert.equal(s.timeline.normalYears,0);assert.equal(s.total,'0.00');}assert.equal(r.chosen.receiptYear,2028);});
+test('65岁之后按当前月份办理，不回填已过去的补缴月份',()=>{const r=calculate(f({birth:'1960-03',extended:'yes'})).chosen;assert.equal(r.timeline.lumpMonth,'2026-10');assert.equal(r.timeline.lumpAge,66);assert.equal(r.timeline.normalYears,0);});
+test('9万元预算只筛合法档次，不制造9万元缴费产品',()=>{const r=calculate(f({budget:'90000'}));assert.deepEqual(r.scenarios.map(s=>s.annual),[360,600,900,1200,1800,3600,4800]);assert.ok(r.scenarios.every(s=>s.affordable));assert.equal(r.scenarios[6].lumpCost,'24000.00');});
+
+test('历史本人缴费与账户余额分开显示，不把补贴利息算已交金额',()=>{assert.equal(calculate(f()).pastPaid,'1200.00');assert.equal(calculate(f({balance:'8000',pastAnnual:''})).pastPaid,null);assert.equal(calculate(f({never:true,years:'0',balance:'0',pastAnnual:'',paidThisYear:'no',usedSubsidy:'0'})).pastPaid,'0.00');});

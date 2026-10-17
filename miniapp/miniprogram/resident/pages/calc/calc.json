@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "退休算盘",
+  "usingComponents": {
+    "tool-nav": "/components/tool-nav/index"
+  }
+}

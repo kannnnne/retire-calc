@@ -1,0 +1,1 @@
+{"desc":"首页可索引，不含用户填写内容","rules":[{"action":"allow","page":"pages/index/index"},{"action":"disallow","page":"*"}]}

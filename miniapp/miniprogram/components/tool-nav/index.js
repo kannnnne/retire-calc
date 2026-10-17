@@ -1,0 +1,1 @@
+Component({properties:{active:String},methods:{go(e){const key=e.currentTarget.dataset.key;const urls={home:'/pages/home/home',employee:'/pages/index/index',resident:'/resident/pages/calc/calc'};if(key===this.properties.active||!urls[key])return;wx.redirectTo({url:urls[key]});}}});
