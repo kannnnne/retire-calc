@@ -1,10 +1,10 @@
 # 退休算盘 微信小程序
 
-免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；2.0.17已于2026-10-17 09:53上传开发版，未送审或正式发布。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
+免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；2.0.18已于2026-10-17 10:14上传开发版，未送审或正式发布。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
 
 ## 运行
 
-微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行490项检查。随包decimal.js 10.6.0（MIT）。
+微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行491项检查。随包decimal.js 10.6.0（MIT）。
 
 ## 功能
 
