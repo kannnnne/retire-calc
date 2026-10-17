@@ -36,6 +36,7 @@ function number(value,label,min,max,integer=false,optional=false) {
 function recovery(cost,pension) { return pension && D(pension).gt(0)?cost.div(pension).ceil().toNumber():null; }
 function forecast(r,now) {
   const regionId=r.regionId||'440100',local=require('./city-policies').requireEmployee(regionId,r.dataAsOf),legacy=!!local.legacy;
+  if(local.nonLocalOnly&&r.szNonLocal!=='yes')throw Error('深圳目前只支持非深圳户籍且无地方补充养老权益的普通情况，请先确认；深户地方补助尚未接入');
   const today=now||new Date(), current=today.getFullYear()*12+today.getMonth();
   const b=month(r.birthMonth,'出生年月','birthMonth'),first=month(r.firstInsuredMonth,'首次参保年月','firstInsuredMonth'),asof=month(r.dataAsOf,'数据截至月份','dataAsOf');
   const ret=retirement(r.birthMonth,r.category),retMonth=month(ret.month);
@@ -60,8 +61,12 @@ function forecast(r,now) {
   const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
   if(!plans.includes(r.plan)) throw Error('请选择缴费方案');
   const parameter=legacy?policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0]:{status:'OFFICIAL',year:local.year,pensionBase:local.pensionBase};
-  const referenceNote=legacy?'':'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
-  const localBasic=(base,index,months)=>legacy?basic(base,index,months):D(base).mul(D(1).plus(index)).div(2).mul(months).div(12).mul('.01');
+  const referenceNote=legacy?'':local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
+  const localBasic=(base,index,months)=>{
+    if(legacy||local.rule==='GUANGDONG')return basic(base,index,months);
+    const years=local.rule==='GUANGXI'?D(months).div(12).toDecimalPlaces(2,Decimal.ROUND_UP):D(months).div(12);
+    return D(base).mul(D(1).plus(local.rule==='GUANGXI'?D(index).toDecimalPlaces(4):index)).div(2).mul(years).mul('.01');
+  };
   const target=minimum(Math.floor(retMonth/12)), gap=Math.max(0,target-paid);
   const rate=type==='FLEXIBLE'?'.20':'.08';
   const scenarios=plans.map(plan=>{

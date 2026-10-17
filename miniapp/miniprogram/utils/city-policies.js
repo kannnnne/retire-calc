@@ -14,6 +14,21 @@ const cities=[
  {id:'330100',name:'杭州市',provinceId:'330000',province:'浙江省',employee:{...pending('浙江2026年度参数及计发口径仍在核对，暂不把2025标准冒充2026标准。'),sources:[source('hz-employee-range','浙江2025年度养老缴费标准','https://zhejiang.chinatax.gov.cn/art/2025/12/11/art_13314_645797.html','2025年上下限4986—25299元；这不是2026年度标准。')]},resident:{...pending('杭州市区与桐庐、淳安、建德的标准不能混用，正核对各地基础养老金与补缴条件。'),sources:[source('hz-resident-tier','杭州居民中高缴费档次调整','https://zfgb.hangzhou.gov.cn/11/104220263/t101220263044/530346.shtml','2026年调整2000、3000、5000、7000元档及补贴；适用范围须核对区县，不能覆盖所有杭州地区。')]}},
  {id:'610100',name:'西安市',provinceId:'610000',province:'陕西省',employee:{...pending('陕西年度计发基数的官方通知仍在核对，暂不采用网上流传数值。'),sources:[]},resident:{...pending('已核对十档年缴标准，历史补缴资格、补缴档次及本市完整待遇标准仍需核对。'),sources:[source('xa-resident-tier','西安居民养老缴费档次答复','https://xasjj.xa.gov.cn/zmhd/hygq/2056556360067239937.html','2026年答复列十档300、500、800、1000、1500、2000、3000、4000、5000、6000元及相应补贴。')]}}
 ];
+const provincial=require('./province-policies');
+for(const entry of provincial.municipalities){
+ if(entry.id==='440100')continue;
+ const previous=cities.find(c=>c.id===entry.id),isGuangdong=entry.provinceId==='440000';
+ const employee={...(isGuangdong?provincial.gdEmployee:provincial.gxEmployee)};
+ const resident={...(isGuangdong?provincial.gdResident:provincial.gxResident)};
+ if(entry.id==='440300'){
+  employee.rule='SHENZHEN_NONLOCAL';employee.pensionBase=11293;employee.nonLocalOnly=true;
+  employee.referenceLabel='深圳非深户普通参保参考';
+  employee.referenceText='限非深圳户籍、无地方补充养老权益的普通参保人。按2025年深圳计发基数11293元计算，未来指数暂按广东参考参数9493元计算；不含深户地方补助、历史特殊待遇及省市就高对比差额。';
+  employee.sources=[...previous.employee.sources,source('sz-rule-2022','深圳企业养老省级统筹处理办法','https://www.sz.gov.cn/zfgb/2022/gb1253/content/post_10008776.html','深府规〔2022〕4号：统筹养老金、个人账户养老金按本市办法计算；计发基数过渡期间实行省市就高。本页仅给非深户普通情况参考，不替代就高核定。')];
+  resident.sources=[...provincial.gdResidentSources,...previous.resident.sources];
+ }
+ const record={...entry,employee,resident};if(previous)Object.assign(previous,record);else cities.push(record);
+}
 function city(id){return cities.find(c=>c.id===id)||null;}
 function capability(id,kind){const c=city(id);return c?c[kind==='flexible'?'employee':kind]:null;}
 function requireEmployee(id,asof){const c=city(id||'440100'),p=c&&c.employee;if(!p||p.status!=='READY')throw Error(p?p.reason:'请选择已开放的领取地区');if(!p.legacy&&asof<p.effectiveFrom)throw Error(c.name+'当前录入规则从'+p.effectiveFrom+'起使用，请核对数据截至月份');return p;}

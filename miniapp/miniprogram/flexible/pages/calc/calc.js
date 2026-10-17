@@ -13,8 +13,9 @@ function defaults(){const bounds=dates();return {dateBounds:bounds,accountOpen:f
 Page({
  data:defaults(),
  onLoad(){const saved=session.load('flexible');this.setData(saved||defaults());this.setData({dateBounds:dates()});this.refresh();},
- regionChanged(e){const id=e.detail.regionId;if(!cities.city(id))return;this.setData({'form.regionId':id,'form.historicalIndex':'',result:null,error:'',compare:false,baseInput:'',baseModeIndex:0});this.refresh();session.save('flexible',this.data);},
- onUnload(){session.save('flexible',this.data);},
+ szScope(e){this.setData({'form.szNonLocal':e.detail.value.length?'yes':'unknown',result:null,error:''});this.refresh();},
+ regionChanged(e){const id=e.detail.regionId;if(!cities.city(id))return;this.setData({'form.regionId':id,'form.historicalIndex':'','form.szNonLocal':'unknown',result:null,error:'',compare:false,baseInput:'',baseModeIndex:0});this.refresh();session.save('flexible',this.data);},
+ onHide(){session.save('flexible',this.data);},onUnload(){session.save('flexible',this.data);},
  refresh(){const f=this.data.form,local=cities.capability(f.regionId||'440100','employee');this.setData({regionReady:!!local&&local.status==='READY'});if(local&&!local.legacy&&f.dataAsOf<local.effectiveFrom){this.setData({result:null,error:'已录入规则从'+local.effectiveFrom+'起使用，请在更多设置修改截至月份'});}if(!local||local.status!=='READY'){this.setData({result:null,baseError:local&&local.reason||'地区暂未开放',futurePayment:'',accountSummary:''});return;}const limits=contributionRange(local.effectiveFrom&&f.dataAsOf<local.effectiveFrom?local.effectiveFrom:f.dataAsOf,f.regionId);let h=null,principal='',accountError='',historyError='',base='',baseError='';
   try{h=inputs.history(f);}catch(e){historyError=e.message;}
   try{if(h)principal=this.data.accountMode==='known'?inputs.amount(f.principal,'查询到的账户余额',true).toFixed(2):inputs.estimate(f,h,limits.min,this.data.historyModeIndex===1);}catch(e){accountError=e.message;}
