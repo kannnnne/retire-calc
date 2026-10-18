@@ -518,3 +518,12 @@ test('云浮页面交够后续缴可在填写与结果切换，保留历史及�
  restored.regionChoice({detail:{regionId:'450900'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.result,null);
  restored.regionChoice({detail:{regionId:'445300'}});restored.setData({'form.ageOnly':true,'form.age':'60'});restored.refreshPolicyQuestions();assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.payUntil,'MINIMUM');
 });
+
+test('江门续缴页面换档与恢复保持本市补贴，政策出处不串其他城市',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'440700'}});
+ p.setData({'form.ageOnly':false,'form.birth':'1971-10','form.asOf':'2026-10','form.years':'15','form.accountMode':'balance','form.balance':'30000','form.pastAnnual':'360','form.paidThisYear':'yes','form.ordinary':'yes','form.eligible':'yes','form.tier':360});p.refreshPolicyQuestions();assert.equal(p.data.canContinueTo60,true);p.calculate();assert.equal(p.data.error,'');const original=p.data.result.chosen.low;
+ p.payUntil({detail:{value:1}});assert.equal(p.data.result.chosen.total,'1440.00');assert.equal(p.data.result.chosen.subsidy,'120.00');assert.equal(p.data.result.chosen.base,'254.50');assert.equal(p.data.baseline.low,original);
+ p.chooseFuture({currentTarget:{dataset:{annual:600}}});assert.equal(p.data.result.chosen.total,'2400.00');assert.equal(p.data.result.chosen.subsidy,'240.00');p.onHide();const restored=page('resident/pages/calc/calc.js',store);assert.equal(restored.data.form.payUntil,'SIXTY');assert.equal(restored.data.result.chosen.annual,600);assert.equal(restored.data.form.balance,'30000');
+ restored.regionChoice({detail:{regionId:'445300'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.result,null);
+ const policy=page('pages/policy/policy.js');policy.onLoad({city:'440700',kind:'resident'});const d=policy.data.documents.find(x=>x.id==='jm-resident-continue-2025');assert.ok(d);assert.deepEqual(d.cityIds,['440700']);assert.equal(d.date,'核对于2026-10-19');for(const other of registry.cities.filter(x=>x.id!=='440700'))assert.ok(!other.resident.sources.some(s=>s.id===d.id));
+});

@@ -34,8 +34,21 @@ test('继续缴费不重算过去金额，不补历史补贴，不虚构历史�
  for(const s of r.scenarios){assert.equal(s.timeline.finalYears,24);assert.equal(s.lumpYears,0);assert.equal(s.immediateCost,null);assert.ok(s.total>0);}
 });
 test('未核实继续缴费的城市不能借云浮条款，默认35市计划不被强制扩长',()=>{
- for(const c of registry.cities.filter(c=>c.id!=='445300'))assert.throws(()=>calculate(form({regionId:c.id,payUntil:'SIXTY'})),/本地区尚未接入/);
+ for(const c of registry.cities.filter(c=>!['445300','440700'].includes(c.id)))assert.throws(()=>calculate(form({regionId:c.id,payUntil:'SIXTY'})),/本地区尚未接入/);
  for(const payUntil of ['forever',true,1,''])assert.throws(()=>calculate(form({payUntil})),/缴费时间/);
  const old=calculate(form()),explicit=calculate(form({payUntil:'MINIMUM'}));assert.deepEqual(old,explicit);
  const p=registry.city('445300').resident;assert.equal(p.postMinimumSubsidy,50);assert.ok(p.sources.some(s=>s.id==='yf-resident-rule-2026'));assert.match(p.referenceText,/第16年/);assert.doesNotMatch(p.referenceText,/未模拟/);
+});
+
+test('江门续缴独立九档矩阵，不套云浮额外补贴或改动已缴年度',()=>{
+ const p=registry.city('440700').resident;
+ assert.equal(p.postMinimumSubsidy,undefined);
+ for(const [i,tier]of p.tiers.entries()){
+  const f=form({regionId:'440700',tier}),r=calculate({...f,payUntil:'SIXTY'}),s=r.chosen,credit=i<3?30:60;
+  assert.equal(s.timeline.normalYears,4);assert.equal(s.timeline.finalYears,19);assert.equal(s.total,(tier*4).toFixed(2));assert.equal(s.subsidy,(credit*4).toFixed(2));assert.equal(s.base,'254.50');assert.equal(s.account,(30000+(tier+credit)*4).toFixed(2));assert.equal(s.low,(254.5+(30000+(tier+credit)*4)/139).toFixed(2));assert.equal(s.receiptYear,2031);assert.equal(s.lumpYears,0);
+  assert.equal(r.openingAmount,'30000.00');assert.equal(r.makeup,null);assert.ok(s.schedule.every(x=>x.year>=2027&&x.year<=2030&&x.subsidy===credit.toFixed(2)));
+  const stopped=calculate(f).chosen;assert.equal(stopped.total,'0.00');assert.equal(stopped.account,'30000.00');assert.equal(stopped.base,'242.50');assert.equal(stopped.timeline.payUntil,'MINIMUM');
+ }
+ const s=calculate(form({regionId:'440700',birth:'1967-10',paidThisYear:'no',payUntil:'SIXTY'})).chosen;assert.equal(s.timeline.normalYears,1);assert.equal(s.base,'245.50');assert.equal(s.subsidy,'30.00');
+ assert.throws(()=>calculate(form({regionId:'440700',birth:'1966-10',payUntil:'SIXTY'})),/60岁前/);
 });
