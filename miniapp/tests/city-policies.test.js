@@ -89,8 +89,8 @@ for(const c of provinces.municipalities){
  if(c.id==='440100')continue;
  test(c.name+'三个入口使用已核参数，居民注明本地或省级参考',()=>{
   const p=registry.capability(c.id,'employee'),r=registry.capability(c.id,'resident');
-  const e=forecast(employee({regionId:c.id,currentBase:String(p.min),szNonLocal:'yes'}));
-  const flex=forecast(employee({regionId:c.id,currentBase:String(p.min),contributionType:'FLEXIBLE',szNonLocal:'yes'}));
+  const e=forecast(employee({regionId:c.id,currentBase:String(p.min),szScopeConfirmed:'yes'}));
+  const flex=forecast(employee({regionId:c.id,currentBase:String(p.min),contributionType:'FLEXIBLE',szScopeConfirmed:'yes'}));
   assert.equal(e.region,c.name);assert.equal(e.parameter.pensionBase,c.id==='440300'?11293:c.provinceId==='440000'?9493:6983);
   assert.equal(e.scenarios[0].monthlyPersonalPayment,c.provinceId==='440000'?'441.68':'336.38');
   assert.equal(flex.scenarios[0].monthlyPersonalPayment,c.provinceId==='440000'?'1104.20':'840.96');
@@ -411,4 +411,22 @@ test('防城港、来宾、钦州官方来源仅归本市，新增本地参考�
   const r=resident(form({regionId:city,pastAnnual:'200',paidThisYear:'no',gxStartYear:'2012',gxReviewed:'yes',tier:200,gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:'200',target:6000}]}));assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.account,'32350.00');assert.equal(r.chosen.immediateCost,'29000.00');
  }
  const other=page('pages/policy/policy.js');other.onLoad({city:'450100',kind:'resident'});assert.ok(other.data.documents.every(x=>!/^fcg-|^lb-|^qz-/.test(x.id)));
+});
+
+
+test('深圳旧身份确认不能替代本市领取资格，旧会话金额失效，重确认及切换一致',()=>{
+ const old=employee({regionId:'440300',currentBase:'5521',szNonLocal:'yes'});
+ assert.throws(()=>forecast(old),/深圳实缴累计满10年/);
+ assert.throws(()=>forecast({...old,szScopeConfirmed:'unknown'}),/领取地为深圳/);
+ assert.equal(forecast({...old,szScopeConfirmed:'yes'}).regionId,'440300');
+ for(const [file,key] of [['pages/index/index.js','employee'],['flexible/pages/calc/calc.js','flexible']]){
+  const first=page(file);first.regionChanged({detail:{regionId:'440300'}});first.szScope({detail:{value:['yes']}});first.calculate();assert.equal(first.data.error,'');assert.ok(first.data.result);
+  const saved=JSON.parse(JSON.stringify(first.data));delete saved.form.szScopeConfirmed;saved.form.szNonLocal='yes';
+  const reopened=page(file,{[key]:saved});assert.equal(reopened.data.result,null);reopened.calculate();assert.match(reopened.data.error,/深圳实缴累计满10年/);
+  reopened.szScope({detail:{value:['yes']}});reopened.calculate();assert.ok(reopened.data.result);reopened.onHide();
+  const restored=page(file,{[key]:JSON.parse(JSON.stringify(reopened.data))});assert.ok(restored.data.result);
+  restored.szScope({detail:{value:[]}});restored.calculate();assert.equal(restored.data.result,null);assert.match(restored.data.error,/领取地为深圳/);
+  restored.regionChanged({detail:{regionId:'440100'}});restored.regionChanged({detail:{regionId:'440300'}});assert.equal(restored.data.form.szScopeConfirmed,'unknown');
+ }
+ const sources=registry.city('440300').employee.sources;assert.ok(sources.some(s=>s.id==='sz-scope-2022'&&s.checkedAt==='2026-10-19'));assert.ok(!registry.city('440100').employee.sources.some(s=>s.id==='sz-scope-2022'));
 });

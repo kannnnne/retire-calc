@@ -36,7 +36,7 @@ function number(value,label,min,max,integer=false,optional=false) {
 function recovery(cost,pension) { return pension && D(pension).gt(0)?cost.div(pension).ceil().toNumber():null; }
 function forecast(r,now) {
   const regionId=r.regionId||'440100',local=require('./city-policies').requireEmployee(regionId,r.dataAsOf),legacy=!!local.legacy;
-  if(local.nonLocalOnly&&r.szNonLocal!=='yes')throw Error('深圳目前只支持非深圳户籍且无地方补充养老权益的普通情况，请先确认；深户地方补助尚未接入');
+  if(local.nonLocalOnly&&r.szScopeConfirmed!=='yes')throw Error('请确认非深圳户籍、退休时在深圳实缴累计满10年且领取地为深圳，并无地方补充养老权益；其他情况暂不支持深圳本市公式');
   const today=now||new Date(), current=today.getFullYear()*12+today.getMonth();
   const b=month(r.birthMonth,'出生年月','birthMonth'),first=month(r.firstInsuredMonth,'首次参保年月','firstInsuredMonth'),asof=month(r.dataAsOf,'数据截至月份','dataAsOf');
   const ret=retirement(r.birthMonth,r.category),retMonth=month(ret.month);

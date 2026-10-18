@@ -23,8 +23,8 @@ for(const entry of provincial.municipalities){
  if(entry.id==='440300'){
   employee.rule='SHENZHEN_NONLOCAL';employee.pensionBase=11293;employee.nonLocalOnly=true;
   employee.referenceLabel='深圳非深户普通参保参考';
-  employee.referenceText='限非深圳户籍、无地方补充养老权益的普通参保人。按2025年深圳计发基数11293元计算，未来指数暂按广东参考参数9493元计算；不含深户地方补助、历史特殊待遇及省市就高对比差额。';
-  employee.sources=[...previous.employee.sources,source('sz-rule-2022','深圳企业养老省级统筹处理办法','https://www.sz.gov.cn/zfgb/2022/gb1253/content/post_10008776.html','深府规〔2022〕4号：统筹养老金、个人账户养老金按本市办法计算；计发基数过渡期间实行省市就高。本页仅给非深户普通情况参考，不替代就高核定。')];
+  employee.referenceText='限非深圳户籍、退休时深圳实际缴费累计满10年且待遇领取地为深圳、无地方补充养老权益的普通参保人。按2025年深圳计发基数11293元计算，未来指数暂按广东参考参数9493元计算；不含深户地方补助、历史特殊待遇及省市就高对比差额。';
+  employee.sources=[...previous.employee.sources,{...source('sz-scope-2022','深圳本市企业养老办法适用人群','https://www.sz.gov.cn/zfgb/zcjd/content/post_10009040.html','非本市户籍须依国家及广东规定以深圳为待遇领取地，法定退休年龄时深圳实缴累计满十年，并满足累计最低缴费年限；其他深圳领取人员按广东办法，不可只凭非深户选择本市公式。'),checkedAt:'2026-10-19'},source('sz-rule-2022','深圳企业养老省级统筹处理办法','https://www.sz.gov.cn/zfgb/2022/gb1253/content/post_10008776.html','深府规〔2022〕4号：统筹养老金、个人账户养老金按本市办法计算；计发基数过渡期间实行省市就高。本页仅给非深户普通情况参考，不替代就高核定。')];
   resident.sources=[...provincial.gdResidentSources,...previous.resident.sources];
  }
  const record={...entry,employee,resident};if(previous)Object.assign(previous,record);else cities.push(record);
