@@ -27,7 +27,7 @@ test('省级参考按本省匹配，成都居民用独立市级公式覆盖四�
  for(const id of ['330100','610100','510100']){const c=registry.city(id);assert.equal(c.employee.scope,'PROVINCE_REFERENCE');assert.equal(c.employee.policyProvinceId,c.provinceId);assert.equal(c.resident.policyProvinceId,c.provinceId);}
  assert.equal(registry.city('510100').resident.scope,'CITY_REFERENCE');
  assert.equal(registry.city('510100').resident.rule,'CHENGDU_REFERENCE');
- assert.equal(registry.city('330100').resident.scope,'PROVINCE_REFERENCE');
+ assert.equal(registry.city('330100').resident.scope,'CITY_REFERENCE');
  assert.equal(registry.city('999999'),null);
 });
 test('浙江2026范围和待遇都使用新文件，四川历史参数与陕西披露参数不冒充官方当年标准',()=>{
@@ -40,8 +40,8 @@ test('浙江居民排除困难代缴档，省级补贴不偷用杭州市区高�
  const r=resident(form({regionId:'330100',tier:7000}));assert.equal(r.chosen.base,'240.00');assert.equal(r.chosen.subsidy,'6000.00');assert.equal(r.chosen.low,(240+(1800+70000+6000)/139).toFixed(2));assert.equal(r.chosen.lumpYears,0);assert.equal(r.chosen.receiptYear,2036);
  assert.throws(()=>resident(form({regionId:'330100',tier:200})),/档次/);assert.ok(r.sources.some(s=>s.id==='zj-resident-subsidy-2026'));
 });
-test('陕西居民十档补贴、省级最低与广州分别计算',()=>{
- const r=resident(form({regionId:'610100',tier:500}));assert.equal(r.chosen.base,'198.00');assert.equal(r.chosen.subsidy,'750.00');assert.equal(r.chosen.account,'7550.00');assert.equal(r.chosen.low,(198+7550/139).toFixed(2));assert.equal(r.chosen.lumpYears,0);assert.throws(()=>resident(form({regionId:'610100',tier:200})),/档次/);
+test('西安居民使用本地239元和2026十档补贴，不再沿用陕西198元',()=>{
+ const r=resident(form({regionId:'610100',tier:500}));assert.equal(r.chosen.base,'239.00');assert.equal(r.chosen.subsidy,'750.00');assert.equal(r.chosen.account,'7550.00');assert.equal(r.chosen.low,(239+7550/139).toFixed(2));assert.equal(r.chosen.lumpYears,0);assert.throws(()=>resident(form({regionId:'610100',tier:200})),/档次/);
 });
 test('成都首次60岁趸缴五档金额逐项匹配2026年社保原图，不套全额入账或省通用公式',()=>{
  const tiers=registry.city('510100').resident.tiers,totals=['20489.40','40978.80','61470.00','81959.40','102448.80'];
@@ -87,7 +87,7 @@ for(const c of registry.cities)test(c.name+'三入口页面可算、来源不串
 });
 for(const c of provinces.municipalities){
  if(c.id==='440100')continue;
- test(c.name+'三个入口使用本省参数，居民明确标明省级参考',()=>{
+ test(c.name+'三个入口使用已核参数，居民注明本地或省级参考',()=>{
   const p=registry.capability(c.id,'employee'),r=registry.capability(c.id,'resident');
   const e=forecast(employee({regionId:c.id,currentBase:String(p.min),szNonLocal:'yes'}));
   const flex=forecast(employee({regionId:c.id,currentBase:String(p.min),contributionType:'FLEXIBLE',szNonLocal:'yes'}));
@@ -96,7 +96,7 @@ for(const c of provinces.municipalities){
   assert.equal(flex.scenarios[0].monthlyPersonalPayment,c.provinceId==='440000'?'1104.20':'840.96');
   assert.equal(e.scenarios[0].futureAccountCredit,flex.scenarios[0].futureAccountCredit);
   const rr=resident(form({regionId:c.id,tier:r.tiers[0]}));assert.equal(rr.regionId,c.id);assert.match(rr.referenceLabel,/参考/);
-  assert.equal(Number(rr.chosen.base),c.provinceId==='440000'?240:191);
+  assert.equal(Number(rr.chosen.base),({'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242})[c.id]||(c.provinceId==='440000'?240:191));
   const ppage=page('pages/policy/policy.js');ppage.onLoad({city:c.id,kind:'resident'});assert.ok(ppage.data.documents.length>0);assert.ok(ppage.data.documents.every(d=>d.cityIds.includes(c.id)));
  });
 }
@@ -143,4 +143,88 @@ test('成都到60岁的档次展示补缴金额，不再把10%年缴单价当作
  const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'510100'}});p.cdResidence({currentTarget:{dataset:{value:'rural'}}});assert.equal(p.data.cdLumpOnly,false);assert.match(p.data.tierLabels[0],/每年1138.32/);
  p.setData({'form.age':'60','form.years':'0','form.never':true,'form.paidThisYear':'no'});p.refreshPolicyQuestions();assert.equal(p.data.cdLumpOnly,true);assert.match(p.data.tierLabels[0],/10%档.*20489.40/);assert.match(p.data.tierLabels[4],/50%档.*102448.80/);
  p.setData({'form.years':'5','form.never':false});p.refreshPolicyQuestions();assert.match(p.data.tierLabels[0],/补10年约13659.60/);
+});
+
+
+test('杭州明确区分市区和三县市，市区补贴和年限待遇不串到省参考',()=>{
+ const urban=resident(form({regionId:'330100',localArea:'urban',tier:7000})).chosen;
+ assert.equal(urban.timeline.normalYears,4);assert.equal(urban.lumpYears,6);assert.equal(urban.lumpUnit,'5000.00');assert.equal(urban.lumpCost,'30000.00');assert.equal(urban.total,'58000.00');assert.equal(urban.subsidy,'3600.00');assert.equal(urban.account,'63400.00');assert.equal(urban.base,'420.00');assert.equal(urban.low,(420+63400/139).toFixed(2));assert.equal(urban.receiptYear,2031);
+ const county=resident(form({regionId:'330100',localArea:'county',tier:7000}));assert.equal(county.chosen.base,'240.00');assert.equal(county.chosen.lumpYears,0);assert.equal(county.chosen.subsidy,'6000.00');assert.match(county.referenceLabel,/省级/);assert.match(county.region,/桐庐/);
+ assert.throws(()=>resident(form({regionId:'330100',localArea:'made-up',tier:300})),/所在地/);assert.throws(()=>resident(form({regionId:'610100',localArea:'urban',tier:300})),/分区/);
+});
+
+test('杭州60岁前后补缴边界、最高5000和无补贴，过去余额不被改档',()=>{
+ const at60=resident(form({regionId:'330100',localArea:'urban',birth:'1966-10',tier:5000,balance:'30000'})).chosen;
+ assert.equal(at60.timeline.normalYears,0);assert.equal(at60.lumpYears,10);assert.equal(at60.lumpCost,'50000.00');assert.equal(at60.subsidy,'0.00');assert.equal(at60.account,'80000.00');assert.equal(at60.base,'420.00');
+ assert.throws(()=>resident(form({regionId:'330100',localArea:'urban',birth:'1966-10',tier:7000})),/最高5000/);
+ const before=resident(form({regionId:'330100',localArea:'urban',birth:'1966-12',tier:7000,paidThisYear:'no'})).chosen;
+ assert.equal(before.timeline.normalYears,1);assert.equal(before.lumpYears,9);assert.equal(before.total,'52000.00');assert.equal(before.subsidy,'900.00');
+ for(const tier of [300,500,1000,2000,3000,5000,7000])assert.equal(resident(form({regionId:'330100',localArea:'urban',tier})).openingAmount,'1800.00');
+});
+
+test('杭州分段年限与高龄加发独立计算，不把每年费率直接乘全部年数',()=>{
+ const rules=require('../miniprogram/utils/local-resident-policies'),policy=rules.resolve(registry.capability('330100','resident'),'urban');
+ for(const [years,expected]of [[0,0],[5,5],[6,7],[10,15],[11,18],[15,30],[16,35],[20,55]])assert.equal(rules.tenureExtra(policy,years),expected);
+ for(const [birth,base]of [['1961-10','430.00'],['1956-10','435.00']])assert.equal(resident(form({regionId:'330100',localArea:'urban',birth,years:'15',tier:300,balance:'30000'})).chosen.base,base);
+});
+
+test('深圳和中山使用各自九档补贴，新增年龄档不叠加，补缴不发补贴',()=>{
+ for(const [id,credits]of [['440300',[30,40,50,70,80,90,100,120,150]],['442000',[60,60,60,90,90,120,120,150,150]]]){
+  for(const [i,tier]of registry.capability(id,'resident').tiers.entries()){
+   const s=resident(form({regionId:id,tier})).chosen;
+   assert.equal(Number(s.subsidy),credits[i]*s.timeline.normalYears);assert.equal(Number(s.lumpCost),tier*s.lumpYears);assert.match(resident(form({regionId:id,tier})).referenceText,/省级下限240/);
+  }
+ }
+ const rules=require('../miniprogram/utils/local-resident-policies');
+ for(const [age,expected]of [[64,0],[65,10],[70,15],[75,20],[80,25],[85,30]])assert.equal(rules.ageExtra(registry.capability('442000','resident'),age),expected);
+ assert.equal(rules.ageExtra(registry.capability('440300','resident'),80),100);
+ const s=resident(form({regionId:'440300',tier:4800,paidThisYear:'no'})).chosen;
+ assert.equal(s.schedule[0].year,2026);assert.equal(s.schedule[0].subsidy,'0.00');assert.match(resident(form({regionId:'440300',tier:4800,paidThisYear:'no'})).warnings.join(''),/1月已过/);
+});
+
+test('杭州页面所在地切换、年龄改到60后纠正补缴档，重新进入保留所选方案',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'330100'}});p.localArea({detail:{value:1}});
+ assert.equal(p.data.region.base,390);assert.equal(p.data.region.subsidies[6],900);p.setData({'form.ordinary':'yes','form.eligible':'yes','form.tier':7000});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.lumpUnit,'5000.00');p.onHide();
+ const reopened=page('resident/pages/calc/calc.js',store);assert.equal(reopened.data.form.localArea,'urban');assert.ok(reopened.data.result);assert.equal(reopened.data.region.base,390);
+ reopened.edit();reopened.input({currentTarget:{dataset:{key:'age'}},detail:{value:'60'}});assert.equal(reopened.data.tiers.length,6);assert.equal(reopened.data.form.tier,5000);assert.match(reopened.data.tierLabels[5],/补10年/);
+ reopened.localArea({detail:{value:2}});assert.equal(reopened.data.result,null);assert.equal(reopened.data.region.base,240);assert.equal(reopened.data.form.ordinary,'unknown');assert.equal(reopened.data.tiers.length,7);
+ reopened.regionChoice({detail:{regionId:'610100'}});assert.equal(reopened.data.form.localArea,'');assert.equal(reopened.data.region.base,239);assert.equal(reopened.data.areaLabels.length,1);
+});
+
+test('杭州本地来源在政策页可查，参保分区不会改变另两类工具参数',()=>{
+ const p=page('pages/policy/policy.js');p.onLoad({city:'330100',kind:'resident'});for(const id of ['hz-resident-2024','hz-resident-subsidy-2026','hz-resident-tenure','hz-resident-base-2026'])assert.ok(p.data.documents.some(d=>d.id===id));assert.ok(p.data.documents.every(d=>d.cityIds.includes('330100')));
+ assert.equal(registry.capability('330100','employee').pensionBase,8537);assert.equal(registry.capability('330100','flexible').pensionBase,8537);
+ assert.equal(registry.capability('440200','resident').subsidies[6],60);assert.equal(registry.capability('450100','resident').base,186);
+});
+
+
+test('中山老制度边界必须核对，不直接安排普通延缴付款',()=>{
+ assert.throws(()=>resident(form({regionId:'442000',birth:'1966-10',tier:360})),/2011年11月/);
+ const r=resident(form({regionId:'442000',birth:'1966-10',tier:360,transition:'no'}));assert.ok(r.chosen);
+ assert.ok(resident(form({regionId:'442000',birth:'1966-11',tier:360})).chosen);
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'442000'}});p.input({currentTarget:{dataset:{key:'age'}},detail:{value:'60'}});assert.equal(p.data.needsTransition,true);
+});
+
+test('深圳不能把今年已过的1月当成已缴，也不重复发补贴',()=>{
+ const r=resident(form({regionId:'440300',birth:'1961-03',tier:360,paidThisYear:'no',extended:'yes'}));assert.equal(r.chosen.timeline.normalYears,0);assert.equal(r.chosen.lumpYears,10);assert.equal(r.chosen.subsidy,'0.00');assert.equal(r.chosen.base,'290.00');
+ const early=resident(form({regionId:'440300',birth:'1971-10',asOf:'2026-01',tier:360,paidThisYear:'no'}));assert.equal(early.chosen.schedule[0].subsidy,'50.00');
+});
+
+test('共享地区提示跟随杭州所在地，切换城市的属性先后更新不抛错',()=>{
+ let definition;const file=path.join(__dirname,'../miniprogram/components/region-picker/index.js');vm.runInNewContext(fs.readFileSync(file,'utf8'),{Component:d=>definition=d,wx:{navigateTo(){}},require:n=>require(path.resolve(path.dirname(file),n))});
+ const c={...definition.methods,data:{...definition.data,value:'330100',kind:'resident',residentArea:'urban'},setData(v){Object.assign(this.data,v);}};c.sync();assert.match(c.data.referenceLabel,/市区/);assert.match(c.data.referenceText,/5000/);c.data.value='610100';assert.doesNotThrow(()=>c.sync());assert.match(c.data.referenceText,/239/);
+});
+
+
+test('云浮采用2026长缴5元和年龄2/5/8元，汕头65岁加10元不借用邻市',()=>{
+ const s=resident(form({regionId:'445300',birth:'1961-10',years:'18',balance:'30000',tier:360})).chosen;assert.equal(s.base,'257.00');assert.equal(s.total,'0.00');
+ const younger=resident(form({regionId:'445300',birth:'1966-10',years:'18',balance:'30000',tier:360})).chosen;assert.equal(younger.base,'255.00');
+ const rules=require('../miniprogram/utils/local-resident-policies');for(const [age,extra]of [[64,0],[65,2],[74,2],[75,5],[84,5],[85,8]])assert.equal(rules.ageExtra(registry.capability('445300','resident'),age),extra);
+ const st=resident(form({regionId:'440500',birth:'1961-10',years:'18',balance:'30000',tier:360})).chosen;assert.equal(st.base,'259.00');assert.equal(registry.capability('440600','resident').ageExtras,undefined);
+});
+
+test('韶关和湛江同为240元有本地确认原文，来源不会误发给其他城市',()=>{
+ for(const [id,source]of [['440200','sg-resident-base-2025'],['440800','zhanjiang-resident-rule-2025'],['440500','st-resident-age-2025'],['445300','yf-resident-rule-2026']]){
+  const p=page('pages/policy/policy.js');p.onLoad({city:id,kind:'resident'});assert.ok(p.data.documents.some(x=>x.id===source));assert.ok(p.data.documents.every(x=>x.cityIds.includes(id)));assert.equal(registry.capability(id,'resident').base,240);
+ }
 });

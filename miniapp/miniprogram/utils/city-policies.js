@@ -37,6 +37,7 @@ for(const c of cities){
   else if((!c[kind]||c[kind].status==='PENDING')&&province[kind])c[kind]={...province[kind],scope:'PROVINCE_REFERENCE',policyProvinceId:c.provinceId};
  }
 }
+require('./local-resident-policies').apply(cities);
 function city(id){return cities.find(c=>c.id===id)||null;}
 function capability(id,kind){const c=city(id);return c?c[kind==='flexible'?'employee':kind]:null;}
 function requireEmployee(id,asof){const c=city(id||'440100'),p=c&&c.employee;if(!p||p.status!=='READY')throw Error(p?p.reason:'请选择已开放的领取地区');if(!p.legacy&&asof<p.effectiveFrom)throw Error(c.name+'当前录入规则从'+p.effectiveFrom+'起使用，请核对数据截至月份');return p;}
