@@ -366,3 +366,32 @@ test('清远当年档页面保留与来源隔离，汕头困难群体补足不�
  const q=page('pages/policy/policy.js');q.onLoad({city:'441800',kind:'resident'});for(const id of ['qy-resident-local-rule','qy-resident-rule-budget-2026','qy-resident-tier-deadline-2026'])assert.ok(q.data.documents.some(x=>x.id===id));q.onLoad({city:'445200',kind:'resident'});assert.ok(q.data.documents.every(x=>!x.id.startsWith('qy-')));
  const st=resident(form({regionId:'440500',birth:'1966-10',tier:360}));assert.equal(st.chosen.timeline.lumpAge,65);assert.ok(st.sources.some(x=>x.id==='st-resident-rule-2025'));assert.match(st.referenceText,/困难群体/);
 });
+
+test('梅州办法续期来源和普通九档、延缴边界保持一致，不能按旧文到期误关',()=>{
+ for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441400',tier}));assert.ok(r.sources.some(x=>x.id==='mz-resident-renewal-2024'));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.equal(r.chosen.timeline.lumpAge,65);assert.equal(r.chosen.lumpYears,1);assert.match(r.referenceText,/省最低基础240/);}
+ assert.throws(()=>resident(form({regionId:'441400',birth:'1961-10',tier:360})),/延缴/);
+ const r=resident(form({regionId:'441400',birth:'1961-10',years:'18',balance:'30000',tier:360}));assert.equal(r.chosen.base,'249.00');
+});
+
+test('梅州八县区与潮州三区县按行政范围，已核县区金额不冒充全市已核',()=>{
+ const region=require('../miniprogram/resident/data/regions');
+ assert.equal(region.getRegion('441400').areas.length,8);assert.equal(region.getRegion('445100').areas.length,3);
+ for(const [id,known,unknown]of [['441400',['xingning','meixian'],['meijiang','pingyuan','jiaoling','dabu','fengshun','wuhua']],['445100',['chaoan'],['xiangqiao','raoping']]]){
+  for(const area of known){const p=region.getRegion(id,area),r=resident(form({regionId:id,localArea:area,tier:360}));assert.equal(p.provincial,false);assert.equal(p.base,240);assert.equal(r.chosen.base,'240.00');assert.match(r.referenceText,/未核齐/);}
+  for(const area of ['',...unknown]){assert.equal(region.getRegion(id,area).provincial,true);assert.match(resident(form({regionId:id,localArea:area,tier:360})).referenceText,/省.*参考|按省最低/);}
+  assert.throws(()=>resident(form({regionId:id,localArea:'fake',tier:360})),/有效的参保所在地/);
+ }
+});
+
+test('惠州采用市级披露最低额，不混入计生特殊待遇或未经发布的草案',()=>{
+ const p=registry.capability('441300','resident');assert.equal(p.base,240);assert.equal(p.baseYear,2025);assert.equal(p.provincial,false);assert.ok(p.sources.some(x=>x.id==='hui-resident-base-2025'));
+ for(const tier of [180,4800]){const r=resident(form({regionId:'441300',tier}));assert.equal(r.chosen.base,'240.00');assert.match(r.referenceText,/征求意见稿/);assert.match(r.referenceText,/特殊补助/);assert.equal(Number(r.chosen.subsidy),(tier===180?30:60)*9);}
+ const pagePolicy=page('pages/policy/policy.js');pagePolicy.onLoad({city:'441300',kind:'resident'});assert.ok(pagePolicy.data.documents.some(x=>x.id==='hui-resident-base-2025'));assert.ok(pagePolicy.data.documents.every(x=>!x.id.startsWith('mz-')&&!x.id.startsWith('cz-')));
+});
+
+test('梅州及潮州地区选择重确认资格，结果和地区会话可恢复，切市不沿用',()=>{
+ for(const [id,areaIndex,area]of [['441400',1,'xingning'],['441400',2,'meixian'],['445100',1,'chaoan']]){
+  const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:id}});p.localArea({detail:{value:areaIndex}});assert.equal(p.data.form.localArea,area);assert.equal(p.data.form.eligible,'unknown');p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'240.00');p.onHide();const r=page('resident/pages/calc/calc.js',store);assert.equal(r.data.form.localArea,area);assert.equal(r.data.result.regionId,id);r.regionChoice({detail:{regionId:'441300'}});assert.equal(r.data.form.localArea,'');assert.equal(r.data.region.areas,undefined);
+ }
+ const policy=page('pages/policy/policy.js');policy.onLoad({city:'445100',kind:'resident'});assert.match(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').publisher,/官方账号/);assert.equal(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').date,'核对于2026-10-19');
+});
