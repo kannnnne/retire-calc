@@ -96,7 +96,7 @@ for(const c of provinces.municipalities){
   assert.equal(flex.scenarios[0].monthlyPersonalPayment,c.provinceId==='440000'?'1104.20':'840.96');
   assert.equal(e.scenarios[0].futureAccountCredit,flex.scenarios[0].futureAccountCredit);
   const rr=resident(form({regionId:c.id,tier:r.tiers[0]}));assert.equal(rr.regionId,c.id);assert.match(rr.referenceLabel,/参考/);
-  assert.equal(Number(rr.chosen.base),({'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242})[c.id]||(c.provinceId==='440000'?240:191));
+  assert.equal(Number(rr.chosen.base),({'440400':543,'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242})[c.id]||(c.provinceId==='440000'?240:191));
   const ppage=page('pages/policy/policy.js');ppage.onLoad({city:c.id,kind:'resident'});assert.ok(ppage.data.documents.length>0);assert.ok(ppage.data.documents.every(d=>d.cityIds.includes(c.id)));
  });
 }
@@ -258,4 +258,42 @@ test('汕尾和河源长缴下限及新来源只出现在相应城市政策页',
   const p=page('pages/policy/policy.js');p.onLoad({city:id,kind:'resident'});for(const source of ids)assert.ok(p.data.documents.some(x=>x.id===source));assert.ok(p.data.documents.every(x=>x.cityIds.includes(id)));
  }
  const p=page('pages/policy/policy.js');p.onLoad({city:'450100',kind:'resident'});assert.ok(p.data.documents.every(x=>!x.id.startsWith('hy-')&&!x.id.startsWith('sw-')));
+});
+
+
+test('珠海四档按月档乘12年缴，补贴65%，60岁补足不冒用省九档',()=>{
+ for(const [tier,credit]of [[720,468],[1200,780],[1440,936],[1800,1170]]){
+  const r=resident(form({regionId:'440400',tier,balance:'30000'})),s=r.chosen;
+  assert.equal(s.timeline.normalYears,4);assert.equal(s.lumpYears,6);assert.equal(Number(s.lumpCost),tier*6);assert.equal(Number(s.subsidy),credit*4);assert.equal(Number(s.total),tier*10);assert.equal(Number(s.account),30000+tier*10+credit*4);assert.equal(s.timeline.lumpAge,60);assert.equal(s.receiptYear,2031);assert.equal(s.base,'543.00');assert.equal(s.low,(543+Number(s.account)/139).toFixed(2));assert.doesNotMatch(s.schedule.at(-1).type,/5000|65岁/);
+ }
+ assert.throws(()=>resident(form({regionId:'440400',tier:360})),/当地缴费档次/);
+});
+
+test('珠海到龄首次领取使用对应年龄计发月数，趸缴无65%补贴',()=>{
+ for(const [birth,base,divisor]of [['1966-10',543,139],['1961-10',553,101],['1956-10',553,56]]){
+  const r=resident(form({regionId:'440400',birth,tier:1800,balance:'30000'})),s=r.chosen;
+  assert.equal(s.timeline.normalYears,0);assert.equal(s.lumpCost,'18000.00');assert.equal(s.subsidy,'0.00');assert.equal(s.account,'48000.00');assert.equal(Number(s.base),base);assert.equal(s.low,(base+48000/divisor).toFixed(2));assert.equal(s.timeline.lumpMonth,'2026-10');assert.equal(s.receiptYear,2026);
+ }
+ const r=resident(form({regionId:'440400',birth:'1961-10',years:'18',tier:720,balance:'30000'}));assert.equal(r.chosen.base,'562.00');assert.equal(r.chosen.total,'0.00');
+});
+
+test('珠海12月补足应次年起领，预算只判断趸缴，历史余额不随档次改动',()=>{
+ const spring=resident(form({regionId:'440400',birth:'1971-03',asOf:'2026-12',tier:720}));assert.equal(spring.chosen.timeline.lumpMonth,'2031-03');assert.equal(spring.chosen.receiptYear,2031);
+ const r=resident(form({regionId:'440400',birth:'1966-12',paidThisYear:'yes',tier:1800,asOf:'2026-12',balance:'30000',budget:'17999'}));assert.equal(r.chosen.receiptYear,2027);assert.equal(r.chosen.shortfall,'1.00');assert.equal(r.chosen.affordable,false);assert.ok(r.scenarios.every(s=>s.account===String((30000+Number(s.lumpCost)).toFixed(2))));
+});
+
+test('珠海页面四档、60岁趸缴标签、历史输入与会话恢复一致',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'440400'}});assert.deepEqual(Array.from(p.data.tiers),[720,1200,1440,1800]);p.setData({'form.eligible':'yes','form.ordinary':'yes','form.age':'60','form.tier':1800});p.refreshPolicyQuestions();assert.equal(p.data.needsExtended,false);assert.match(p.data.tierLabels[3],/补10年 × 1800/);p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.lumpCost,'18000.00');p.onHide();const reopened=page('resident/pages/calc/calc.js',store);assert.equal(reopened.data.form.regionId,'440400');assert.equal(reopened.data.result.chosen.lumpCost,'18000.00');assert.equal(reopened.data.result.scenarios.length,4);
+ const policy=page('pages/policy/policy.js');policy.onLoad({city:'440400',kind:'resident'});assert.ok(policy.data.documents.some(x=>x.id==='zh-resident-renewal-2026'));assert.match(policy.data.documents.find(x=>x.id==='zh-resident-base-conference-2025').publisher,/非调标通知原件/);assert.ok(policy.data.documents.every(x=>x.cityIds.includes('440400')));
+});
+
+
+test('珠海按首次领取月份计算年龄，不漏生日当月的年龄加发及计发月数',()=>{
+ const r=resident(form({regionId:'440400',birth:'1961-10',asOf:'2026-09',years:'15',tier:720,balance:'30000'}));assert.equal(r.chosen.timeline.receivingAge,65);assert.equal(r.chosen.base,'553.00');assert.equal(r.chosen.low,(553+30000/101).toFixed(2));
+ assert.throws(()=>resident(form({regionId:'440400',birth:'1955-10',asOf:'2026-09',years:'15',tier:720,balance:'30000'})),/超过70岁/);
+});
+
+test('阳江新通知九档、补贴、长缴按本地字段，基础额仍注明省下限',()=>{
+ for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441700',tier}));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.match(r.referenceText,/省级最低240元/);assert.ok(r.sources.some(s=>s.id==='yj-resident-rule-2026'));}
+ const r=resident(form({regionId:'441700',birth:'1961-10',years:'18',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'249.00');assert.equal(r.chosen.total,'0.00');
 });
