@@ -65,7 +65,12 @@ const ylTenure=source('yl-resident-tenure-2024','玉林社保：超过15年每�
 const ylCalculator={...source('yl-resident-official-calculator-2026','玉林人社2026官方规划师：本地长缴4元交叉核对','http://rsj.yulin.gov.cn/bmzl/shbz/ylsiggs/index.shtml','玉林人社2026年9月上线官方社保规划师：居民累计超过15年，每多1年月加4元。工具将186元明确标为广西默认、允许改成本地额，不能据此宣称已核齐所有县区基础额。本工具仅交叉核对4元标准，不照搬其简化补缴提示或自动推定制度过渡资格。'),publisher:'玉林市人力资源和社会保障局官方规划师'};
 const lzHandbook=source('lz-resident-handbook-2025','柳州人社2025全民参保手册：年缴补贴和补缴','http://rsj.liuzhou.gov.cn/zwgk/fdzdgknr/qmcbdj/202511/t20251111_3689150.shtml','柳州人社2025年11月11日手册确认15档200至6000元、补贴35至200元；历史断缴或提档无补贴，本年提档补政府补贴差额。60岁一次补足另要求当地制度实施时距60岁不足15年、按规定逐年缴费，不能只凭年龄补足。可向参保地社保申请，审核后推送税务。手册未给市县完整基础养老金金额。');
 for(const item of [ylTenure,ylCalculator,lzHandbook])item.checkedAt='2026-10-19';
+const bhMakeup=source('bh-resident-makeup-local-2023','北海人社：补缴对象与历史／本年提档区别','http://www.beihai.gov.cn/xxgkbm/bhsrlzyhshbzj/zcfg_48/t17089559.shtml','北海人社2023年9月公布桂人社规〔2023〕2号：已参保且未领取基本养老保险待遇者按规定申请。历年断缴和提档均按当时年度上限、无补贴；本年提档仅补政府补贴差额。制度过渡60岁补足另有制度起点与逐年缴费前提；本地基础额、县区加发及当年截止日期不由此推定。');
+const hzGxMakeup=source('hezhou-resident-makeup-interpretation','贺州官网：居民补缴政策解读','http://www.gxhz.gov.cn/zfxxgk/zc/zcjd/t17553737.shtml','贺州官网2023年12月公开解读：已参保、未领取基本养老保险待遇者可按规定申请，历史补缴不补贴；当年提档补政府差额。制度实施时距60不足15年且逐年交至60仍不足，才可按当前档补足并享补贴。本页未自动开放该特殊资格；县区基础标准仍待核。');
+for(const item of [bhMakeup,hzGxMakeup])item.checkedAt='2026-10-19';
 const overrides={
+ '450500':{referenceLabel:'北海本地补缴依据 · 自治区待遇参考',referenceText:'已核北海人社公布的补缴对象和历史／本年提档规则，须已参保且尚未领取基本养老金。基础186元、65岁191元及15档补贴仍自治区参考，市县额外提高未核齐；制度过渡的60岁补足尚未开放，不能只凭年龄补足。',sources:[bhMakeup]},
+ '451100':{referenceLabel:'贺州本地补缴依据 · 自治区待遇参考',referenceText:'已核贺州官网补缴解读，补缴须已参保且未领取基本养老金，历史无补贴、本年提档补差。基础186元、65岁191元及15档仍自治区参考，市县额外提高未核齐；制度过渡的60岁补足尚未开放，须另核制度起点与逐年缴费记录。',sources:[hzGxMakeup]},
  '450900':{extraYear:4,referenceLabel:'玉林长缴每年4元 · 自治区基础额参考',referenceText:'玉林社保公告与2026官方规划师均确认超过15年每多1年月加4元，不再套自治区2元参考。基础额仍用自治区186元、65岁191元，市县额外提高未核齐；历史补缴和提档需具体年度记录，原制度过渡的60岁补足尚未开放，不能只按年龄认定。',sources:[ylTenure,ylCalculator]},
  '450200':{referenceLabel:'柳州本地年缴／补缴 · 自治区待遇参考',referenceText:'柳州官方参保手册已核普通15档与35至200元补贴、历史及本年提档补贴区别。基础186元、65岁191元和长缴2元仍按自治区参考，县区提高未核齐；制度过渡的60岁补足尚未开放，须核对当地制度起点与逐年记录。',sources:[lzHandbook]},
  '440900':{provincial:false,base:240,baseYear:2025,ageDivisor:true,extraYear:3,referenceLabel:'茂名市级最低额 · 本地普通年缴参考',referenceText:'采用市人社负责人公开说明的2025年底最低基础240元；九档30/60元补贴和超过15年每年加3元已核，原办法续至2027年11月16日。个人账户按首次领取年龄计发，未来按当前标准静态参考；年度调标原件、县区与年龄加发尚未核齐，不自动认定原制度过渡资格。',paymentNote:'普通按年缴费，60岁不足继续逐年交，缴至65岁仍不足再补足，无补贴。已交年份不任意提档；具体当年征缴日期及历史资格向当地经办核对。',sources:[mmRule,mmRenewal,mmOrdinary,mmBase]},

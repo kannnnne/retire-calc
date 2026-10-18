@@ -336,8 +336,8 @@ test('广西补缴单页只列相应历史档，金额和资格修改后重新�
  const input=(key,value)=>p.gxInput({currentTarget:{dataset:{index:0,key}},detail:{value}});
  input('start','2018');input('end','2019');input('original','200');assert.equal(p.data.gxUiRows[0].tiers.at(-1),2000);assert.ok(!p.data.gxUiRows[0].tiers.includes(6000));
  input('start','2019');input('end','2022');assert.equal(p.data.gxUiRows[0].tiers.at(-1),6000);p.gxTarget({currentTarget:{dataset:{index:0}},detail:{value:p.data.gxUiRows[0].tiers.length}});assert.equal(p.data.form.gxMakeupRows[0].target,6000);
- p.setData({'form.pastAnnual':'200','form.gxStartYear':'2012','form.gxReviewed':'yes','form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.immediateCost,'23200.00');assert.equal(p.data.result.openingAmount,'1000.00');p.chooseFuture({currentTarget:{dataset:{annual:6000}}});assert.equal(p.data.result.chosen.immediateCost,'23200.00');assert.equal(p.data.result.openingAmount,'1000.00');p.onHide();
- const reopened=page('resident/pages/calc/calc.js',store);assert.equal(reopened.data.result.chosen.annual,6000);assert.equal(reopened.data.form.gxMakeupRows[0].target,6000);assert.equal(reopened.data.result.makeup.cost,'23200.00');reopened.edit();reopened.input({currentTarget:{dataset:{key:'gxStartYear'}},detail:{value:'2013'}});assert.equal(reopened.data.form.gxReviewed,'unknown');reopened.gxRemove({currentTarget:{dataset:{index:0}}});assert.equal(reopened.data.gxUiRows.length,0);
+ p.setData({'form.pastAnnual':'200','form.gxStartYear':'2012','form.gxScopeReviewed':'yes','form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.immediateCost,'23200.00');assert.equal(p.data.result.openingAmount,'1000.00');p.chooseFuture({currentTarget:{dataset:{annual:6000}}});assert.equal(p.data.result.chosen.immediateCost,'23200.00');assert.equal(p.data.result.openingAmount,'1000.00');p.onHide();
+ const reopened=page('resident/pages/calc/calc.js',store);assert.equal(reopened.data.result.chosen.annual,6000);assert.equal(reopened.data.form.gxMakeupRows[0].target,6000);assert.equal(reopened.data.result.makeup.cost,'23200.00');reopened.edit();reopened.input({currentTarget:{dataset:{key:'gxStartYear'}},detail:{value:'2013'}});assert.equal(reopened.data.form.gxScopeReviewed,'unknown');reopened.gxRemove({currentTarget:{dataset:{index:0}}});assert.equal(reopened.data.gxUiRows.length,0);
  reopened.gxAdd();reopened.regionChoice({detail:{regionId:'440600'}});assert.equal(reopened.data.form.gxMakeupRows.length,0);assert.equal(reopened.data.form.gxStartYear,'');assert.equal(reopened.data.gxMakeupOpen,false);
 });
 
@@ -408,7 +408,7 @@ test('防城港市级最低基础额不是人均实发额，广西本地追溯�
 test('防城港、来宾、钦州官方来源仅归本市，新增本地参考保留广西历史补缴能力',()=>{
  for(const [city,id]of [['450600','fcg-resident-base-2025-q4'],['451300','lb-resident-tier-local'],['450700','qz-resident-tier-local']]){
   const p=page('pages/policy/policy.js');p.onLoad({city,kind:'resident'});assert.ok(p.data.documents.some(x=>x.id===id&&x.date==='核对于2026-10-19'));assert.ok(p.data.documents.every(x=>x.cityIds.includes(city)));
-  const r=resident(form({regionId:city,pastAnnual:'200',paidThisYear:'no',gxStartYear:'2012',gxReviewed:'yes',tier:200,gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:'200',target:6000}]}));assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.account,'32350.00');assert.equal(r.chosen.immediateCost,'29000.00');
+  const r=resident(form({regionId:city,pastAnnual:'200',paidThisYear:'no',gxStartYear:'2012',gxScopeReviewed:'yes',tier:200,gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:'200',target:6000}]}));assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.account,'32350.00');assert.equal(r.chosen.immediateCost,'29000.00');
  }
  const other=page('pages/policy/policy.js');other.onLoad({city:'450100',kind:'resident'});assert.ok(other.data.documents.every(x=>!/^fcg-|^lb-|^qz-/.test(x.id)));
 });
@@ -471,17 +471,38 @@ test('玉林本地长缴4元不套自治区2元，领取年龄加发及历史年
   const expected=base+(years-15)*4;assert.equal(Number(s.base),expected);assert.equal(s.total,'0.00');assert.equal(s.low,(expected+30000/139).toFixed(2));
   const other=resident({...f,regionId:'450600'}).chosen;assert.equal(Number(s.base)-Number(other.base),(years-15)*2);
  }
- const r=resident(form({regionId:'450900',birth:'1966-10',years:'15',pastAnnual:'200',tier:200,gxStartYear:'2010',gxReviewed:'yes',gxMakeupRows:[{mode:'missing',start:'2010',end:'2010',target:1000}]}));
+ const r=resident(form({regionId:'450900',birth:'1966-10',years:'15',pastAnnual:'200',tier:200,gxStartYear:'2010',gxScopeReviewed:'yes',gxMakeupRows:[{mode:'missing',start:'2010',end:'2010',target:1000}]}));
  assert.equal(r.makeup.addedYears,1);assert.equal(r.chosen.immediateCost,'1000.00');assert.equal(r.chosen.total,'1000.00');assert.equal(r.chosen.subsidy,'0.00');assert.equal(r.chosen.base,'190.00');assert.equal(r.chosen.account,'4000.00');
 });
 test('柳州本地15档原件与自治区参数一致，历史提档不冒充60岁过渡补足',()=>{
  const p=registry.city('450200').resident;assert.equal(p.provincial,true);assert.equal(p.extraYear,2);assert.ok(!p.lumpAt60);assert.ok(!p.lumpAt65);
  for(const [i,tier]of p.tiers.entries()){
-  const r=resident(form({regionId:'450200',pastAnnual:'200',tier,paidThisYear:'no',gxStartYear:'2012',gxReviewed:'yes',gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:200,target:6000}]}));
+  const r=resident(form({regionId:'450200',pastAnnual:'200',tier,paidThisYear:'no',gxStartYear:'2012',gxScopeReviewed:'yes',gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:200,target:6000}]}));
   assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.total,(29000+tier*10).toFixed(2));assert.equal(r.chosen.subsidy,(p.subsidies[i]*10).toFixed(2));assert.equal(r.chosen.lumpYears,0);assert.equal(r.chosen.account,(30000+tier*10+p.subsidies[i]*10).toFixed(2));
  }
  for(const [city,ids]of [['450900',['yl-resident-tenure-2024','yl-resident-official-calculator-2026']],['450200',['lz-resident-handbook-2025']]]){
   const policyPage=page('pages/policy/policy.js');policyPage.onLoad({city,kind:'resident'});
   for(const id of ids){const d=policyPage.data.documents.find(x=>x.id===id);assert.ok(d);assert.deepEqual(d.cityIds,[city]);assert.match(d.date,/2026-10-19/);for(const other of registry.cities.filter(c=>c.id!==city)){assert.ok(!other.resident.sources.some(s=>s.id===id));assert.ok(!other.employee.sources.some(s=>s.id===id));}}
+ }
+});
+
+
+test('广西旧补缴确认会话失效，新资格确认可恢复，切市或改补缴需重确认',()=>{
+ const first=page('resident/pages/calc/calc.js');first.regionChoice({detail:{regionId:'450500'}});
+ first.setData({'form.eligible':'yes','form.ordinary':'yes','form.pastAnnual':'200','form.paidThisYear':'no','form.gxStartYear':'2012','form.gxScopeReviewed':'yes','form.gxMakeupRows':[{mode:'upgrade',start:'2019',end:'2023',original:200,target:6000}]});first.calculate();assert.equal(first.data.error,'');assert.ok(first.data.result);
+ const old=JSON.parse(JSON.stringify(first.data));delete old.form.gxScopeReviewed;old.form.gxReviewed='yes';
+ const p=page('resident/pages/calc/calc.js',{resident:old});assert.equal(p.data.result,null);assert.equal(p.data.display,null);assert.equal(p.data.baseline,null);assert.deepEqual(Array.from(p.data.planOptions),[]);p.calculate();assert.match(p.data.error,/尚未领取/);
+ p.choice({currentTarget:{dataset:{key:'gxScopeReviewed',value:'yes'}}});p.calculate();assert.equal(p.data.error,'');assert.ok(p.data.result);const restored=page('resident/pages/calc/calc.js',{resident:JSON.parse(JSON.stringify(p.data))});assert.ok(restored.data.result);
+ restored.gxInput({currentTarget:{dataset:{index:0,key:'original'}},detail:{value:'300'}});assert.equal(restored.data.form.gxScopeReviewed,'unknown');
+ restored.regionChoice({detail:{regionId:'451100'}});assert.equal(restored.data.form.gxScopeReviewed,'unknown');assert.equal(restored.data.form.gxMakeupRows.length,0);
+ const ordinary=page('resident/pages/calc/calc.js');ordinary.calculate();assert.ok(ordinary.data.result);assert.ok(page('resident/pages/calc/calc.js',{resident:JSON.parse(JSON.stringify(ordinary.data))}).data.result);
+});
+test('北海贺州原件仅归本市，15档历史提档与未来正常补贴不混',()=>{
+ for(const [city,id]of [['450500','bh-resident-makeup-local-2023'],['451100','hezhou-resident-makeup-interpretation']]){
+  const p=registry.city(city).resident;assert.equal(p.provincial,true);assert.ok(!p.lumpAt60);
+  for(const [i,tier]of p.tiers.entries()){
+   const r=resident(form({regionId:city,tier,pastAnnual:'200',paidThisYear:'no',gxStartYear:'2012',gxScopeReviewed:'yes',gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:200,target:6000}]}));assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.subsidy,(p.subsidies[i]*10).toFixed(2));assert.equal(r.chosen.total,(29000+tier*10).toFixed(2));
+  }
+  const policy=page('pages/policy/policy.js');policy.onLoad({city,kind:'resident'});const d=policy.data.documents.find(x=>x.id===id);assert.ok(d);assert.deepEqual(d.cityIds,[city]);assert.match(d.date,/2026-10-19/);for(const other of registry.cities.filter(x=>x.id!==city))assert.ok(!other.resident.sources.some(x=>x.id===id));
  }
 });

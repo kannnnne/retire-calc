@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {calculate}=require('../miniprogram/resident/utils/calculate'),{tiersForYear,tiersForRange}=require('../miniprogram/resident/utils/gx-makeup');
-const form=(patch={})=>({regionId:'450100',birth:'1971-10',asOf:'2026-10',years:'5',pastAnnual:'200',balance:'',tier:200,budget:'',never:false,paidThisYear:'no',eligible:'yes',ordinary:'yes',gxStartYear:'2012',gxReviewed:'yes',...patch});
+const form=(patch={})=>({regionId:'450100',birth:'1971-10',asOf:'2026-10',years:'5',pastAnnual:'200',balance:'',tier:200,budget:'',never:false,paidThisYear:'no',eligible:'yes',ordinary:'yes',gxStartYear:'2012',gxScopeReviewed:'yes',...patch});
 const upgrade=(patch={})=>({mode:'upgrade',start:'2019',end:'2023',original:'200',target:6000,subsidyAlready:'',...patch});
 const missed=(patch={})=>({mode:'missing',start:'2015',end:'2017',target:2000,...patch});
 
@@ -40,7 +40,7 @@ test('历史提档不依未来新档重新算，每年历史上限和原档必�
 
 test('核对可补起点、年龄、重复年、未来年和原年数，不能任意买年限',()=>{
  assert.throws(()=>calculate(form({gxMakeupRows:[null]})),/核对补缴记录/);assert.throws(()=>calculate(form({gxMakeupRows:Array(21).fill(missed())})),/最多填写20/);
- for(const [patch,pattern]of [[{gxReviewed:'unknown'},/先核对/],[{gxStartYear:''},/起始年度/],[{gxStartYear:'2020'},/可补起点/],[{birth:'2000-10'},/16岁/]])assert.throws(()=>calculate(form({...patch,gxMakeupRows:[missed()]})),pattern);
+ for(const [patch,pattern]of [[{gxScopeReviewed:'unknown'},/尚未领取.*核对可补/],[{gxStartYear:''},/起始年度/],[{gxStartYear:'2020'},/可补起点/],[{birth:'2000-10'},/16岁/]])assert.throws(()=>calculate(form({...patch,gxMakeupRows:[missed()]})),pattern);
  assert.throws(()=>calculate(form({gxMakeupRows:[missed(),missed()]})),/同一年度不能重复/);
  assert.throws(()=>calculate(form({gxMakeupRows:[missed({start:'2027',end:'2027'})]})),/晚于当前年度/);
  assert.throws(()=>calculate(form({birth:'2000-10',gxMakeupRows:[missed({start:'2016',end:'2025',target:1000})]})),/可参保的实际年份/);
@@ -75,4 +75,13 @@ for(const regionId of ['450100','450200','450300','450400','450500','450600','45
 test('15个已缴年度按各年最高档提档，不允许把全部年份直接乘6000元',()=>{
  const rows=[upgrade({start:'2012',end:'2013',target:1000}),upgrade({start:'2014',end:'2018',target:2000}),upgrade({start:'2019',end:'2026',target:6000,subsidyAlready:'35'})];
  const r=calculate(form({years:'15',paidThisYear:'yes',gxMakeupRows:rows}));assert.equal(r.makeup.upgradedYears,15);assert.equal(r.makeup.cost,'57000.00');assert.equal(r.makeup.subsidy,'165.00');assert.equal(r.openingAmount,'3000.00');assert.equal(r.chosen.total,'57000.00');assert.equal(r.chosen.account,'60165.00');assert.equal(r.chosen.timeline.normalYears,0);assert.equal(r.chosen.low,(186+60165/139).toFixed(2));assert.equal(r.chosen.receiptYear,2031);assert.ok(r.makeup.entries.filter(x=>x.year<2019).every(x=>Number(x.target)<=2000));
+});
+
+
+test('广西补缴旧记录确认不能代替未领取资格，普通无补缴不强加确认',()=>{
+ const f=form({gxMakeupRows:[upgrade()]});delete f.gxScopeReviewed;f.gxReviewed='yes';
+ assert.throws(()=>calculate(f),/尚未领取基本养老保险待遇/);
+ for(const value of ['unknown','no',true,1])assert.throws(()=>calculate({...f,gxScopeReviewed:value}),/尚未领取/);
+ assert.equal(calculate({...f,gxScopeReviewed:'yes'}).makeup.cost,'29000.00');
+ assert.equal(calculate({...f,gxMakeupRows:[]}).makeup,null);
 });
