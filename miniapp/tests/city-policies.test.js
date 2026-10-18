@@ -96,7 +96,7 @@ for(const c of provinces.municipalities){
   assert.equal(flex.scenarios[0].monthlyPersonalPayment,c.provinceId==='440000'?'1104.20':'840.96');
   assert.equal(e.scenarios[0].futureAccountCredit,flex.scenarios[0].futureAccountCredit);
   const rr=resident(form({regionId:c.id,tier:r.tiers[0]}));assert.equal(rr.regionId,c.id);assert.match(rr.referenceLabel,/参考/);
-  assert.equal(Number(rr.chosen.base),({'440600':343,'440400':543,'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242})[c.id]||(c.provinceId==='440000'?240:191));
+  assert.equal(Number(rr.chosen.base),({'440600':343,'440400':543,'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242,'441800':245})[c.id]||(c.provinceId==='440000'?240:191));
   const ppage=page('pages/policy/policy.js');ppage.onLoad({city:c.id,kind:'resident'});assert.ok(ppage.data.documents.length>0);assert.ok(ppage.data.documents.every(d=>d.cityIds.includes(c.id)));
  });
 }
@@ -344,4 +344,25 @@ test('广西补缴单页只列相应历史档，金额和资格修改后重新�
 test('广西补断缴与当前年提档的页面字段区分，删除记录后普通计算不受影响',()=>{
  const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450300'}});p.gxAdd();p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:0}});assert.equal(p.data.form.gxMakeupRows[0].mode,'missing');assert.equal(p.data.gxUiRows[0].currentUpgrade,false);
  p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:1}});p.gxInput({currentTarget:{dataset:{index:0,key:'start'}},detail:{value:'2026'}});p.gxInput({currentTarget:{dataset:{index:0,key:'end'}},detail:{value:'2026'}});assert.equal(p.data.gxUiRows[0].currentUpgrade,true);p.gxRemove({currentTarget:{dataset:{index:0}}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.makeup,null);assert.equal(p.data.result.chosen.total,'2000.00');
+});
+
+test('清远九档与长缴、年龄加发按市级原文，不与省参考或其他市混用',()=>{
+ for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441800',tier}));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.equal(r.chosen.base,'245.00');assert.match(r.referenceText,/省最低240元/);assert.ok(r.sources.some(s=>s.id==='qy-resident-local-rule'));}
+ const r=resident(form({regionId:'441800',birth:'1961-10',years:'18',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'254.00');assert.equal(r.chosen.total,'0.00');
+ const local=require('../miniprogram/utils/local-resident-policies'),p=registry.city('441800').resident;
+ for(const [age,amount]of [[64,0],[65,5],[79,5],[80,10],[90,10]])assert.equal(local.ageExtra(p,age),amount);
+});
+
+test('清远2026三月底调档期限与年缴分开，未来换档不改变今年确认费用',()=>{
+ assert.throws(()=>resident(form({regionId:'441800',paidThisYear:'no',asOf:'2026-04',tier:4800})),/今年实际/);
+ const early=resident(form({regionId:'441800',paidThisYear:'no',asOf:'2026-03',tier:4800}));assert.equal(early.chosen.timeline.lockedYear,null);
+ const r=resident(form({regionId:'441800',paidThisYear:'no',asOf:'2026-04',tier:4800,currentYearTier:360}));assert.equal(r.chosen.total,'43560.00');assert.equal(r.chosen.subsidy,'570.00');assert.equal(r.chosen.timeline.lockedAnnual,360);assert.equal(r.chosen.timeline.futureFirstYear,2027);assert.ok(r.scenarios.every(s=>s.schedule[0].cost==='360'));
+ const next=resident(form({regionId:'441800',paidThisYear:'no',asOf:'2027-04',tier:4800}));assert.equal(next.chosen.timeline.lockedYear,null);
+ assert.throws(()=>resident(form({regionId:'441800',birth:'1961-10',tier:360})),/延缴/);
+});
+
+test('清远当年档页面保留与来源隔离，汕头困难群体补足不套给普通人员',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'441800'}});p.choice({currentTarget:{dataset:{key:'paidThisYear',value:'no'}}});assert.equal(p.data.needsCurrentYearTier,true);p.currentYearTier({detail:{value:3}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.lockedAnnual,360);p.onHide();assert.equal(page('resident/pages/calc/calc.js',store).data.form.currentYearTier,360);
+ const q=page('pages/policy/policy.js');q.onLoad({city:'441800',kind:'resident'});for(const id of ['qy-resident-local-rule','qy-resident-rule-budget-2026','qy-resident-tier-deadline-2026'])assert.ok(q.data.documents.some(x=>x.id===id));q.onLoad({city:'445200',kind:'resident'});assert.ok(q.data.documents.every(x=>!x.id.startsWith('qy-')));
+ const st=resident(form({regionId:'440500',birth:'1966-10',tier:360}));assert.equal(st.chosen.timeline.lumpAge,65);assert.ok(st.sources.some(x=>x.id==='st-resident-rule-2025'));assert.match(st.referenceText,/困难群体/);
 });
