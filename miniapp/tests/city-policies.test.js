@@ -228,3 +228,34 @@ test('韶关和湛江同为240元有本地确认原文，来源不会误发给�
   const p=page('pages/policy/policy.js');p.onLoad({city:id,kind:'resident'});assert.ok(p.data.documents.some(x=>x.id===source));assert.ok(p.data.documents.every(x=>x.cityIds.includes(id)));assert.equal(registry.capability(id,'resident').base,240);
  }
 });
+
+
+test('东莞2026新领取人员不计旧50元年龄加发，其他城市不受影响',()=>{
+ const rules=require('../miniprogram/utils/local-resident-policies'),p=registry.capability('441900','resident');
+ for(const age of [60,65,70,75,85])assert.equal(rules.ageExtra(p,age),0);
+ const r=resident(form({regionId:'441900',birth:'1961-10',years:'15',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'240.00');assert.match(r.referenceText,/此前已领取人员不适用/);assert.ok(r.sources.some(s=>s.id==='dg-resident-new-receipt-2026'));
+ assert.equal(rules.ageExtra(registry.capability('440300','resident'),65),50);
+});
+
+test('汕尾和河源市级最低额、九档及补贴逐档校验，不改历史余额',()=>{
+ for(const id of ['441500','441600'])for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){
+  const r=resident(form({regionId:id,tier,balance:'30000'})),s=r.chosen;
+  assert.equal(s.base,'240.00');assert.equal(s.timeline.normalYears,9);assert.equal(s.lumpYears,1);assert.equal(Number(s.lumpCost),tier);
+  assert.equal(Number(s.subsidy),(tier<=360?30:60)*9);assert.equal(Number(s.account),30000+tier*10+Number(s.subsidy));assert.equal(s.timeline.lumpMonth,'2036-10');assert.equal(r.openingAmount,'30000.00');
+ }
+});
+
+test('河源新办法按生效月份使用，65岁补足须核对延缴，不能重新开放旧趸缴',()=>{
+ assert.throws(()=>resident(form({regionId:'441600',asOf:'2026-07',tier:360})),/2026-08/);
+ assert.ok(resident(form({regionId:'441600',asOf:'2026-08',tier:360})).chosen);
+ assert.throws(()=>resident(form({regionId:'441600',birth:'1961-10',tier:360})),/已按规定延缴/);
+ const r=resident(form({regionId:'441600',birth:'1966-10',tier:360}));assert.equal(r.chosen.timeline.receivingAge,65);assert.equal(r.chosen.timeline.normalYears,4);assert.equal(r.chosen.lumpYears,6);assert.match(r.warnings.join(''),/2026年7月31日.*已截止/);
+});
+
+test('汕尾和河源长缴下限及新来源只出现在相应城市政策页',()=>{
+ for(const [id,ids]of [['441500',['sw-resident-rule-2026','sw-resident-base-2025']],['441600',['hy-resident-rule-2026','hy-resident-base-2025','hy-zijin-old-lump-deadline']]]){
+  const r=resident(form({regionId:id,birth:'1961-10',years:'18',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'249.00');assert.equal(r.chosen.total,'0.00');
+  const p=page('pages/policy/policy.js');p.onLoad({city:id,kind:'resident'});for(const source of ids)assert.ok(p.data.documents.some(x=>x.id===source));assert.ok(p.data.documents.every(x=>x.cityIds.includes(id)));
+ }
+ const p=page('pages/policy/policy.js');p.onLoad({city:'450100',kind:'resident'});assert.ok(p.data.documents.every(x=>!x.id.startsWith('hy-')&&!x.id.startsWith('sw-')));
+});
