@@ -430,3 +430,35 @@ test('深圳旧身份确认不能替代本市领取资格，旧会话金额失�
  }
  const sources=registry.city('440300').employee.sources;assert.ok(sources.some(s=>s.id==='sz-scope-2022'&&s.checkedAt==='2026-10-19'));assert.ok(!registry.city('440100').employee.sources.some(s=>s.id==='sz-scope-2022'));
 });
+
+
+test('茂名现行九档及65岁补足、首次领取年龄系数，不使用旧190或新闻400示例',()=>{
+ const rule=registry.city('440900').resident;assert.equal(rule.provincial,false);assert.equal(rule.base,240);assert.equal(rule.ageDivisor,true);
+ for(const [i,tier] of rule.tiers.entries()){
+  const credit=i<3?30:60,s=resident(form({regionId:'440900',birth:'1966-10',years:'5',balance:'30000',tier})).chosen;
+  assert.equal(s.timeline.normalYears,4);assert.equal(s.lumpYears,6);assert.equal(s.receiptYear,2031);assert.equal(s.total,String(tier*10)+'.00');assert.equal(s.subsidy,String(credit*4)+'.00');assert.equal(s.account,(30000+tier*10+credit*4).toFixed(2));assert.equal(s.low,(240+(30000+tier*10+credit*4)/101).toFixed(2));
+ }
+ for(const [birth,divisor] of [['1966-10',139],['1961-10',101],['1956-10',56]]){
+  const s=resident(form({regionId:'440900',birth,years:'18',balance:'30000',tier:360})).chosen;
+  assert.equal(s.total,'0.00');assert.equal(s.base,'249.00');assert.equal(s.low,(249+30000/divisor).toFixed(2));
+ }
+ const birthday=resident(form({regionId:'440900',birth:'1961-11',years:'15',balance:'30000',tier:360})).chosen;assert.equal(birthday.timeline.receivingAge,65);assert.equal(birthday.low,(240+30000/101).toFixed(2));
+ assert.throws(()=>resident(form({regionId:'440900',birth:'1955-11',years:'15',balance:'30000',tier:360})),/超过70岁/);
+ assert.throws(()=>resident(form({regionId:'440900',birth:'1961-10',years:'5',tier:360})),/延缴/);
+ assert.throws(()=>resident(form({regionId:'440900',tier:120})),/档次/);
+});
+test('肇庆九档下限与65岁普通补足，本地资料不串到揭阳或职工',()=>{
+ const p=registry.city('441200').resident;assert.equal(p.base,240);assert.equal(p.provincial,false);
+ for(const [i,tier]of p.tiers.entries()){
+  const s=resident(form({regionId:'441200',birth:'1966-10',years:'5',balance:'30000',tier})).chosen;
+  assert.equal(Number(s.total),tier*10);assert.equal(Number(s.subsidy),(i<3?30:60)*4);assert.equal(s.lumpYears,6);assert.equal(s.low,(240+Number(s.account)/139).toFixed(2));
+ }
+ assert.equal(resident(form({regionId:'441200',birth:'1966-10',years:'18',balance:'30000',tier:360})).chosen.base,'249.00');
+ const ids={440900:['mm-resident-rule-2020','mm-resident-renewal-2025','mm-resident-ordinary-divisor','mm-resident-base-2025'],441200:['zq-resident-rule-2020','zq-resident-base-2025','zq-resident-makeup-channel-2026']};
+ for(const [city,expected]of Object.entries(ids)){
+  const pagePolicy=page('pages/policy/policy.js');pagePolicy.onLoad({city,kind:'resident'});
+  for(const id of expected){const d=pagePolicy.data.documents.find(d=>d.id===id);assert.ok(d);assert.deepEqual(d.cityIds,[city]);assert.match(d.date,/2026-10-19/);}
+  for(const other of registry.cities.filter(c=>c.id!==city))for(const id of expected){assert.ok(!other.resident.sources.some(s=>s.id===id));assert.ok(!other.employee.sources.some(s=>s.id===id));}
+ }
+ assert.match(registry.city('445200').resident.referenceLabel,/省级/);
+});
