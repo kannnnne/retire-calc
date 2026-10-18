@@ -506,3 +506,15 @@ test('北海贺州原件仅归本市，15档历史提档与未来正常补贴不
   const policy=page('pages/policy/policy.js');policy.onLoad({city,kind:'resident'});const d=policy.data.documents.find(x=>x.id===id);assert.ok(d);assert.deepEqual(d.cityIds,[city]);assert.match(d.date,/2026-10-19/);for(const other of registry.cities.filter(x=>x.id!==city))assert.ok(!other.resident.sources.some(x=>x.id===id));
  }
 });
+
+
+test('云浮页面交够后续缴可在填写与结果切换，保留历史及会话，换市归默认',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'445300'}});
+ p.setData({'form.ageOnly':false,'form.birth':'1971-10','form.asOf':'2026-10','form.years':'15','form.accountMode':'balance','form.balance':'30000','form.pastAnnual':'360','form.paidThisYear':'yes','form.ordinary':'yes','form.eligible':'yes','form.tier':360});p.refreshPolicyQuestions();assert.equal(p.data.canContinueTo60,true);assert.equal(p.data.payUntilIndex,0);
+ p.calculate();assert.equal(p.data.error,'');const original=p.data.result.chosen.low;assert.equal(p.data.result.chosen.total,'0.00');p.payUntil({detail:{value:1}});assert.equal(p.data.form.payUntil,'SIXTY');assert.equal(p.data.payUntilIndex,1);assert.equal(p.data.result.chosen.total,'1440.00');assert.equal(p.data.baseline.low,original);assert.equal(p.data.compare,true);assert.equal(p.data.form.balance,'30000');
+ p.chooseFuture({currentTarget:{dataset:{annual:600}}});assert.equal(p.data.result.chosen.total,'2400.00');assert.equal(p.data.result.chosen.subsidy,'440.00');p.onHide();
+ const restored=page('resident/pages/calc/calc.js',store);assert.equal(restored.data.result.chosen.annual,600);assert.equal(restored.data.form.payUntil,'SIXTY');assert.equal(restored.data.payUntilIndex,1);assert.equal(restored.data.baseline.low,original);
+ restored.payUntil({detail:{value:0}});assert.equal(restored.data.result.chosen.total,'0.00');assert.equal(restored.data.payUntilIndex,0);restored.edit();restored.payUntil({detail:{value:1}});assert.equal(restored.data.result,null);assert.equal(restored.data.form.payUntil,'SIXTY');restored.calculate();assert.ok(restored.data.result);
+ restored.regionChoice({detail:{regionId:'450900'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.result,null);
+ restored.regionChoice({detail:{regionId:'445300'}});restored.setData({'form.ageOnly':true,'form.age':'60'});restored.refreshPolicyQuestions();assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.payUntil,'MINIMUM');
+});
