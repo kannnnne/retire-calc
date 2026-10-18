@@ -4,6 +4,7 @@ const divisors={60:139,61:132,62:125,63:117,64:109,65:101,66:93,67:84,68:75,69:6
 function month(s,label){if(!/^\d{4}-\d{2}$/.test(s||'')||+s.slice(5)<1||+s.slice(5)>12)throw Error('请选择'+label);return +s.slice(0,4)*12+(+s.slice(5)-1);}
 function money(v,label,blank=false){if(blank&&v==='')return null;if(!/^\d+(\.\d{1,2})?$/.test(String(v))||new D(v).gt(100000000))throw Error('请检查'+label);return new D(v);}
 function calculate(f){
+ if(f.regionId==='440100'&&f.gxMakeupRows&&f.gxMakeupRows.length)throw Error('本地区不能使用广西历史补缴方案，请清除补缴记录');
  if(f.regionId!=='440100')return require('./ordinary-calculate').calculate(f);
  const region=getRegion(f.regionId);if(!region||region.rule!=='GUANGZHOU_2021')throw Error('这个地区还没开放计算');
  const b=month(f.birth,'出生年月'),a=month(f.asOf,'数据截至月份'),age=Math.floor((a-b)/12);if(a<2025*12)throw Error('居民参考参数从2025年起使用，不支持更早截至月份');if(age<16||age>70)throw Error('本版支持16至70岁普通参保情况');

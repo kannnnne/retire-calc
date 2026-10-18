@@ -327,5 +327,21 @@ test('佛山只在需要时显示今年实际档，切换城市清除，保存�
 
 
 test('广西14市均可查看补缴原件和历史档次限制，贵港档次来源不串其他市',()=>{
- for(const c of registry.cities.filter(x=>x.provinceId==='450000')){const p=page('pages/policy/policy.js');p.onLoad({city:c.id,kind:'resident'});for(const id of ['gx-resident-makeup-2023','gx-resident-historical-tiers'])assert.ok(p.data.documents.some(x=>x.id===id));const r=resident(form({regionId:c.id,tier:6000}));assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/本页尚未计算|本页只算/);assert.equal(p.data.documents.some(x=>x.id==='gg-resident-tier-local'),c.id==='450800');}
+ for(const c of registry.cities.filter(x=>x.provinceId==='450000')){const p=page('pages/policy/policy.js');p.onLoad({city:c.id,kind:'resident'});for(const id of ['gx-resident-makeup-2023','gx-resident-historical-tiers'])assert.ok(p.data.documents.some(x=>x.id===id));const r=resident(form({regionId:c.id,tier:6000}));assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*尚未开放/);assert.equal(p.data.documents.some(x=>x.id==='gg-resident-tier-local'),c.id==='450800');}
+});
+
+
+test('广西补缴单页只列相应历史档，金额和资格修改后重新核对，结果与换档恢复一致',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'450100'}});assert.equal(p.data.region.gxMakeup,true);assert.equal(p.data.gxUiRows.length,0);p.gxAdd();
+ const input=(key,value)=>p.gxInput({currentTarget:{dataset:{index:0,key}},detail:{value}});
+ input('start','2018');input('end','2019');input('original','200');assert.equal(p.data.gxUiRows[0].tiers.at(-1),2000);assert.ok(!p.data.gxUiRows[0].tiers.includes(6000));
+ input('start','2019');input('end','2022');assert.equal(p.data.gxUiRows[0].tiers.at(-1),6000);p.gxTarget({currentTarget:{dataset:{index:0}},detail:{value:p.data.gxUiRows[0].tiers.length}});assert.equal(p.data.form.gxMakeupRows[0].target,6000);
+ p.setData({'form.pastAnnual':'200','form.gxStartYear':'2012','form.gxReviewed':'yes','form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.immediateCost,'23200.00');assert.equal(p.data.result.openingAmount,'1000.00');p.chooseFuture({currentTarget:{dataset:{annual:6000}}});assert.equal(p.data.result.chosen.immediateCost,'23200.00');assert.equal(p.data.result.openingAmount,'1000.00');p.onHide();
+ const reopened=page('resident/pages/calc/calc.js',store);assert.equal(reopened.data.result.chosen.annual,6000);assert.equal(reopened.data.form.gxMakeupRows[0].target,6000);assert.equal(reopened.data.result.makeup.cost,'23200.00');reopened.edit();reopened.input({currentTarget:{dataset:{key:'gxStartYear'}},detail:{value:'2013'}});assert.equal(reopened.data.form.gxReviewed,'unknown');reopened.gxRemove({currentTarget:{dataset:{index:0}}});assert.equal(reopened.data.gxUiRows.length,0);
+ reopened.gxAdd();reopened.regionChoice({detail:{regionId:'440600'}});assert.equal(reopened.data.form.gxMakeupRows.length,0);assert.equal(reopened.data.form.gxStartYear,'');assert.equal(reopened.data.gxMakeupOpen,false);
+});
+
+test('广西补断缴与当前年提档的页面字段区分，删除记录后普通计算不受影响',()=>{
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450300'}});p.gxAdd();p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:0}});assert.equal(p.data.form.gxMakeupRows[0].mode,'missing');assert.equal(p.data.gxUiRows[0].currentUpgrade,false);
+ p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:1}});p.gxInput({currentTarget:{dataset:{index:0,key:'start'}},detail:{value:'2026'}});p.gxInput({currentTarget:{dataset:{index:0,key:'end'}},detail:{value:'2026'}});assert.equal(p.data.gxUiRows[0].currentUpgrade,true);p.gxRemove({currentTarget:{dataset:{index:0}}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.makeup,null);assert.equal(p.data.result.chosen.total,'2000.00');
 });
