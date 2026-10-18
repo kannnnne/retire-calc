@@ -395,3 +395,20 @@ test('梅州及潮州地区选择重确认资格，结果和地区会话可恢�
  }
  const policy=page('pages/policy/policy.js');policy.onLoad({city:'445100',kind:'resident'});assert.match(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').publisher,/官方账号/);assert.equal(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').date,'核对于2026-10-19');
 });
+
+test('防城港市级最低基础额不是人均实发额，广西本地追溯不改变自治区缴费补贴',()=>{
+ const ids=['450600','450700','451300'];
+ for(const id of ids)for(const tier of registry.capability(id,'resident').tiers){const r=resident(form({regionId:id,tier}));assert.equal(r.chosen.base,'191.00');assert.equal(Number(r.chosen.subsidy),registry.capability(id,'resident').subsidies[registry.capability(id,'resident').tiers.indexOf(tier)]*10);assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*尚未开放/);}
+ assert.equal(registry.capability('450600','resident').provincial,false);assert.equal(registry.capability('450700','resident').provincial,true);
+ const r=resident(form({regionId:'450600',birth:'1966-10',years:'15',balance:'30000',tier:6000}));assert.equal(r.chosen.base,'186.00');assert.equal(r.chosen.low,(186+30000/139).toFixed(2));assert.equal(r.chosen.total,'0.00');
+ const long=resident(form({regionId:'450600',birth:'1961-10',years:'18',balance:'30000',tier:200}));assert.equal(long.chosen.base,'197.00');
+ assert.throws(()=>resident(form({regionId:'451300',tier:100})),/当地缴费档次/);
+});
+
+test('防城港、来宾、钦州官方来源仅归本市，新增本地参考保留广西历史补缴能力',()=>{
+ for(const [city,id]of [['450600','fcg-resident-base-2025-q4'],['451300','lb-resident-tier-local'],['450700','qz-resident-tier-local']]){
+  const p=page('pages/policy/policy.js');p.onLoad({city,kind:'resident'});assert.ok(p.data.documents.some(x=>x.id===id&&x.date==='核对于2026-10-19'));assert.ok(p.data.documents.every(x=>x.cityIds.includes(city)));
+  const r=resident(form({regionId:city,pastAnnual:'200',paidThisYear:'no',gxStartYear:'2012',gxReviewed:'yes',tier:200,gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:'200',target:6000}]}));assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.account,'32350.00');assert.equal(r.chosen.immediateCost,'29000.00');
+ }
+ const other=page('pages/policy/policy.js');other.onLoad({city:'450100',kind:'resident'});assert.ok(other.data.documents.every(x=>!/^fcg-|^lb-|^qz-/.test(x.id)));
+});
