@@ -462,3 +462,26 @@ test('肇庆九档下限与65岁普通补足，本地资料不串到揭阳或职
  }
  assert.match(registry.city('445200').resident.referenceLabel,/省级/);
 });
+
+
+test('玉林本地长缴4元不套自治区2元，领取年龄加发及历史年数独立计算',()=>{
+ const p=registry.city('450900').resident;assert.equal(p.extraYear,4);assert.equal(p.provincial,true);assert.match(p.referenceLabel,/自治区基础额参考/);
+ for(const years of [15,16,20,25])for(const [birth,base]of [['1966-10',186],['1961-10',191]]){
+  const f=form({regionId:'450900',birth,years:String(years),tier:6000,balance:'30000'}),s=resident(f).chosen;
+  const expected=base+(years-15)*4;assert.equal(Number(s.base),expected);assert.equal(s.total,'0.00');assert.equal(s.low,(expected+30000/139).toFixed(2));
+  const other=resident({...f,regionId:'450600'}).chosen;assert.equal(Number(s.base)-Number(other.base),(years-15)*2);
+ }
+ const r=resident(form({regionId:'450900',birth:'1966-10',years:'15',pastAnnual:'200',tier:200,gxStartYear:'2010',gxReviewed:'yes',gxMakeupRows:[{mode:'missing',start:'2010',end:'2010',target:1000}]}));
+ assert.equal(r.makeup.addedYears,1);assert.equal(r.chosen.immediateCost,'1000.00');assert.equal(r.chosen.total,'1000.00');assert.equal(r.chosen.subsidy,'0.00');assert.equal(r.chosen.base,'190.00');assert.equal(r.chosen.account,'4000.00');
+});
+test('柳州本地15档原件与自治区参数一致，历史提档不冒充60岁过渡补足',()=>{
+ const p=registry.city('450200').resident;assert.equal(p.provincial,true);assert.equal(p.extraYear,2);assert.ok(!p.lumpAt60);assert.ok(!p.lumpAt65);
+ for(const [i,tier]of p.tiers.entries()){
+  const r=resident(form({regionId:'450200',pastAnnual:'200',tier,paidThisYear:'no',gxStartYear:'2012',gxReviewed:'yes',gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:200,target:6000}]}));
+  assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.total,(29000+tier*10).toFixed(2));assert.equal(r.chosen.subsidy,(p.subsidies[i]*10).toFixed(2));assert.equal(r.chosen.lumpYears,0);assert.equal(r.chosen.account,(30000+tier*10+p.subsidies[i]*10).toFixed(2));
+ }
+ for(const [city,ids]of [['450900',['yl-resident-tenure-2024','yl-resident-official-calculator-2026']],['450200',['lz-resident-handbook-2025']]]){
+  const policyPage=page('pages/policy/policy.js');policyPage.onLoad({city,kind:'resident'});
+  for(const id of ids){const d=policyPage.data.documents.find(x=>x.id===id);assert.ok(d);assert.deepEqual(d.cityIds,[city]);assert.match(d.date,/2026-10-19/);for(const other of registry.cities.filter(c=>c.id!==city)){assert.ok(!other.resident.sources.some(s=>s.id===id));assert.ok(!other.employee.sources.some(s=>s.id===id));}}
+ }
+});
