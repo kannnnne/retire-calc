@@ -41,6 +41,7 @@ function forecast(r,now) {
   const b=month(r.birthMonth,'出生年月','birthMonth'),first=month(r.firstInsuredMonth,'首次参保年月','firstInsuredMonth'),asof=month(r.dataAsOf,'数据截至月份','dataAsOf');
   const ret=retirement(r.birthMonth,r.category),retMonth=month(ret.month);
   const paid=number(r.paidMonths,'累计缴费月数',0,960,true);
+  if((r.contributionType||'FLEXIBLE')==='FLEXIBLE')require('./flexible-category').validate(regionId,r.category,r.pastEmployeeMonths,paid);
   if(b>first) invalid('首次参保年月'+date(first)+'早于出生年月'+date(b)+'，请重新选择首次参保年月','firstInsuredMonth');
   if(first>asof) invalid('数据截至月份'+date(asof)+'早于首次参保年月'+date(first)+'，请改为缴费记录的截至月份','dataAsOf');
   if(asof>retMonth) invalid('截至月份'+date(asof)+'已晚于法定退休年月'+date(retMonth)+'；此简易版暂不支持退休后的权益核算，请检查出生年月和人员类别','birthMonth');

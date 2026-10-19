@@ -559,3 +559,15 @@ test('桂林城区、百色和崇左来源按市隔离，历史文件用途和�
  }
  assert.match(registry.city('450300').resident.sources.find(x=>x.id==='gl-resident-urban-rule-2014').text,/不把城区历史起点套给桂林所有县市/);
 });
+
+test('广东灵活页面单位年限归零时纠正原50岁并清旧结果，再填单位记录可重新选',()=>{
+ const p=page('flexible/pages/calc/calc.js');p.setData({'form.birthMonth':'1985-06','form.firstInsuredMonth':'2010-07','form.dataAsOf':'2026-10','form.unitYears':10,'form.unitMonths':0,'form.flexYears':2,'form.flexMonths':0});p.refresh();p.category({detail:{value:2}});p.calculate();assert.equal(p.data.error,'');assert.ok(p.data.result);assert.equal(p.data.form.category,'FEMALE_50');
+ p.input({currentTarget:{dataset:{key:'unitYears'}},detail:{value:'0'}});assert.equal(p.data.form.category,'FEMALE_55');assert.equal(p.data.result,null);assert.equal(p.data.categoryLabels.length,2);assert.match(p.data.error,/重新计算/);p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.retirement.month,'2043-06');
+ p.edit();p.input({currentTarget:{dataset:{key:'unitMonths'}},detail:{value:'1'}});assert.equal(p.data.categoryLabels.length,3);p.category({detail:{value:2}});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.retirement.month,'2040-06');
+});
+
+test('广西灵活旧原50岁结果恢复失效，原55岁结果可恢复，换广东不混类别索引',()=>{
+ const store={},p=page('flexible/pages/calc/calc.js',store);p.regionChanged({detail:{regionId:'450100'}});p.setData({'form.birthMonth':'1985-06','form.firstInsuredMonth':'2010-07','form.dataAsOf':'2026-10','form.unitYears':10,'form.unitMonths':0,'form.flexYears':2,'form.flexMonths':0,'form.category':'FEMALE_50',categoryIndex:2,result:{old:true}});p.onHide();
+ const q=page('flexible/pages/calc/calc.js',store);assert.equal(q.data.result,null);assert.equal(q.data.form.category,'FEMALE_55');assert.equal(q.data.categoryIndex,1);assert.equal(q.data.categoryLabels.length,2);assert.match(q.data.error,/重新计算/);q.calculate();assert.equal(q.data.error,'');assert.equal(q.data.result.retirement.month,'2043-06');q.onHide();
+ const restored=page('flexible/pages/calc/calc.js',store);assert.ok(restored.data.result);assert.equal(restored.data.form.category,'FEMALE_55');restored.regionChanged({detail:{regionId:'440700'}});assert.equal(restored.data.result,null);assert.equal(restored.data.categoryLabels.length,3);restored.category({detail:{value:2}});restored.calculate();assert.equal(restored.data.error,'');assert.equal(restored.data.result.retirement.month,'2040-06');
+});

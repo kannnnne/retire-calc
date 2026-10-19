@@ -38,6 +38,8 @@ for(const c of cities){
  }
 }
 require('./local-resident-policies').apply(cities);
+// Guangzhou keeps its legacy calculator and Shenzhen its own formula, but both share the Guangdong category rule.
+for(const c of cities){if(!['440000','450000'].includes(c.provinceId))continue;const sources=c.provinceId==='440000'?provincial.gdEmployeeSources:provincial.gxEmployeeSources,item=sources.find(s=>s.id===(c.provinceId==='440000'?'gd-flex-female-category-2024':'gx-flex-female-category-2021'));if(!c.employee.sources.some(s=>s.id===item.id))c.employee.sources=[...c.employee.sources,item];}
 function city(id){return cities.find(c=>c.id===id)||null;}
 function capability(id,kind){const c=city(id);return c?c[kind==='flexible'?'employee':kind]:null;}
 function requireEmployee(id,asof){const c=city(id||'440100'),p=c&&c.employee;if(!p||p.status!=='READY')throw Error(p?p.reason:'请选择已开放的领取地区');if(!p.legacy&&asof<p.effectiveFrom)throw Error(c.name+'当前录入规则从'+p.effectiveFrom+'起使用，请核对数据截至月份');return p;}
