@@ -93,6 +93,6 @@ function forecast(r,now) {
     }
     return {...common,receiptMonth:qualified?date(eligible+1):null,index:index.toFixed(4),basic:money(bs),personalLow:money(low),personalHigh:money(high),totalLow:money(tl),totalHigh:money(th),divisorRange:lo!==hi,recoveryMonthsFast:recovery(cost,th),recoveryMonthsSlow:recovery(cost,tl),incrementalLow:money(il),incrementalHigh:money(ih),incrementalRecoveryFast:recovery(cost,ih),incrementalRecoverySlow:recovery(cost,il)};
   });
-  return {regionId,region:require('./city-policies').city(regionId).name,referenceNote,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
+  return {regionId,region:require('./city-policies').city(regionId).name,referenceNote,indexWage:local.indexWage,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
 }
 module.exports={forecast,retirement,minimum,basic,policy};

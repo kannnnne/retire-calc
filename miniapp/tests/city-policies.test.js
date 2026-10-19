@@ -599,3 +599,21 @@ test('广西补断缴后表单与引擎按同一年限开放续缴，改记录�
  restored.gxInput({currentTarget:{dataset:{index:0,key:'end'}},detail:{value:'2017'}});assert.equal(restored.data.result,null);assert.equal(restored.data.form.gxScopeReviewed,'unknown');assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.payUntil,'MINIMUM');
  restored.gxRemove({currentTarget:{dataset:{index:0}}});assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.gxMakeupRows.length,0);
 });
+
+
+test('深圳旧指数缓存回到填写页，两入口保留新指数结果且保留原输入',()=>{
+ for(const [file,key]of [['pages/index/index.js','employee'],['flexible/pages/calc/calc.js','flexible']]){
+  const p=page(file);p.regionChanged({detail:{regionId:'440300'}});p.szScope({detail:{value:['yes']}});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.indexWage,9201);
+  const saved=JSON.parse(JSON.stringify(p.data)),old=JSON.parse(JSON.stringify(saved));delete old.result.indexWage;
+  const restored=page(file,{[key]:old});assert.equal(restored.data.result,null);assert.match(restored.data.error,/标准已更新/);assert.equal(restored.data.form.birthMonth,saved.form.birthMonth);assert.equal(restored.data.form.szScopeConfirmed,'yes');
+  const current=page(file,{[key]:saved});assert.ok(current.data.result);assert.equal(current.data.result.indexWage,9201);
+  const wrong=JSON.parse(JSON.stringify(saved));wrong.result.indexWage=9493;assert.equal(page(file,{[key]:wrong}).data.result,null);
+ }
+});
+
+
+test('湛江复用今年实际档控件，九档可选，换市清空且恢复不丢',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'440800'}});p.choice({currentTarget:{dataset:{key:'paidThisYear',value:'no'}}});assert.equal(p.data.needsCurrentYearTier,true);
+ p.currentYearTier({detail:{value:3}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.lockedAnnual,360);p.onHide();assert.equal(page('resident/pages/calc/calc.js',store).data.form.currentYearTier,360);
+ p.regionChoice({detail:{regionId:'450700'}});assert.equal(p.data.form.currentYearTier,0);assert.equal(p.data.needsCurrentYearTier,false);
+});
