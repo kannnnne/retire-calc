@@ -96,7 +96,7 @@ for(const c of provinces.municipalities){
   assert.equal(flex.scenarios[0].monthlyPersonalPayment,c.provinceId==='440000'?'1104.20':'840.96');
   assert.equal(e.scenarios[0].futureAccountCredit,flex.scenarios[0].futureAccountCredit);
   const rr=resident(form({regionId:c.id,tier:r.tiers[0]}));assert.equal(rr.regionId,c.id);assert.match(rr.referenceLabel,/参考/);
-  assert.equal(Number(rr.chosen.base),({'440600':343,'440400':543,'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242,'441800':245})[c.id]||(c.provinceId==='440000'?240:191));
+  assert.equal(Number(rr.chosen.base),({'441900':330,'440600':343,'440400':543,'440300':240,'440700':242.5,'442000':250,'440500':250,'445300':242,'441800':245})[c.id]||(c.provinceId==='440000'?240:191));
   const ppage=page('pages/policy/policy.js');ppage.onLoad({city:c.id,kind:'resident'});assert.ok(ppage.data.documents.length>0);assert.ok(ppage.data.documents.every(d=>d.cityIds.includes(c.id)));
  });
 }
@@ -233,7 +233,7 @@ test('韶关和湛江同为240元有本地确认原文，来源不会误发给�
 test('东莞2026新领取人员不计旧50元年龄加发，其他城市不受影响',()=>{
  const rules=require('../miniprogram/utils/local-resident-policies'),p=registry.capability('441900','resident');
  for(const age of [60,65,70,75,85])assert.equal(rules.ageExtra(p,age),0);
- const r=resident(form({regionId:'441900',birth:'1961-10',years:'15',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'240.00');assert.match(r.referenceText,/此前已领取人员不适用/);assert.ok(r.sources.some(s=>s.id==='dg-resident-new-receipt-2026'));
+ const r=resident(form({regionId:'441900',birth:'1961-10',years:'15',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'330.00');assert.match(r.referenceText,/此前已领取人员不适用/);assert.ok(r.sources.some(s=>s.id==='dg-resident-new-receipt-2026'));
  assert.equal(rules.ageExtra(registry.capability('440300','resident'),65),50);
 });
 
