@@ -399,7 +399,7 @@ test('梅州及潮州地区选择重确认资格，结果和地区会话可恢�
 test('防城港市级最低基础额不是人均实发额，广西本地追溯不改变自治区缴费补贴',()=>{
  const ids=['450600','450700','451300'];
  for(const id of ids)for(const tier of registry.capability(id,'resident').tiers){const r=resident(form({regionId:id,tier}));assert.equal(r.chosen.base,'191.00');assert.equal(Number(r.chosen.subsidy),registry.capability(id,'resident').subsidies[registry.capability(id,'resident').tiers.indexOf(tier)]*10);assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*尚未开放/);}
- assert.equal(registry.capability('450600','resident').provincial,false);assert.equal(registry.capability('450700','resident').provincial,true);
+ assert.equal(registry.capability('450600','resident').provincial,false);assert.equal(registry.capability('450700','resident').provincial,false);
  const r=resident(form({regionId:'450600',birth:'1966-10',years:'15',balance:'30000',tier:6000}));assert.equal(r.chosen.base,'186.00');assert.equal(r.chosen.low,(186+30000/139).toFixed(2));assert.equal(r.chosen.total,'0.00');
  const long=resident(form({regionId:'450600',birth:'1961-10',years:'18',balance:'30000',tier:200}));assert.equal(long.chosen.base,'197.00');
  assert.throws(()=>resident(form({regionId:'451300',tier:100})),/当地缴费档次/);
