@@ -637,3 +637,19 @@ test('广西未核定补足的旧缓存结果清除，不把核定按钮自动�
  const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450700'}});p.setData({'form.age':'60','form.ageOnly':false,'form.birth':'1966-10','form.years':'13','form.gxTransitionStart':'2014-01','form.eligible':'yes','form.gxTransitionEnabled':'yes','form.gxTransitionYears':'2','form.gxTransitionReviewed':'yes'});p.refreshPolicyQuestions();p.calculate();assert.ok(p.data.result.transition);
  const saved=JSON.parse(JSON.stringify(p.data));delete saved.form.gxTransitionReviewed;const restored=page('resident/pages/calc/calc.js',{resident:saved});assert.equal(restored.data.result,null);assert.equal(restored.data.baseline,null);assert.equal(restored.data.display,null);restored.calculate();assert.match(restored.data.error,/核定/);
 });
+
+
+test('柳州选融水才显示本县标准，原制度年月不猜填，保存恢复与切回省参考一致',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'450200'}});assert.equal(p.data.region.provincial,true);assert.match(p.data.areaLabels[1],/融水/);
+ p.localArea({detail:{value:1}});assert.equal(p.data.region.provincial,false);assert.equal(p.data.form.gxTransitionStart,'');p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.match(p.data.result.region,/融水/);assert.match(p.data.result.referenceLabel,/本地最低/);p.onHide();const restored=page('resident/pages/calc/calc.js',store);assert.ok(restored.data.result);assert.equal(restored.data.form.localArea,'rongshui');assert.equal(restored.data.areaIndex,1);
+ restored.localArea({detail:{value:0}});assert.equal(restored.data.result,null);assert.equal(restored.data.region.provincial,true);assert.equal(restored.data.form.localArea,'');assert.equal(restored.data.form.eligible,'unknown');
+});
+
+
+test('深圳旧居民结果按次月加发规则清缓存，新结果仍恢复，不影响其他城市缓存',()=>{
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'440300'}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.ageExtraNextMonth,true);
+ const saved=JSON.parse(JSON.stringify(p.data)),old=JSON.parse(JSON.stringify(saved));delete old.result.ageExtraNextMonth;
+ const stale=page('resident/pages/calc/calc.js',{resident:old});assert.equal(stale.data.result,null);assert.equal(stale.data.baseline,null);assert.equal(stale.data.display,null);assert.match(stale.data.error,/加发规则已更新/);assert.equal(stale.data.form.birth,saved.form.birth);
+ const current=page('resident/pages/calc/calc.js',{resident:saved});assert.ok(current.data.result);assert.equal(current.data.result.ageExtraNextMonth,true);
+ p.regionChoice({detail:{regionId:'450700'}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();const gx=JSON.parse(JSON.stringify(p.data));delete gx.result.ageExtraNextMonth;assert.ok(page('resident/pages/calc/calc.js',{resident:gx}).data.result);
+});
