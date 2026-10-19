@@ -527,3 +527,35 @@ test('江门续缴页面换档与恢复保持本市补贴，政策出处不串�
  restored.regionChoice({detail:{regionId:'445300'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.result,null);
  const policy=page('pages/policy/policy.js');policy.onLoad({city:'440700',kind:'resident'});const d=policy.data.documents.find(x=>x.id==='jm-resident-continue-2025');assert.ok(d);assert.deepEqual(d.cityIds,['440700']);assert.equal(d.date,'核对于2026-10-19');for(const other of registry.cities.filter(x=>x.id!=='440700'))assert.ok(!other.resident.sources.some(s=>s.id===d.id));
 });
+
+test('百色居民领取年龄和年限不套职工改革或按性别延迟',()=>{
+ const p=registry.city('451000').resident;assert.equal(p.provincial,true);assert.equal(p.baseYear,2025);assert.equal(p.base,186);
+ for(const sex of ['male','female']){
+  const r=resident(form({regionId:'451000',birth:'1966-12',years:'15',balance:'30000',tier:200,sex})).chosen;
+  assert.equal(r.timeline.receivingAge,60);assert.equal(r.receiptYear,2027);assert.equal(r.total,'0.00');assert.equal(r.base,'186.00');assert.equal(r.low,(186+30000/139).toFixed(2));
+ }
+ const short=resident(form({regionId:'451000',birth:'1966-10',years:'14',tier:200})).chosen;assert.equal(short.timeline.normalYears,1);assert.equal(short.receiptYear,2027);assert.equal(short.lumpYears,0);
+});
+
+test('崇左起领取条件齐备的次月，年末达到年龄或缴费均跨到次年',()=>{
+ const f=form({regionId:'451400',birth:'1966-12',asOf:'2026-10',years:'15',tier:200}),r=resident(f).chosen;
+ assert.equal(r.receiptYear,2027);assert.equal(r.timeline.receivingAge,60);assert.equal(r.timeline.normalYears,0);
+ const later=resident({...f,birth:'1965-10',asOf:'2026-12',years:'14',paidThisYear:'no'}).chosen;assert.equal(later.timeline.normalYears,1);assert.equal(later.timeline.lastYear,2026);assert.equal(later.receiptYear,2027);assert.equal(later.timeline.receivingAge,61);
+ assert.equal(registry.city('451400').resident.provincial,true);
+});
+
+test('桂林城区旧办法不倒套现行15档和补贴，也不自动开放全市特殊补足',()=>{
+ const p=registry.city('450300').resident;assert.equal(p.provincial,true);assert.equal(p.tiers.length,15);assert.equal(p.tiers[0],200);assert.equal(p.subsidies[0],35);assert.ok(!p.lumpAt60);assert.ok(!p.continueTo60);
+ for(const [i,tier]of p.tiers.entries()){
+  const s=resident(form({regionId:'450300',birth:'1971-10',years:'5',pastAnnual:'200',tier})).chosen;assert.equal(s.timeline.normalYears,10);assert.equal(s.subsidy,(p.subsidies[i]*10).toFixed(2));assert.equal(s.total,(tier*10).toFixed(2));assert.equal(s.base,'191.00');assert.equal(s.account,(1000+(tier+p.subsidies[i])*10).toFixed(2));
+ }
+ assert.throws(()=>resident(form({regionId:'450300',tier:100})),/当地缴费档/);
+});
+
+test('桂林城区、百色和崇左来源按市隔离，历史文件用途和未核金额保留可见',()=>{
+ for(const [id,source]of [['450300','gl-resident-urban-rule-2014'],['451000','bs-resident-age-2024'],['451400','chongzuo-resident-receipt-month']]){
+  const p=registry.city(id).resident;assert.match(p.referenceText,/自治区参考/);const policy=page('pages/policy/policy.js');policy.onLoad({city:id,kind:'resident'});const d=policy.data.documents.find(x=>x.id===source);assert.ok(d);assert.deepEqual(d.cityIds,[id]);assert.match(d.date,/2026-10-19/);
+  for(const c of registry.cities){assert.ok(!c.employee.sources.some(x=>x.id===source));if(c.id!==id)assert.ok(!c.resident.sources.some(x=>x.id===source));}
+ }
+ assert.match(registry.city('450300').resident.sources.find(x=>x.id==='gl-resident-urban-rule-2014').text,/不把城区历史起点套给桂林所有县市/);
+});
