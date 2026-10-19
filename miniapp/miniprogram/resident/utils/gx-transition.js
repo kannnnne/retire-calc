@@ -2,7 +2,8 @@
 // 桂政办发〔2012〕40、152号已全区覆盖新农保、城居保。此处只核年份
 // 上界，不把全覆盖追溯日期或2014年并轨时间当成每个县的原制度起点。
 const COVERAGE_YEAR=2012;
-function originalPeriod(value){const m=String(value||'').match(/^(\d{4})-(\d{2})$/);return !!(m&&+m[1]>=2009&&+m[1]<=COVERAGE_YEAR&&+m[2]>=1&&+m[2]<=12);}
+const FIRST_PILOT_MONTH='2009-10';
+function originalPeriod(value){const m=String(value||'').match(/^(\d{4})-(\d{2})$/);return !!(m&&String(value)>=FIRST_PILOT_MONTH&&+m[1]<=COVERAGE_YEAR&&+m[2]>=1&&+m[2]<=12);}
 function stale(result){return !!(result&&result.transition&&(result.transition.coverageYear!==COVERAGE_YEAR||!originalPeriod(result.transition.schemeStart)));}
 function validate(f,{policy,age,years,birth,asOf}){
  if(f.gxTransitionEnabled!=null&&!['yes','no'].includes(f.gxTransitionEnabled))throw Error('请选择是否按经办核定的老参保人办法补足');
@@ -14,6 +15,7 @@ function validate(f,{policy,age,years,birth,asOf}){
  if(policy.gxSchemeStart&&schemeStart!==policy.gxSchemeStart)throw Error('原制度建立年月与所选区县已核日期不符，请核对参保地和经办记录');
  const match=String(schemeStart).match(/^(\d{4})-(\d{2})$/);
  if(!match||+match[1]<2009||+match[2]<1||+match[2]>12)throw Error('请填写经办确认的新农保或城居保建立年月（2009至2012年）');
+ if(schemeStart<FIRST_PILOT_MONTH)throw Error('广西新农保试点从2009年10月起启动，请核对当地原制度年月，不是此前老农保或本人首次缴费时间');
  if(+match[1]>COVERAGE_YEAR)throw Error('广西2012年已实现新农保和城居保全覆盖；请填写当地原制度年月，不是2014年合并或本人首次缴费年月');
  const start=+match[1]*12+(+match[2]-1);
  if(start<=birth+45*12||start>=birth+60*12)throw Error('制度建立时须未满60岁、距60岁不足15年，不能按现在年龄判断');
