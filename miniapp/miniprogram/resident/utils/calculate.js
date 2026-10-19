@@ -7,6 +7,7 @@ function calculate(f){
  if(f.payUntil!=null&&!['MINIMUM','SIXTY'].includes(f.payUntil))throw Error('请选择缴费时间');
  if(f.regionId==='440100'&&f.payUntil==='SIXTY')throw Error('本地区尚未接入交够年限后继续缴费方案');
  if(f.regionId==='440100'&&f.gxMakeupRows&&f.gxMakeupRows.length)throw Error('本地区不能使用广西历史补缴方案，请清除补缴记录');
+ if(f.regionId==='440100'&&f.gxTransitionEnabled==='yes')throw Error('本地区不能使用广西老参保人补足方案');
  if(f.regionId!=='440100')return require('./ordinary-calculate').calculate(f);
  const region=getRegion(f.regionId);if(!region||region.rule!=='GUANGZHOU_2021')throw Error('这个地区还没开放计算');
  const b=month(f.birth,'出生年月'),a=month(f.asOf,'数据截至月份'),age=Math.floor((a-b)/12);if(a<2025*12)throw Error('居民参考参数从2025年起使用，不支持更早截至月份');if(age<16||age>70)throw Error('本版支持16至70岁普通参保情况');

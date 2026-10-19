@@ -327,7 +327,7 @@ test('佛山只在需要时显示今年实际档，切换城市清除，保存�
 
 
 test('广西14市均可查看补缴原件和历史档次限制，贵港档次来源不串其他市',()=>{
- for(const c of registry.cities.filter(x=>x.provinceId==='450000')){const p=page('pages/policy/policy.js');p.onLoad({city:c.id,kind:'resident'});for(const id of ['gx-resident-makeup-2023','gx-resident-historical-tiers'])assert.ok(p.data.documents.some(x=>x.id===id));const r=resident(form({regionId:c.id,tier:6000}));assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*尚未开放/);assert.equal(p.data.documents.some(x=>x.id==='gg-resident-tier-local'),c.id==='450800');}
+ for(const c of registry.cities.filter(x=>x.provinceId==='450000')){const p=page('pages/policy/policy.js');p.onLoad({city:c.id,kind:'resident'});for(const id of ['gx-resident-makeup-2023','gx-resident-historical-tiers'])assert.ok(p.data.documents.some(x=>x.id===id));const r=resident(form({regionId:c.id,tier:6000}));assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*未核定时不自动开放/);assert.equal(p.data.documents.some(x=>x.id==='gg-resident-tier-local'),c.id==='450800');}
 });
 
 
@@ -398,7 +398,7 @@ test('梅州及潮州地区选择重确认资格，结果和地区会话可恢�
 
 test('防城港市级最低基础额不是人均实发额，广西本地追溯不改变自治区缴费补贴',()=>{
  const ids=['450600','450700','451300'];
- for(const id of ids)for(const tier of registry.capability(id,'resident').tiers){const r=resident(form({regionId:id,tier}));assert.equal(r.chosen.base,'191.00');assert.equal(Number(r.chosen.subsidy),registry.capability(id,'resident').subsidies[registry.capability(id,'resident').tiers.indexOf(tier)]*10);assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*尚未开放/);}
+ for(const id of ids)for(const tier of registry.capability(id,'resident').tiers){const r=resident(form({regionId:id,tier}));assert.equal(r.chosen.base,'191.00');assert.equal(Number(r.chosen.subsidy),registry.capability(id,'resident').subsidies[registry.capability(id,'resident').tiers.indexOf(tier)]*10);assert.equal(r.chosen.lumpYears,0);assert.match(r.referenceText,/制度过渡.*未核定时不自动开放/);}
  assert.equal(registry.capability('450600','resident').provincial,false);assert.equal(registry.capability('450700','resident').provincial,false);
  const r=resident(form({regionId:'450600',birth:'1966-10',years:'15',balance:'30000',tier:6000}));assert.equal(r.chosen.base,'186.00');assert.equal(r.chosen.low,(186+30000/139).toFixed(2));assert.equal(r.chosen.total,'0.00');
  const long=resident(form({regionId:'450600',birth:'1961-10',years:'18',balance:'30000',tier:200}));assert.equal(long.chosen.base,'197.00');
@@ -616,4 +616,24 @@ test('湛江复用今年实际档控件，九档可选，换市清空且恢复�
  const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'440800'}});p.choice({currentTarget:{dataset:{key:'paidThisYear',value:'no'}}});assert.equal(p.data.needsCurrentYearTier,true);
  p.currentYearTier({detail:{value:3}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.lockedAnnual,360);p.onHide();assert.equal(page('resident/pages/calc/calc.js',store).data.form.currentYearTier,360);
  p.regionChoice({detail:{regionId:'450700'}});assert.equal(p.data.form.currentYearTier,0);assert.equal(p.data.needsCurrentYearTier,false);
+});
+
+
+test('广西核定补足入口按60岁条件显示，确认后两档比较和会话保留',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'450700'}});assert.equal(p.data.canGXTransition,false);
+ p.input({currentTarget:{dataset:{key:'age'}},detail:{value:'60'}});assert.equal(p.data.canGXTransition,true);
+ p.ageMode({currentTarget:{dataset:{value:'birth'}}});p.input({currentTarget:{dataset:{key:'birth'}},detail:{value:'1966-10'}});p.input({currentTarget:{dataset:{key:'years'}},detail:{value:'13'}});p.input({currentTarget:{dataset:{key:'gxTransitionStart'}},detail:{value:'2014-01'}});p.choice({currentTarget:{dataset:{key:'gxTransitionEnabled',value:'yes'}}});p.input({currentTarget:{dataset:{key:'gxTransitionYears'}},detail:{value:'2'}});p.setData({'form.eligible':'yes'});p.calculate();assert.match(p.data.error,/经办核定/);assert.equal(p.data.result,null);
+ p.choice({currentTarget:{dataset:{key:'gxTransitionReviewed',value:'yes'}}});assert.equal(p.data.cdLumpOnly,true);p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.lumpYears,2);assert.equal(p.data.result.chosen.subsidy,'70.00');assert.equal(p.data.result.chosen.timeline.normalYears,0);
+ p.chooseFuture({currentTarget:{dataset:{annual:6000}}});assert.equal(p.data.result.chosen.total,'12000.00');assert.equal(p.data.result.chosen.subsidy,'400.00');p.input({currentTarget:{dataset:{key:'budget'}},detail:{value:'11000'}});assert.equal(p.data.form.gxTransitionReviewed,'yes');p.calculate();assert.equal(p.data.result.chosen.affordable,false);assert.equal(p.data.result.chosen.shortfall,'1000.00');p.onHide();const restored=page('resident/pages/calc/calc.js',store);assert.ok(restored.data.result.transition);assert.equal(restored.data.result.chosen.annual,6000);assert.equal(restored.data.form.gxTransitionReviewed,'yes');
+});
+
+test('广西核定信息改动撤销确认，变回未满60岁或换市时关闭入口',()=>{
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450700'}});p.input({currentTarget:{dataset:{key:'age'}},detail:{value:'60'}});p.ageMode({currentTarget:{dataset:{value:'birth'}}});p.input({currentTarget:{dataset:{key:'birth'}},detail:{value:'1966-10'}});p.input({currentTarget:{dataset:{key:'years'}},detail:{value:'13'}});p.input({currentTarget:{dataset:{key:'gxTransitionStart'}},detail:{value:'2014-01'}});p.choice({currentTarget:{dataset:{key:'gxTransitionEnabled',value:'yes'}}});p.input({currentTarget:{dataset:{key:'gxTransitionYears'}},detail:{value:'2'}});p.choice({currentTarget:{dataset:{key:'gxTransitionReviewed',value:'yes'}}});
+ p.input({currentTarget:{dataset:{key:'years'}},detail:{value:'6'}});assert.equal(p.data.form.gxTransitionReviewed,'unknown');p.setData({'form.gxTransitionReviewed':'yes','form.age':'59'});p.ageMode({currentTarget:{dataset:{value:'age'}}});assert.equal(p.data.form.gxTransitionEnabled,'no');assert.equal(p.data.form.gxTransitionReviewed,'unknown');
+ p.regionChoice({detail:{regionId:'450100'}});assert.equal(p.data.form.gxTransitionEnabled,'no');assert.equal(p.data.form.gxTransitionYears,'');assert.equal(p.data.form.gxTransitionReviewed,'unknown');
+});
+
+test('广西未核定补足的旧缓存结果清除，不把核定按钮自动勾选',()=>{
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450700'}});p.setData({'form.age':'60','form.ageOnly':false,'form.birth':'1966-10','form.years':'13','form.gxTransitionStart':'2014-01','form.eligible':'yes','form.gxTransitionEnabled':'yes','form.gxTransitionYears':'2','form.gxTransitionReviewed':'yes'});p.refreshPolicyQuestions();p.calculate();assert.ok(p.data.result.transition);
+ const saved=JSON.parse(JSON.stringify(p.data));delete saved.form.gxTransitionReviewed;const restored=page('resident/pages/calc/calc.js',{resident:saved});assert.equal(restored.data.result,null);assert.equal(restored.data.baseline,null);assert.equal(restored.data.display,null);restored.calculate();assert.match(restored.data.error,/核定/);
 });
