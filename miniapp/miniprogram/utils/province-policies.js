@@ -11,6 +11,7 @@ const gdResidentSources=[
  source('gd-resident-floor','2025年广东居民基础养老金省级最低标准','https://www.xinxing.gov.cn/xxxrmzf/xxdt/bmdt/content/post_1990541.html','公布2025年全省基础养老金最低标准为240元/月。这里只计算省级参考，不等于每个市县实际标准，也未加入未来上调。'),
  source('gd-resident-example','省级九档与补贴的经办说明','https://www.gdwc.gov.cn/zjwcsbj/gkmlpt/content/2/2154/post_2154595.html','吴川社保说明九档180、240、360、600、900、1200、1800、3600、4800元，低三档补30元、其余补60元；当地2025年7月基础养老金240元。其他城市加发另行核对。')
 ];
+gdResidentSources.push({...source('gd-resident-procedure-2025','广东居民养老2025经办规程','http://rsj.huizhou.gov.cn/zdlyxx/jycyxx/zczy/zc/content/post_5563290.html','粤人社规〔2025〕20号，2025年6月16日印发起实施、有效期5年，适用于全省。第四十二条可线上线下查询打印个人账户对账单；第四十八条符合领取条件次月起领。规程没有另行开放普遍的60岁一次补足或历史提档，不凭表格中的一次性缴费栏推定补缴资格；本地金额仍按各市已核标准或明确标注的省级参考。'),publisher:'广东省人力资源和社会保障厅文件（惠州市人社局公开原始PDF）',checkedAt:'2026-10-19'});
 const gxEmployeeSources=[
  source('gx-range-reprint','广西2026缴费通知全文（人社政策转载）','https://www.bhqz.net/wap/c_article-a_show-id_4046.html','署名广西人社厅的桂人社发〔2026〕32号通知全文，2026年9月18日；供原站不可访问时核对4204.8—21024元范围。'),
  source('gx-base-reprint','广西2025计发通知全文（中国会计视野）','https://law.esnai.cn/do.aspx?action=show&controller=home&lawid=227384','上海国家会计学院中国会计视野所载桂人社发〔2025〕43号通知全文；2025待遇计发基数6983元。不是2026标准。'),

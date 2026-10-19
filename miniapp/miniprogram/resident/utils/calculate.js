@@ -38,7 +38,9 @@ function calculate(f){
    for(let y=firstYear;missing>0&&y*12+a%12<b+780;y++){const credit=D.min(remaining,region.subsidies[i]+collectiveCredit);remaining=remaining.minus(credit);subsidy=subsidy.plus(credit);out=out.plus(annual).plus(selfCollective);account=account.plus(annual).plus(selfCollective).plus(credit);missing--;totalYears++;schedule.push({year:y,type:'正常年缴（模拟在截至月缴）',years:1,cost:String(annual+selfCollective),subsidy:credit.toFixed(2)});}
    const lumpYears=missing;if(missing){const cost=new D(annual).mul(missing);out=out.plus(cost);account=account.plus(cost);schedule.push({year:Math.max(asYear,sixtyFiveYear),type:'65岁延缴后一次性缴费（需核定）',years:missing,cost:cost.toFixed(2),subsidy:'0.00'});totalYears+=missing;}
    const lastYear=schedule.length?schedule[schedule.length-1].year:asYear;
-   const receiptYear=Math.max(sixtyYear,asYear,lastYear);const receivingAge=Math.max(60,receiptYear-Math.floor(b/12));
+   // Match the ordinary calculator: eligibility in December means receipt starts next January.
+   const lumpAt=Math.max(a,b+780),eligibleAt=Math.max(b+720,a,lumpYears?lumpAt:lastYear*12+a%12);
+   const receiptYear=Math.floor((eligibleAt+1)/12),receivingAge=Math.max(60,Math.floor((eligibleAt+1-b)/12));
    // Annual records cannot determine the exact first receiving age. Show neighboring divisors.
    const lowAge=Math.max(60,receivingAge-1),highAge=Math.min(70,receivingAge);const base=new D(region.base).plus(Math.max(0,totalYears-15)*6);
    const low=account.div(divisors[lowAge]).plus(base),high=account.div(divisors[highAge]).plus(base);
@@ -46,7 +48,7 @@ function calculate(f){
    const lumpCost=new D(annual).mul(lumpYears),affordable=!budget||lumpCost.lte(budget);
    const normal=schedule.filter(row=>row.type.indexOf('正常年缴')===0);
    const paidAt60=years+normal.filter(row=>row.year*12+a%12<=b+720).length;
-   const lumpAt=Math.max(a,b+780),lumpMonth=Math.floor(lumpAt/12)+'-'+String(lumpAt%12+1).padStart(2,'0');
+   const lumpMonth=Math.floor(lumpAt/12)+'-'+String(lumpAt%12+1).padStart(2,'0');
    const timeline={normalYears:normal.length,normalCost:new D(annual).plus(selfCollective).mul(normal.length).toFixed(2),firstYear:normal.length?normal[0].year:null,lastYear:normal.length?normal[normal.length-1].year:null,paidAt60,missingAt60:Math.max(0,15-paidAt60),sixtyYear,lumpMonth,lumpAge:Math.max(65,age),receivingAge};
    return {timeline,annual,selfCollective,annualTotal:annual+selfCollective,total:out.toFixed(2),account:account.toFixed(2),subsidy:subsidy.toFixed(2),lumpYears,lumpCost:lumpCost.toFixed(2),receiptYear,low:low.toFixed(2),high:high.toFixed(2),personalLow:low.minus(base).toFixed(2),personalHigh:high.minus(base).toFixed(2),recoveryFast,recoverySlow,recoveryYearsFast:(recoveryFast/12).toFixed(1),recoveryYearsSlow:(recoverySlow/12).toFixed(1),affordable,shortfall:budget?D.max(0,lumpCost.minus(budget)).toFixed(2):'0.00',schedule,base:base.toFixed(2)};
  });
