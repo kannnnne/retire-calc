@@ -41,5 +41,5 @@ test('省级类别来源覆盖35市职工与灵活入口但不串居民和外省
    assert.ok(!c.resident.sources.some(s=>s.id===id));if(matches.length){assert.equal(matches[0].checkedAt,'2026-10-19');assert.equal(registry.capability(c.id,'flexible'),c.employee);}
   }
  }
- const gx=registry.city('450100').employee.sources.find(s=>s.id==='gx-flex-female-category-2021');assert.match(gx.publisher,/公开报道/);
+ const gx=registry.city('450100').employee.sources.find(s=>s.id==='gx-flex-female-category-2021');assert.equal(gx.publisher,'广西壮族自治区人力资源和社会保障厅');assert.match(gx.url,/t10218731/);
 });

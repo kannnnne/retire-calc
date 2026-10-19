@@ -82,7 +82,9 @@ function forecast(r,now) {
     const common={plan,futureMonths:future,totalMonths:total,minimumMonths:target,lastPaymentMonth:date(last),qualified,shortMonths:Math.max(0,target-total),monthlyBase:money(base),monthlyPersonalPayment:money(payment),futurePersonalCost:money(cost),futureAccountCredit:money(credit),account:money(account)};
     if(lo<40||hi>70) return {...common,qualified:false,unsupported:true,error:'领取年龄超出40—70岁支持范围',totalLow:null,totalHigh:null};
     const bs=localBasic(parameter.pensionBase,index,total),low=account.div(policy.accountMonths[lo]),high=account.div(policy.accountMonths[hi]);
-    const tl=qualified?bs.plus(low):null,th=qualified?bs.plus(high):null;
+    // Guangxi rounds the final monthly pension up to one decimal, not each component.
+    const pension=v=>local.rule==='GUANGXI'?v.toDecimalPlaces(1,Decimal.ROUND_CEIL):v;
+    const tl=qualified?pension(bs.plus(low)):null,th=qualified?pension(bs.plus(high)):null;
     let il=null,ih=null;
     if(qualified&&paid>=target) {
       const prior=localBasic(parameter.pensionBase,historic,paid);
