@@ -10,7 +10,7 @@ test('兴宁区基础211、满15年月加10、65岁再加5，只对所选区生�
  const r=calculate(form());assert.equal(r.region,'南宁市 · 兴宁区');assert.equal(r.baseYear,2025);assert.equal(r.chosen.base,'221.00');assert.equal(r.chosen.low,(221+30000/139).toFixed(2));assert.equal(r.chosen.total,'0.00');
  assert.equal(calculate(form({birth:'1961-10'})).chosen.base,'226.00');assert.equal(calculate(form({years:'20'})).chosen.base,'231.00');
  const city=calculate(form({localArea:''}));assert.equal(city.chosen.base,'186.00');assert.equal(city.referenceLabel,'南宁自治区参考 · 可选已核区县');assert.equal(calculate(form({regionId:'450400',localArea:''})).chosen.base,'186.00');
- assert.throws(()=>calculate(form({localArea:'qingxiu'})),/参保所在地/);
+ assert.throws(()=>calculate(form({localArea:'not-a-district'})),/参保所在地/);
 });
 
 test('满15年加10是一个门槛金额，不给14年提前加、不每年重复加',()=>{

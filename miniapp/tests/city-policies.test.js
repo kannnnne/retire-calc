@@ -172,7 +172,7 @@ test('深圳和中山使用各自九档补贴，新增年龄档不叠加，补�
  for(const [id,credits]of [['440300',[30,40,50,70,80,90,100,120,150]],['442000',[60,60,60,90,90,120,120,150,150]]]){
   for(const [i,tier]of registry.capability(id,'resident').tiers.entries()){
    const s=resident(form({regionId:id,tier})).chosen;
-   assert.equal(Number(s.subsidy),credits[i]*s.timeline.normalYears);assert.equal(Number(s.lumpCost),tier*s.lumpYears);assert.match(resident(form({regionId:id,tier})).referenceText,/省级下限240/);
+   assert.equal(Number(s.subsidy),credits[i]*s.timeline.normalYears);assert.equal(Number(s.lumpCost),tier*s.lumpYears);assert.match(resident(form({regionId:id,tier})).referenceText,id==='440300'?/省级下限240/:/官方图解明确基础养老金240/);
   }
  }
  const rules=require('../miniprogram/utils/local-resident-policies');
@@ -579,4 +579,13 @@ test('南宁居民页面选兴宁区才使用本地额，切回省参考清旧�
  p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.region,'南宁市 · 兴宁区');assert.equal(p.data.result.chosen.base,'226.00');
  p.localArea({detail:{value:0}});assert.equal(p.data.result,null);assert.equal(p.data.baseline,null);assert.equal(p.data.form.localArea,'');assert.equal(p.data.region.base,186);
  p.localArea({detail:{value:1}});p.regionChoice({detail:{regionId:'441400'}});assert.equal(p.data.form.localArea,'');assert.equal(p.data.region.tenureBonus,undefined);assert.equal(p.data.region.base,240);
+});
+
+
+test('南宁区县切换：兴宁完整额与青秀自治区底额及长缴规则不残留',()=>{
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450100'}});assert.match(p.data.areaLabels[2],/青秀区/);
+ p.localArea({detail:{value:1}});p.setData({'form.eligible':'yes','form.ordinary':'yes','form.years':'20'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'231.00');
+ p.localArea({detail:{value:2}});assert.equal(p.data.result,null);assert.equal(p.data.baseline,null);assert.equal(p.data.region.base,186);assert.equal(p.data.region.tenureBonus,undefined);assert.equal(p.data.region.extraYear,4);
+ p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'206.00');assert.match(p.data.result.referenceLabel,/自治区基础额参考/);
+ p.localArea({detail:{value:1}});assert.equal(p.data.result,null);assert.equal(p.data.region.base,211);assert.equal(p.data.region.extraYear,2);assert.equal(p.data.region.tenureBonus.amount,10);
 });
