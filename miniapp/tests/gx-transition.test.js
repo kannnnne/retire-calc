@@ -41,8 +41,8 @@ test('广西核定补足不泄漏至广东或其他省份，不改变广西普�
 
 
 test('原制度的45及60岁边界和南宁已核起点不能凭当前年龄或自行改日期绕过',()=>{
- assert.throws(()=>calculate(form({birth:'1969-01',asOf:'2029-01',gxTransitionStart:'2014-01',years:'13',gxTransitionYears:'2'})),/距60岁不足15年/);
- assert.throws(()=>require('../miniprogram/resident/utils/gx-transition').validate(form({birth:'1954-01',gxTransitionStart:'2014-01'}),{policy:registry.capability('450700','resident'),age:72,years:9,birth:1954*12,asOf:2026*12}),/未满60岁/);
+ assert.throws(()=>calculate(form({birth:'1967-01',asOf:'2029-01',gxTransitionStart:'2012-01',years:'13',gxTransitionYears:'2'})),/距60岁不足15年/);
+ assert.throws(()=>require('../miniprogram/resident/utils/gx-transition').validate(form({birth:'1952-01',gxTransitionStart:'2012-01'}),{policy:registry.capability('450700','resident'),age:74,years:9,birth:1952*12,asOf:2026*12}),/未满60岁/);
  for(const area of ['xingning','qingxiu']){assert.throws(()=>calculate(form({regionId:'450100',localArea:area})),/区县已核日期不符/);const r=calculate(form({regionId:'450100',localArea:area,gxTransitionStart:'',years:'10',gxTransitionYears:'5'}));assert.equal(r.transition.schemeStart,'2011-07');assert.equal(r.transition.requiredYears,10);}
  assert.throws(()=>calculate(form({paidThisYear:'yes'})),/逐年记录/);
 });
@@ -53,9 +53,13 @@ test('完整分段记录逐年核验到60岁当年，不能用后来的缴费年
 });
 
 
-test('满60岁当年还没缴的先正常交今年，再补核定年数，全部本次费用受预算约束',()=>{
- const r=calculate(form({birth:'1966-10',years:'12',gxTransitionStart:'2014-01',gxTransitionYears:'2',paidThisYear:'no',tier:200,budget:'500'})),s=r.chosen;
- assert.equal(r.transition.normalCurrentYear,true);assert.equal(s.timeline.normalYears,1);assert.equal(s.lumpYears,2);assert.equal(s.timeline.finalYears,15);assert.equal(s.total,'600.00');assert.equal(s.subsidy,'105.00');assert.equal(s.account,'30705.00');assert.equal(s.schedule[0].cost,'200');assert.equal(s.schedule[0].subsidy,'35.00');assert.equal(s.schedule[1].cost,'400.00');assert.equal(s.schedule[1].subsidy,'70.00');assert.equal(s.affordable,false);assert.equal(s.shortfall,'100.00');
- const paid=calculate(form({birth:'1966-10',years:'13',gxTransitionStart:'2014-01',gxTransitionYears:'2',paidThisYear:'yes'}));assert.equal(paid.chosen.total,'400.00');assert.equal(paid.chosen.timeline.normalYears,0);assert.equal(paid.chosen.subsidy,'70.00');
- assert.throws(()=>calculate(form({birth:'1966-10',years:'13',gxTransitionStart:'2014-01',gxTransitionYears:'1',paidThisYear:'no'})),/超出原制度/);
+test('核定补足预算计本人费用，2014并轨不得虚造当前60岁的补足资格',()=>{
+ const r=calculate(form({birth:'1964-10',years:'13',gxTransitionStart:'2012-01',gxTransitionYears:'2',paidThisYear:'no',tier:200,budget:'300'})),s=r.chosen;
+ assert.equal(r.transition.normalCurrentYear,false);assert.equal(s.timeline.normalYears,0);assert.equal(s.lumpYears,2);assert.equal(s.timeline.finalYears,15);assert.equal(s.total,'400.00');assert.equal(s.subsidy,'70.00');assert.equal(s.account,'30470.00');assert.equal(s.affordable,false);assert.equal(s.shortfall,'100.00');assert.equal(s.low,(186+30470/139).toFixed(2));
+ const paid=calculate(form({birth:'1964-10',years:'14',gxTransitionStart:'2012-01',gxTransitionYears:'1',paidThisYear:'yes'}));assert.equal(paid.chosen.total,'200.00');assert.equal(paid.chosen.subsidy,'35.00');
+ assert.throws(()=>calculate(form({birth:'1966-10',years:'12',gxTransitionStart:'2014-01',gxTransitionYears:'2'})),/2012年已实现/);
+ assert.throws(()=>calculate(form({birth:'1966-10',years:'14',gxTransitionStart:'2012-01',gxTransitionYears:'1',paidThisYear:'no'})),/今年正常缴费后就满15年/);
+ // The general transition validator still distinguishes a pending normal year
+ // for valid older records; the amount calculator only accepts 2026 onward.
+ const historical=require('../miniprogram/resident/utils/gx-transition').validate(form({birth:'1965-10',asOf:'2025-10',years:'13',gxTransitionYears:'1'}),{policy:registry.capability('450700','resident'),age:60,years:13,birth:1965*12+9,asOf:2025*12+9});assert.equal(historical.normalCurrentYear,true);assert.equal(historical.requiredYears,13);assert.equal(historical.years,1);
 });
