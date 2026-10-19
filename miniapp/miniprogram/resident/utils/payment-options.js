@@ -8,4 +8,16 @@ function continuation(policy,f){
  const normalYears=Math.max(0,Math.ceil((birth+720-firstMonth)/12));
  return {available:normalYears>Math.max(0,15-years),normalYears};
 }
-module.exports={continuation};
+function preview(policy,f){
+ if(!policy||policy.rule!=='GUANGXI_ORDINARY'||!(f.gxMakeupRows||[]).length)return continuation(policy,f);
+ // Reuse the calculator's validated make-up years, never count unchecked row spans.
+ try{
+  const input={...f,payUntil:'MINIMUM'};
+  if(input.accountMode==='estimate')input.balance='';
+  else if(input.accountMode==='balance'){input.historyMode='simple';input.pastAnnual='';input.pastMonthly=false;}
+  if(input.pastMonthly&&input.pastAnnual!=='')input.pastAnnual=new (require('../../vendor/decimal'))(input.pastAnnual).mul(12).toFixed(2);
+  const result=require('./ordinary-calculate').calculate(input);
+  return continuation(policy,{...input,years:Number(input.years)+(result.makeup?result.makeup.addedYears:0)});
+ }catch{return {available:false,normalYears:0};}
+}
+module.exports={continuation,preview};

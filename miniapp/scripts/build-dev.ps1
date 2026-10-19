@@ -10,7 +10,15 @@ $ErrorActionPreference = 'Stop'
 $projectDir = Split-Path $PSScriptRoot -Parent
 $nodeExe = $NodePath
 if (-not (Test-Path -LiteralPath $nodeExe)) { $nodeExe = (Get-Command node -ErrorAction Stop).Source }
-$compilerDir = Join-Path $DevTools 'code\package.nw\node_modules\wcc-exec'
+$compilerCandidates = @(
+    (Join-Path $DevTools 'code\package.nw\node_modules\wcc-exec'),
+    (Join-Path $DevTools 'resources\app.asar.unpacked\node_modules\wcc-exec')
+)
+$compilerDir = $compilerCandidates | Where-Object {
+    (Test-Path -LiteralPath (Join-Path $_ 'wcc.exe')) -and
+    (Test-Path -LiteralPath (Join-Path $_ 'wcsc.exe'))
+} | Select-Object -First 1
+if (-not $compilerDir) { throw '未找到微信原生编译器 wcc.exe 和 wcsc.exe，请用 -DevTools 指定完整的开发者工具安装目录。' }
 $buildDir = Join-Path $projectDir 'output'
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
 if (-not $Version) {

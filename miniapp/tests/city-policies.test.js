@@ -515,7 +515,7 @@ test('云浮页面交够后续缴可在填写与结果切换，保留历史及�
  p.chooseFuture({currentTarget:{dataset:{annual:600}}});assert.equal(p.data.result.chosen.total,'2400.00');assert.equal(p.data.result.chosen.subsidy,'440.00');p.onHide();
  const restored=page('resident/pages/calc/calc.js',store);assert.equal(restored.data.result.chosen.annual,600);assert.equal(restored.data.form.payUntil,'SIXTY');assert.equal(restored.data.payUntilIndex,1);assert.equal(restored.data.baseline.low,original);
  restored.payUntil({detail:{value:0}});assert.equal(restored.data.result.chosen.total,'0.00');assert.equal(restored.data.payUntilIndex,0);restored.edit();restored.payUntil({detail:{value:1}});assert.equal(restored.data.result,null);assert.equal(restored.data.form.payUntil,'SIXTY');restored.calculate();assert.ok(restored.data.result);
- restored.regionChoice({detail:{regionId:'450900'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.result,null);
+ restored.regionChoice({detail:{regionId:'450900'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.canContinueTo60,true);assert.equal(restored.data.result,null);
  restored.regionChoice({detail:{regionId:'445300'}});restored.setData({'form.ageOnly':true,'form.age':'60'});restored.refreshPolicyQuestions();assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.payUntil,'MINIMUM');
 });
 
@@ -545,7 +545,7 @@ test('崇左起领取条件齐备的次月，年末达到年龄或缴费均跨�
 });
 
 test('桂林城区旧办法不倒套现行15档和补贴，也不自动开放全市特殊补足',()=>{
- const p=registry.city('450300').resident;assert.equal(p.provincial,true);assert.equal(p.tiers.length,15);assert.equal(p.tiers[0],200);assert.equal(p.subsidies[0],35);assert.ok(!p.lumpAt60);assert.ok(!p.continueTo60);
+ const p=registry.city('450300').resident;assert.equal(p.provincial,true);assert.equal(p.tiers.length,15);assert.equal(p.tiers[0],200);assert.equal(p.subsidies[0],35);assert.ok(!p.lumpAt60);assert.equal(p.continueTo60,true);assert.ok(p.sources.some(s=>s.id==='gx-resident-incentive-2018'));
  for(const [i,tier]of p.tiers.entries()){
   const s=resident(form({regionId:'450300',birth:'1971-10',years:'5',pastAnnual:'200',tier})).chosen;assert.equal(s.timeline.normalYears,10);assert.equal(s.subsidy,(p.subsidies[i]*10).toFixed(2));assert.equal(s.total,(tier*10).toFixed(2));assert.equal(s.base,'191.00');assert.equal(s.account,(1000+(tier+p.subsidies[i])*10).toFixed(2));
  }
@@ -588,4 +588,14 @@ test('南宁区县切换：兴宁完整额与青秀自治区底额及长缴规�
  p.localArea({detail:{value:2}});assert.equal(p.data.result,null);assert.equal(p.data.baseline,null);assert.equal(p.data.region.base,186);assert.equal(p.data.region.tenureBonus,undefined);assert.equal(p.data.region.extraYear,4);
  p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'206.00');assert.match(p.data.result.referenceLabel,/自治区基础额参考/);
  p.localArea({detail:{value:1}});assert.equal(p.data.result,null);assert.equal(p.data.region.base,211);assert.equal(p.data.region.extraYear,2);assert.equal(p.data.region.tenureBonus.amount,10);
+});
+
+test('广西补断缴后表单与引擎按同一年限开放续缴，改记录清资格和方案，恢复不丢结果',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'450100'}});
+ p.setData({'form.ageOnly':false,'form.birth':'1971-10','form.asOf':'2026-10','form.years':'5','form.accountMode':'balance','form.balance':'1800','form.paidThisYear':'yes','form.ordinary':'yes','form.eligible':'yes','form.tier':200});p.refreshPolicyQuestions();assert.equal(p.data.canContinueTo60,false);
+ p.gxAdd();p.setData({'form.gxStartYear':'2012','form.gxMakeupRows':[{mode:'missing',start:'2012',end:'2018',target:200}],'form.gxScopeReviewed':'yes'});p.refreshPolicyQuestions();assert.equal(p.data.canContinueTo60,true);p.calculate();assert.equal(p.data.error,'');const before=p.data.result.chosen.low;
+ p.payUntil({detail:{value:1}});assert.equal(p.data.form.payUntil,'SIXTY');assert.equal(p.data.result.chosen.total,'2200.00');assert.equal(p.data.result.chosen.timeline.finalYears,16);assert.equal(p.data.result.chosen.subsidy,'140.00');assert.equal(p.data.baseline.low,before);p.onHide();
+ const restored=page('resident/pages/calc/calc.js',store);assert.equal(restored.data.result.chosen.total,'2200.00');assert.equal(restored.data.canContinueTo60,true);assert.equal(restored.data.form.payUntil,'SIXTY');
+ restored.gxInput({currentTarget:{dataset:{index:0,key:'end'}},detail:{value:'2017'}});assert.equal(restored.data.result,null);assert.equal(restored.data.form.gxScopeReviewed,'unknown');assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.payUntil,'MINIMUM');
+ restored.gxRemove({currentTarget:{dataset:{index:0}}});assert.equal(restored.data.canContinueTo60,false);assert.equal(restored.data.form.gxMakeupRows.length,0);
 });

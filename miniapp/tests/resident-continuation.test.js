@@ -34,7 +34,7 @@ test('继续缴费不重算过去金额，不补历史补贴，不虚构历史�
  for(const s of r.scenarios){assert.equal(s.timeline.finalYears,24);assert.equal(s.lumpYears,0);assert.equal(s.immediateCost,null);assert.ok(s.total>0);}
 });
 test('未核实继续缴费的城市不能借云浮条款，默认35市计划不被强制扩长',()=>{
- for(const c of registry.cities.filter(c=>!['445300','440700'].includes(c.id)))assert.throws(()=>calculate(form({regionId:c.id,payUntil:'SIXTY'})),/本地区尚未接入/);
+ for(const c of registry.cities.filter(c=>!c.resident.continueTo60))assert.throws(()=>calculate(form({regionId:c.id,payUntil:'SIXTY'})),/本地区尚未接入/);
  for(const payUntil of ['forever',true,1,''])assert.throws(()=>calculate(form({payUntil})),/缴费时间/);
  const old=calculate(form()),explicit=calculate(form({payUntil:'MINIMUM'}));assert.deepEqual(old,explicit);
  const p=registry.city('445300').resident;assert.equal(p.postMinimumSubsidy,50);assert.ok(p.sources.some(s=>s.id==='yf-resident-rule-2026'));assert.match(p.referenceText,/第16年/);assert.doesNotMatch(p.referenceText,/未模拟/);
