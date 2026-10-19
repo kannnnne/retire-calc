@@ -571,3 +571,12 @@ test('广西灵活旧原50岁结果恢复失效，原55岁结果可恢复，换�
  const q=page('flexible/pages/calc/calc.js',store);assert.equal(q.data.result,null);assert.equal(q.data.form.category,'FEMALE_55');assert.equal(q.data.categoryIndex,1);assert.equal(q.data.categoryLabels.length,2);assert.match(q.data.error,/重新计算/);q.calculate();assert.equal(q.data.error,'');assert.equal(q.data.result.retirement.month,'2043-06');q.onHide();
  const restored=page('flexible/pages/calc/calc.js',store);assert.ok(restored.data.result);assert.equal(restored.data.form.category,'FEMALE_55');restored.regionChanged({detail:{regionId:'440700'}});assert.equal(restored.data.result,null);assert.equal(restored.data.categoryLabels.length,3);restored.category({detail:{value:2}});restored.calculate();assert.equal(restored.data.error,'');assert.equal(restored.data.result.retirement.month,'2040-06');
 });
+
+
+test('南宁居民页面选兴宁区才使用本地额，切回省参考清旧结果且不误认广东兴宁市',()=>{
+ const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450100'}});assert.equal(p.data.region.base,186);assert.equal(p.data.areaLabels[1],'兴宁区');
+ p.localArea({detail:{value:1}});assert.equal(p.data.form.localArea,'xingning');assert.equal(p.data.region.base,211);assert.equal(p.data.form.eligible,'unknown');assert.equal(p.data.form.ordinary,'unknown');
+ p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.region,'南宁市 · 兴宁区');assert.equal(p.data.result.chosen.base,'226.00');
+ p.localArea({detail:{value:0}});assert.equal(p.data.result,null);assert.equal(p.data.baseline,null);assert.equal(p.data.form.localArea,'');assert.equal(p.data.region.base,186);
+ p.localArea({detail:{value:1}});p.regionChoice({detail:{regionId:'441400'}});assert.equal(p.data.form.localArea,'');assert.equal(p.data.region.tenureBonus,undefined);assert.equal(p.data.region.base,240);
+});

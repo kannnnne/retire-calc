@@ -15,6 +15,8 @@ const jmBase=source('jm-resident-base-2025','江门2025年基础养老金与年�
 const jmCity=source('jm-resident-base-city','江门基础额市级适用范围（2026年鹤山预算）','https://www.heshan.gov.cn/attachment/0/372/372900/3470180.pdf','预算引用江人社发〔2025〕85号，明确2025年7月起江门市基础养老金最低标准242.5元。这里只用市级最低额，未计各区县额外提高。');
 const jmContinue={...source('jm-resident-continue-2025','江门社保：满15年继续缴费与调档生效时间','https://www.jiangmen.gov.cn/jmshbj/gkmlpt/content/3/3301/post_3301142.html','江门市社保局2025年5月20日说明：15年为最低缴费年限，交够后可继续缴费，超过15年每多1年月加发不少于3元；按3元下限计算。未缴当年可先变更档次，已缴后变更次年生效，不改过去已缴金额。本页开放普通60岁前续缴，不把2025批扣提醒当2026截止日，也不加入云浮第16年额外50元补贴。'),checkedAt:'2026-10-19'};
 const zsRule=source('zs-resident-rule-2026','中山2026年居民缴费补贴、年龄和补缴办法','https://www.zs.gov.cn/zwgk/fggw/bsgfxwj/content/post_2581682.html','中人社发〔2025〕66号自2026年实施：九档补贴60、60、60、90、90、120、120、150、150元。65/70/75/80/85岁起每月加10/15/20/25/30元；超过15年每年加3元。60岁不足可延缴，逐年缴至65岁仍不足可一次补足且无补贴。2011年11月制度实施时的老参保另有条件，不自动套用。');
+const nnXingningBase={...source('nn-xingning-base-2025','南宁兴宁区：2026一季度人社公示基础额','http://www.nnxn.gov.cn/rmzfzcbm/rsldshbzj1/xxgk_27653/t6650196.html','兴宁区人社局2026年6月5日公示：自2025年7月1日起基础额211元，65周岁及以上每月另加5元。是明确基础标准，不是平均领取金额；仅用于兴宁区，不推广南宁其他区县。'),publisher:'南宁市兴宁区人力资源和社会保障局',checkedAt:'2026-10-19'};
+const nnXingningRule={...source('nn-xingning-rule-2024','南宁兴宁区：居民养老实施办法','http://www.nnxn.gov.cn/rmzfzcbm/rsldshbzj1/bszn_27651/t5908150.html','2024年4月15日印发起施行、有效期5年。第六、八条普通15档及35—200元补贴；第十六条缴满15年月加10元，超出每年再加2元；第十八条账户除139。第二十条制度起点2011年7月1日，过渡补足须按规定逐年缴至60岁；第二十一条补足后到账次月起领。本页保留普通年缴及明确年度补缴，不能只凭年龄断定特殊补足或将旧基础171元套入2026。'),publisher:'南宁市兴宁区人民政府',checkedAt:'2026-10-19'};
 const dgRule=source('dg-resident-tiers-2026','东莞2026年居民九档与补贴通知','https://dghrss.dg.gov.cn/zcfg/shbz/content/post_4499577.html','2026年普通九档180—4800元，低三档补30元、其余补60元，同一年度只能选一档；有效至2030年末。困难群体代缴、职工转居民另行办理。基础额调标另见2022—2024原件，按年龄加发另按2025新通知区分首次领取时间。');
 const dgBaseHistory=[
  {...source('dg-resident-base-2022','东莞2022年居民基础养老金原件','http://dghrss.dg.gov.cn/gkmlpt/content/3/3865/post_3865672.html','东人社发〔2022〕51号，2022年1月1日起：普通新领取人员基础额从290增至300元；2021办法印发前已领取者从440增至460元。两批不能混用；已读取官网两页盖章扫描件。'),checkedAt:'2026-10-19'},
@@ -79,6 +81,7 @@ const bsAge={...source('bs-resident-age-2024','百色人社：居民领取年龄
 const czReceipt={...source('chongzuo-resident-receipt-month','崇左官网：符合领取条件的次月起领','http://www.chongzuo.gov.cn/wsbs/ztfw/shbx/shbx_ylbx/ylbx_cjwt/t23385293.shtml','崇左官网2025年10月24日发布广西政务一体化平台答复：从符合待遇领取条件的次月起享受居民养老待遇。既要符合年龄，也要满足缴费条件；不能把达到60岁或补缴计划所在月份直接当作发放月份。具体缴费到账和核定日期仍以经办为准，本地金额另核。'),publisher:'崇左市政府官网（来源：广西政务一体化平台）',checkedAt:'2026-10-19'};
 const glUrban={...source('gl-resident-urban-rule-2014','桂林城区2014实施办法（历史条款核对）','http://www.guilin.gov.cn/zfxxgk/zc/zcwjk/zfwj/szb/t26459990.shtml','市政办〔2014〕76号原文适用于城区：账户除以139，超过15年每多1年月加2元；第二十一条以2012年1月1日区分原制度人员，特殊补足仍有逐年缴费等条件。原文12档、旧补贴及丧葬额不作为2026现行参数，不把城区历史起点套给桂林所有县市。本页仍按自治区普通规则参考，未自动开放原制度60岁补足。'),checkedAt:'2026-10-19'};
 const overrides={
+ '450100':{referenceLabel:'南宁自治区参考 · 可选已核区县',referenceText:'未选区县时按自治区2025最低基础186元及普通15档参考，未含市县提高。兴宁区已核2025年7月基础211元、65岁加5元、满15年月加10元及超15年每年2元；须选择兴宁区才采用，不能套南宁其他区县。制度过渡的60岁补足尚未开放，须核个人逐年记录和经办资格。',areas:[{id:'xingning',name:'兴宁区',policy:{provincial:false,base:211,baseYear:2025,age65Extra:5,extraYear:2,tenureBonus:{minimumYears:15,amount:10},referenceLabel:'南宁兴宁区本地待遇参考',referenceText:'兴宁区人社2026年一季度公示确认：2025年7月起基础211元，65岁另加5元；2024实施办法满15年月加10元，超过部分每年加2元。普通15档及补贴按本区办法；未计未来上调、历史利息及特殊待遇。只适用南宁市兴宁区，2011年7月制度过渡和60岁补足须核个人连续记录，不按当前年龄自动安排。'}}],sources:[nnXingningBase,nnXingningRule]},
  '451000':{referenceLabel:'百色本地领取条件 · 自治区待遇参考',referenceText:'百色人社明确居民领取年龄仍60岁、最低缴费15年，不随职工延迟退休改革调整。基础186元、65岁191元、15档补贴及长缴2元仍按自治区参考，市县提高尚未核齐；制度过渡60岁补足尚未开放，不能只凭年龄认定资格。',sources:[bsAge]},
  '451400':{referenceLabel:'崇左本地起领规则 · 自治区待遇参考',referenceText:'崇左官网答复明确符合年龄和缴费等领取条件后次月起领，本页年份按计划完成的次月安排，实际到账和核定月份另核。基础186元、65岁191元及15档仍自治区参考，市县提高待核；制度过渡60岁补足尚未开放，资格须另核。',sources:[czReceipt]},
  '450300':{referenceLabel:'桂林普通年缴 · 自治区待遇参考',referenceText:'已取得桂林城区2014办法原文，仅作城区历史条款核对，未将旧12档、旧补贴或城区起点套到全市。当前基础186元、65岁191元及15档补贴仍自治区参考，县市额外待遇和原制度补足资格待核；本页制度过渡60岁补足尚未开放。',sources:[glUrban]},
@@ -116,6 +119,10 @@ const overrides={
 function apply(cities){for(const c of cities){const patch=overrides[c.id];if(!patch)continue;c.resident={...c.resident,...patch,scope:'CITY_REFERENCE',sources:[...(c.resident.sources||[]),...patch.sources]};}}
 function resolve(policy,area){if(!policy)return policy;if(!policy.areas){if(area)throw Error('当前城市没有这个参保分区，请重新选择');return policy;}if(!area)return policy;const chosen=policy.areas.find(x=>x.id===area);if(!chosen)throw Error('请选择有效的参保所在地');return {...policy,...(chosen.policy||{}),areaName:chosen.name};}
 function ageExtra(policy,age){let value=policy.age65Extra&&age>=65?policy.age65Extra:0;for(const [start,extra]of policy.ageExtras||[])if(age>=start)value=extra;return value;}
-function tenureExtra(policy,years){if(!policy.tenureBands)return Math.max(0,years-15)*(policy.extraYear||0);let previous=0,result=0;for(const [end,rate]of policy.tenureBands){result+=Math.max(0,Math.min(years,end)-previous)*rate;previous=end;}return result;}
+function tenureExtra(policy,years){
+ const bonus=policy.tenureBonus&&years>=policy.tenureBonus.minimumYears?policy.tenureBonus.amount:0;
+ if(!policy.tenureBands)return bonus+Math.max(0,years-15)*(policy.extraYear||0);
+ let previous=0,result=bonus;for(const [end,rate]of policy.tenureBands){result+=Math.max(0,Math.min(years,end)-previous)*rate;previous=end;}return result;
+}
 function requiresCurrentTier(policy,f,age){const lock=policy.currentYearTierLock;return !!(lock&&String(f.asOf||'').slice(0,4)===String(lock.year)&&f.asOf>=lock.from&&f.paidThisYear==='no'&&Number(f.years)<15&&age<65);}
 module.exports={apply,resolve,ageExtra,tenureExtra,requiresCurrentTier};
