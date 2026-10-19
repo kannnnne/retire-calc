@@ -42,6 +42,9 @@ require('./local-resident-policies').apply(cities);
 for(const c of cities){if(!['440000','450000'].includes(c.provinceId))continue;const sources=c.provinceId==='440000'?provincial.gdEmployeeSources:provincial.gxEmployeeSources,item=sources.find(s=>s.id===(c.provinceId==='440000'?'gd-flex-female-category-2024':'gx-flex-female-category-2021'));if(!c.employee.sources.some(s=>s.id===item.id))c.employee.sources=[...c.employee.sources,item];}
 // The current resident procedure applies province-wide, including the legacy Guangzhou calculator.
 for(const c of cities.filter(c=>c.provinceId==='440000')){const item=provincial.gdResidentSources.find(s=>s.id==='gd-resident-procedure-2025');if(!c.resident.sources.some(s=>s.id===item.id))c.resident.sources=[...c.resident.sources,item];}
+// Jieyang's payment-frequency notice does not renew its expired benefit rules.
+const jieyang=cities.find(c=>c.id==='445200');
+jieyang.resident.sources=[...jieyang.resident.sources,{...source('jy-resident-annual-2023','揭阳居民养老统一按年缴费','http://www.jieyang.gov.cn/rsj/tzgg/content/post_780179.html','市人社局、税务局2023年6月29日通知：自2023年1月1日起全市统一按年缴费，原按月、按季档次换算为年档。该通知只调整缴费方式，不给新的基础养老金金额、历史提档或到龄补足资格，也不延长2020年实施文件有效期。'),publisher:'揭阳市人力资源和社会保障局、国家税务总局揭阳市税务局',checkedAt:'2026-10-19'}];
 function city(id){return cities.find(c=>c.id===id)||null;}
 function capability(id,kind){const c=city(id);return c?c[kind==='flexible'?'employee':kind]:null;}
 function requireEmployee(id,asof){const c=city(id||'440100'),p=c&&c.employee;if(!p||p.status!=='READY')throw Error(p?p.reason:'请选择已开放的领取地区');if(!p.legacy&&asof<p.effectiveFrom)throw Error(c.name+'当前录入规则从'+p.effectiveFrom+'起使用，请核对数据截至月份');return p;}
