@@ -41,6 +41,12 @@ for(const c of cities){
  }
 }
 require('./local-resident-policies').apply(cities);
+// Guangzhou retains its older-date calculator. Only its July 2026 onward
+// future-index reference is shared here; no resident amount or Shenzhen formula.
+const guangzhou=cities.find(c=>c.id==='440100');
+guangzhou.employee.indexWage=provincial.gdEmployee.indexWage;
+guangzhou.employee.referenceText=provincial.gdEmployee.referenceText;
+guangzhou.employee.sources=[...guangzhou.employee.sources,...provincial.gdEmployeeSources.filter(s=>['gd-pooling-2020','gd-index-explanation-2024','gd-index-upper-rule'].includes(s.id))];
 // Guangzhou keeps its legacy calculator and Shenzhen its own formula, but both share the Guangdong category rule.
 for(const c of cities){if(!['440000','450000'].includes(c.provinceId))continue;const sources=c.provinceId==='440000'?provincial.gdEmployeeSources:provincial.gxEmployeeSources,item=sources.find(s=>s.id===(c.provinceId==='440000'?'gd-flex-female-category-2024':'gx-flex-female-category-2021'));if(!c.employee.sources.some(s=>s.id===item.id))c.employee.sources=[...c.employee.sources,item];}
 // The current resident procedure applies province-wide, including the legacy Guangzhou calculator.

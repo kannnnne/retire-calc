@@ -17,9 +17,9 @@ test('深圳两身份、低中高档及不同历史指数的金额由独立公�
  }
 });
 
-test('深圳修正保留历史输入及身份阻断，广东其他城市与广西暂存口径不受影响',()=>{
+test('深圳修正保留历史输入及身份阻断，省模型同用全口径工资但不借深圳待遇公式',()=>{
  const r=forecast(sample({historicalIndex:'0.45',plan:'CUSTOM',customMonths:0}));assert.equal(r.scenarios[3].index,'0.4500');assert.equal(r.scenarios[3].account,'80000.00');assert.equal(r.scenarios[3].qualified,false);
  assert.throws(()=>forecast(sample({szScopeConfirmed:'unknown'})),/深圳实缴累计满10年/);assert.throws(()=>forecast(sample({dataAsOf:'2026-06'})),/2026-07/);
- for(const id of ['440200','440600','441900'])assert.equal(registry.capability(id,'employee').indexWage,9493);
+ for(const id of ['440200','440600','441900']){assert.equal(registry.capability(id,'employee').indexWage,9201);assert.equal(registry.capability(id,'employee').pensionBase,9493);assert.equal(registry.capability(id,'employee').rule,'GUANGDONG');}
  assert.equal(registry.capability('450100','employee').indexWage,6983);
 });

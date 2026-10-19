@@ -1,6 +1,7 @@
 const Decimal = require('../vendor/decimal');
 const policy = require('./policy-data');
 const {contributionRange}=require('./input-model');
+const {referenceWage}=require('./employee-index');
 Decimal.set({ precision: 34, rounding: Decimal.ROUND_HALF_UP });
 const D = v => new Decimal(v);
 const money = v => v == null ? null : D(v).toFixed(2);
@@ -62,7 +63,8 @@ function forecast(r,now) {
   const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
   if(!plans.includes(r.plan)) throw Error('请选择缴费方案');
   const parameter=legacy?policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0]:{status:local.parameterStatus||'OFFICIAL',year:local.year,pensionBase:local.pensionBase};
-  const referenceNote=legacy?'':local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
+  const indexWage=referenceWage(local,r.dataAsOf);
+  const referenceNote=legacy?(indexWage?local.referenceText:''):local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
   const localBasic=(base,index,months)=>{
     if(legacy||local.rule==='GUANGDONG')return basic(base,index,months);
     const years=local.rule==='GUANGXI'?D(months).div(12).toDecimalPlaces(2,Decimal.ROUND_UP):D(months).div(12);
@@ -75,7 +77,7 @@ function forecast(r,now) {
     const future=plan==='CUSTOM'?custom:plan==='MINIMUM_STOP'?gap:Math.max(0,retMonth-asof-pause,gap);
     const total=paid+future,last=future?asof+pause+future:asof,eligible=Math.max(last,retMonth),age=eligible-b;
     const lo=Math.floor(age/12),hi=Math.ceil(age/12), qualified=total>=target;
-    const futureIndex=legacy?D('.6').mul(base).div(5510):base.div(local.indexWage);
+    const futureIndex=legacy&&indexWage===null?D('.6').mul(base).div(5510):base.div(indexWage);
     const index=total?historic.mul(paid).plus(futureIndex.mul(future)).div(total):historic;
     const credit=base.mul('.08').mul(future),account=principal.plus(interest).plus(credit);
     const payment=future?base.mul(rate):D(0),cost=payment.mul(future);
@@ -93,6 +95,6 @@ function forecast(r,now) {
     }
     return {...common,receiptMonth:qualified?date(eligible+1):null,index:index.toFixed(4),basic:money(bs),personalLow:money(low),personalHigh:money(high),totalLow:money(tl),totalHigh:money(th),divisorRange:lo!==hi,recoveryMonthsFast:recovery(cost,th),recoveryMonthsSlow:recovery(cost,tl),incrementalLow:money(il),incrementalHigh:money(ih),incrementalRecoveryFast:recovery(cost,ih),incrementalRecoverySlow:recovery(cost,il)};
   });
-  return {regionId,region:require('./city-policies').city(regionId).name,referenceNote,indexWage:local.indexWage,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
+  return {regionId,region:require('./city-policies').city(regionId).name,referenceNote,indexWage,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
 }
 module.exports={forecast,retirement,minimum,basic,policy};

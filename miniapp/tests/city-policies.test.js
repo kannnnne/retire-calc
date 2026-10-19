@@ -653,3 +653,13 @@ test('深圳旧居民结果按次月加发规则清缓存，新结果仍恢复�
  const current=page('resident/pages/calc/calc.js',{resident:saved});assert.ok(current.data.result);assert.equal(current.data.result.ageExtraNextMonth,true);
  p.regionChoice({detail:{regionId:'450700'}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();const gx=JSON.parse(JSON.stringify(p.data));delete gx.result.ageExtraNextMonth;assert.ok(page('resident/pages/calc/calc.js',{resident:gx}).data.result);
 });
+
+
+test('广东省模型两入口清除旧9493指数缓存，新结果及已填信息能恢复',()=>{
+ for(const c of registry.cities.filter(c=>c.employee.rule==='GUANGDONG'||c.id==='440100'))for(const [file,key]of [['pages/index/index.js','employee'],['flexible/pages/calc/calc.js','flexible']]){
+  const p=page(file);p.regionChanged({detail:{regionId:c.id}});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.indexWage,9201);
+  const saved=JSON.parse(JSON.stringify(p.data)),old=JSON.parse(JSON.stringify(saved));old.result.indexWage=9493;old.compare=true;
+  const restored=page(file,{[key]:old});assert.equal(restored.data.result,null);assert.equal(restored.data.compare,false);assert.match(restored.data.error,/标准已更新/);assert.equal(restored.data.form.birthMonth,saved.form.birthMonth);assert.equal(restored.data.form.regionId,c.id);assert.equal(restored.data.form.principal,saved.form.principal);
+  const current=page(file,{[key]:saved});assert.ok(current.data.result);assert.equal(current.data.result.indexWage,9201);assert.equal(current.data.result.scenarios[0].totalLow,saved.result.scenarios[0].totalLow);
+ }
+});
