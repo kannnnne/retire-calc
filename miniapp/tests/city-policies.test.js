@@ -347,7 +347,7 @@ test('广西补断缴与当前年提档的页面字段区分，删除记录后�
 });
 
 test('清远九档与长缴、年龄加发按市级原文，不与省参考或其他市混用',()=>{
- for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441800',tier}));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.equal(r.chosen.base,'245.00');assert.match(r.referenceText,/省最低240元/);assert.ok(r.sources.some(s=>s.id==='qy-resident-local-rule'));}
+ for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441800',tier}));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.equal(r.chosen.base,'245.00');assert.match(r.referenceText,/基础最低240元/);assert.ok(r.sources.some(s=>s.id==='qy-resident-local-rule'));}
  const r=resident(form({regionId:'441800',birth:'1961-10',years:'18',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'254.00');assert.equal(r.chosen.total,'0.00');
  const local=require('../miniprogram/utils/local-resident-policies'),p=registry.city('441800').resident;
  for(const [age,amount]of [[64,0],[65,5],[79,5],[80,10],[90,10]])assert.equal(local.ageExtra(p,age),amount);
@@ -365,6 +365,22 @@ test('清远当年档页面保留与来源隔离，汕头困难群体补足不�
  const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'441800'}});p.choice({currentTarget:{dataset:{key:'paidThisYear',value:'no'}}});assert.equal(p.data.needsCurrentYearTier,true);p.currentYearTier({detail:{value:3}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.lockedAnnual,360);p.onHide();assert.equal(page('resident/pages/calc/calc.js',store).data.form.currentYearTier,360);
  const q=page('pages/policy/policy.js');q.onLoad({city:'441800',kind:'resident'});for(const id of ['qy-resident-local-rule','qy-resident-rule-budget-2026','qy-resident-tier-deadline-2026'])assert.ok(q.data.documents.some(x=>x.id===id));q.onLoad({city:'445200',kind:'resident'});assert.ok(q.data.documents.every(x=>!x.id.startsWith('qy-')));
  const st=resident(form({regionId:'440500',birth:'1966-10',tier:360}));assert.equal(st.chosen.timeline.lumpAge,65);assert.ok(st.sources.some(x=>x.id==='st-resident-rule-2025'));assert.match(st.referenceText,/困难群体/);
+});
+
+test('清远旧139月结果重进清金额保输入，按首次领取年龄重算后可保留',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'441800'}});
+ p.setData({'form.ageOnly':false,'form.birth':'1961-10','form.asOf':'2026-10','form.years':'15','form.balance':'30000','form.accountMode':'balance','form.eligible':'yes','form.ordinary':'yes','form.paidThisYear':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.low,(245+30000/101).toFixed(2));p.onHide();
+ delete store.resident.result.ageDivisor;store.resident.compare=true;store.resident.result.chosen.low=(245+30000/139).toFixed(2);
+ const next=page('resident/pages/calc/calc.js',store);assert.equal(next.data.result,null);assert.equal(next.data.baseline,null);assert.equal(next.data.display,null);assert.equal(next.data.planOptions.length,0);assert.equal(next.data.compare,false);assert.match(next.data.error,/清远领取年龄规则/);assert.equal(next.data.form.birth,'1961-10');assert.equal(next.data.form.balance,'30000');assert.equal(next.data.region.ageDivisor,true);
+ next.calculate();assert.equal(next.data.error,'');assert.equal(next.data.result.ageDivisor,true);assert.equal(next.data.result.chosen.low,(245+30000/101).toFixed(2));next.onHide();assert.ok(page('resident/pages/calc/calc.js',store).data.result);
+});
+
+test('清远页面交足后继续缴费可选，改未来档并切走保留方案，历史账户不改',()=>{
+ const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'441800'}});
+ p.setData({'form.ageOnly':false,'form.birth':'1971-10','form.asOf':'2026-10','form.years':'15','form.balance':'30000','form.accountMode':'balance','form.tier':360,'form.eligible':'yes','form.ordinary':'yes','form.paidThisYear':'yes'});p.refreshPolicyQuestions();assert.equal(p.data.canContinueTo60,true);p.calculate();assert.equal(p.data.result.chosen.total,'0.00');
+ p.payUntil({detail:{value:1}});assert.equal(p.data.error,'');assert.equal(p.data.form.payUntil,'SIXTY');assert.equal(p.data.result.chosen.total,'1440.00');assert.equal(p.data.result.chosen.timeline.finalYears,19);assert.equal(p.data.result.chosen.base,'252.00');
+ p.chooseFuture({currentTarget:{dataset:{annual:4800}}});assert.equal(p.data.result.openingAmount,'30000.00');assert.equal(p.data.result.chosen.total,'19200.00');assert.equal(p.data.result.chosen.subsidy,'240.00');assert.equal(p.data.result.chosen.low,(252+49440/139).toFixed(2));p.onHide();
+ const next=page('resident/pages/calc/calc.js',store);assert.equal(next.data.form.payUntil,'SIXTY');assert.equal(next.data.result.chosen.total,'19200.00');assert.equal(next.data.region.provincial,false);assert.equal(next.data.result.ageDivisor,true);
 });
 
 test('梅州办法续期来源和普通九档、延缴边界保持一致，不能按旧文到期误关',()=>{
