@@ -40,12 +40,6 @@
  <view class="pension-label">退休后，每月约领</view>
  <view class="pension-value">{{display.monthly}}<text>元</text></view>
 </view>
-<view wx:if="{{region.rule==='GUANGXI_ORDINARY'}}" class="makeup-review"><view class="card-title">不只一种交法</view><view class="route-current">{{result.transition?'当前：按核定年数补足':result.makeup?'当前：已加入历史补缴':result.missing===0?'当前：已交够15年':'当前：以后逐年交满15年'}}</view>
-<button class="route-option" bindtap="openMissingPlan"><view>补以前漏缴的年份<text>补够年数后，可能更早领</text></view><text>算一算 →</text></button>
-<button wx:if="{{canGXTransition}}" class="route-option" bindtap="reviewTransition"><view>老参保人一次补足<text>须符合旧制条件，按核定年数补</text></view><text>看条件 →</text></button>
-<button wx:if="{{result.paidYears>0}}" class="route-option" bindtap="reviewUpgrade"><view>提高以前已交的档次<text>补差额，看看每月能多领多少</text></view><text>算一算 →</text></button>
-<view class="hint">能补哪些年，要核对以前的记录；提高手头已交年份的档次，只增加金额、不增加年数。</view>
-</view>
 <view class="card field payment-card"><view class="card-title">接下来这样交</view><view wx:if="{{result.chosen.timeline.lockedYear}}" class="hint">{{result.chosen.timeline.lockedYear}}年待交{{result.chosen.timeline.lockedAnnual}}元，已计入总额。</view>
  <view wx:if="{{result.missing || result.makeup || result.chosen.timeline.normalYears}}" class="payment-grid"><view wx:if="{{result.makeup}}">现在补交<text>{{result.chosen.immediateCost}}元</text><view class="payment-detail"><block wx:if="{{result.makeup.addedYears}}">补{{result.makeup.addedYears}}年</block><block wx:if="{{result.makeup.upgradedYears}}"> 提高{{result.makeup.upgradedYears}}年档次</block></view><view class="payment-date">按已填年度办理参考</view></view>
   <view wx:if="{{result.chosen.timeline.normalYears && result.chosen.timeline.futureNormalYears!==0}}">{{result.transition?'先交今年':'以后每年交'}}<text>{{result.chosen.annualTotal}}元</text><view wx:if="{{result.chosen.socialAidAnnual}}" class="payment-detail">自己{{result.chosen.annual}}元＋家人资助{{result.chosen.socialAidAnnual}}元</view><view class="payment-detail">× {{result.chosen.timeline.lockedYear?result.chosen.timeline.futureNormalYears:result.chosen.timeline.normalYears}}年</view><view class="payment-date">{{result.chosen.timeline.lockedYear?result.chosen.timeline.futureFirstYear:result.chosen.timeline.firstYear}}—{{result.chosen.timeline.lastYear}}</view></view>
@@ -54,6 +48,12 @@
  <view wx:else class="hint">已交够，{{result.age>=60?'可办理领取':'到60岁办理领取'}}</view>
  <view class="total-row"><text>{{result.transition?'本次需交':'以后共交'}}</text><text>{{display.total}}元</text></view>
  <view wx:if="{{!result.chosen.affordable}}" class="error">一次缴费超预算{{result.chosen.shortfall}}元</view>
+</view>
+<view wx:if="{{region.rule==='GUANGXI_ORDINARY'}}" class="makeup-review"><view class="card-title">不只一种交法</view><view class="route-current">{{result.transition?'当前：按核定年数补足':result.makeup?'当前：已加入历史补缴':result.missing===0?'当前：已交够15年':'当前：以后逐年交满15年'}}</view>
+<button class="route-option" bindtap="openMissingPlan"><view>补以前漏缴的年份<text>补够年数后，可能更早领</text></view><text>算一算 →</text></button>
+<button wx:if="{{canGXTransition}}" class="route-option" bindtap="reviewTransition"><view>老参保人一次补足<text>须符合旧制条件，按核定年数补</text></view><text>看条件 →</text></button>
+<button wx:if="{{result.paidYears>0}}" class="route-option" bindtap="reviewUpgrade"><view>提高以前已交的档次<text>补差额，看看每月能多领多少</text></view><text>算一算 →</text></button>
+<view class="hint">能补哪些年，要核对以前的记录；提高手头已交年份的档次，只增加金额、不增加年数。</view>
 </view>
 <view class="submit-dock result-dock"><view class="result-actions"><button class="secondary restart-button" bindtap="reset">重新填写</button><button class="primary" bindtap="edit">修改信息</button></view></view>
 <view class="card result-section future-plans">
