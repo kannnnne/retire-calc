@@ -1,3 +1,4 @@
+const {recoveryYears}=require('../../utils/recovery-display');
 const indexRules=require('../../utils/employee-index');
 const cities=require('../../utils/city-policies');
 const session=require('../../utils/session');
@@ -8,7 +9,7 @@ const {dates,suggestedFirst,estimateAccount,serial,date}=require('../../utils/em
 const referenceParameter=policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0];
 const names={CURRENT:'照现在交到退休',MINIMUM:'改交最低档到退休',MINIMUM_STOP:'最低档交够年限',CUSTOM:'自选缴费时间'};
 const duration=n=>n==null?'—':n===0?'无需投入':(Math.floor(n/12)?Math.floor(n/12)+'年':'')+(n%12?n%12+'个月':'');
-function show(s){return {...s,name:names[s.plan],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),pension:s.totalLow===s.totalHigh?s.totalLow:s.totalLow+'～'+s.totalHigh,years:duration(s.futureMonths),recovery:s.recoveryMonthsFast===s.recoveryMonthsSlow?duration(s.recoveryMonthsFast):duration(s.recoveryMonthsFast)+'～'+duration(s.recoveryMonthsSlow),incrementalRecovery:s.incrementalRecoveryFast===s.incrementalRecoverySlow?duration(s.incrementalRecoveryFast):duration(s.incrementalRecoveryFast)+'～'+duration(s.incrementalRecoverySlow)};}
+function show(s){return {...s,name:names[s.plan],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),pension:s.totalLow===s.totalHigh?s.totalLow:s.totalLow+'～'+s.totalHigh,years:duration(s.futureMonths),recovery:recoveryYears(s.recoveryMonthsSlow),incrementalRecovery:recoveryYears(s.incrementalRecoverySlow)};}
 function initialData(){return {accountOpen:false,paymentOpen:false,step:0,advanced:false,compare:false,result:null,error:'',isDemo:false,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],categoryIndex:0,planLabels:['照现在交到退休','最低档交到退休','最低档交够年限','自己选缴费时间'],planIndex:0,form:{regionId:'440100',birthMonth:'',firstInsuredMonth:'',dataAsOf:'',paidMonths:'',principal:'',interest:'',currentBase:'',historicalIndex:'',contributionType:'EMPLOYEE',pauseMonths:0,customMonths:60,plan:'CURRENT',category:'MALE',historicalRights:false}};}
 Page({
  data:initialData(),

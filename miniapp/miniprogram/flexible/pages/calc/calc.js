@@ -1,3 +1,4 @@
+const {recoveryYears}=require('../../../utils/recovery-display');
 const indexRules=require('../../../utils/employee-index');
 const cities=require('../../../utils/city-policies');
 const session=require('../../../utils/session');
@@ -10,7 +11,7 @@ const categoryRules=require('../../../utils/flexible-category');
 const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
 const planLabels=['照这个金额交到退休','最低档交到退休','最低档交够年限就停','自己选还交多久'];
 const duration=n=>(Math.floor(n/12)?Math.floor(n/12)+'年':'')+(n%12?n%12+'个月':'')||(n===0?'0个月':'—');
-const show=s=>({...s,name:planLabels[plans.indexOf(s.plan)],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),years:duration(s.futureMonths),recovery:s.recoveryMonthsSlow==null?'—':duration(s.recoveryMonthsSlow)});
+const show=s=>({...s,name:planLabels[plans.indexOf(s.plan)],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),years:duration(s.futureMonths),recovery:recoveryYears(s.recoveryMonthsSlow)});
 function defaults(){const bounds=dates();return {dateBounds:bounds,accountOpen:false,paymentOpen:false,advanced:false,compare:false,result:null,error:'',categoryIndex:0,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],planLabels,planIndex:0,accountMode:'estimate',historyModeIndex:0,baseModeIndex:0,baseModeLabels:['最低档','自填每月养老缴费','自填缴费基数'],baseInput:'',form:{regionId:'440100',birthMonth:bounds.defaultBirth,category:'MALE',firstInsuredMonth:suggestedFirst(bounds.defaultBirth,bounds.todayMonth),dataAsOf:bounds.todayMonth,unitYears:10,unitMonths:0,flexYears:2,flexMonths:0,unitPayment:'',flexPayment:'',principal:'',historicalIndex:'',historicalRights:false,pauseMonths:0,customMonths:60,plan:'CURRENT',contributionType:'FLEXIBLE',interest:0}};}
 Page({
  data:defaults(),
