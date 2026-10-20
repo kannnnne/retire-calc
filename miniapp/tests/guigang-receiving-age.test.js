@@ -34,8 +34,8 @@ test('贵港结果可返回核对补缴，保留原输入，不自动填可补�
  const p={...def,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const [k,v]of Object.entries(patch)){const keys=k.split('.');let t=this.data;for(const key of keys.slice(0,-1))t=t[key];t[keys.at(-1)]=v;}}};
  p.setData({form:{...p.data.form,...form(),ageOnly:true,age:'59'}});p.refreshPolicyQuestions();p.calculate();
  assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,69);
- p.reviewMakeup();assert.equal(p.data.result,null);assert.equal(p.data.gxMakeupOpen,true);assert.equal(p.data.more,true);
+ p.reviewMakeup();assert.equal(p.data.result,null);assert.equal(p.data.gxMakeupOpen,true);assert.equal(p.data.planRecords,true);
  assert.equal(p.data.form.age,'59');assert.equal(p.data.form.years,'5');assert.equal(p.data.form.tier,200);
  assert.equal(p.data.form.gxStartYear,'');assert.equal(p.data.form.gxScopeReviewed,'unknown');assert.equal(p.data.form.gxTransitionEnabled,'no');
- const wxml=fs.readFileSync(path.join(base,'calc.wxml'),'utf8');assert.match(wxml,/按逐年交费/);assert.match(wxml,/核对以前的记录/);assert.match(wxml,/bindtap="openMissingPlan"/);
+ const wxml=fs.readFileSync(path.join(base,'calc.wxml'),'utf8');assert.match(wxml,/按逐年交费/);assert.match(wxml,/以前实际漏交的年份/);assert.match(wxml,/bindtap="openPaymentPlanner"/);
 });

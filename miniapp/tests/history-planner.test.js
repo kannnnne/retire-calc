@@ -27,14 +27,14 @@ test('贵港59岁5年真实页面点选核对10个漏年后，由69岁改为满6
  const p=page();p.setData({form:{...p.data.form,...f({ageOnly:true,age:'59',gxStartYear:''})}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.result.chosen.timeline.receivingAge,69);
  p.openMissingPlan();assert.equal(p.data.form.gxStartYear,'');assert.equal(p.data.gxPlan.count,0);
  p.missingStart({detail:{value:'2012'}});for(let year=2012;year<=2021;year++)p.missingYear({currentTarget:{dataset:{year}}});assert.equal(p.data.gxPlan.cost,'2000.00');
- p.applyMissingPlan();assert.match(p.data.error,/先确认/);assert.equal(p.data.result,null);
+ p.applyMissingPlan();assert.match(p.data.error,/未确认/);assert.equal(p.data.result,null);
  p.missingConfirm();p.applyMissingPlan();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,60);assert.equal(p.data.result.chosen.total,'2000.00');assert.equal(p.data.result.makeup.subsidy,'0.00');assert.equal(p.data.gxPlanOpen,false);
  assert.equal(p.data.form.gxTransitionEnabled,'no');assert.equal(p.data.form.gxTransitionReviewed,'unknown');
 });
 test('60岁路线可核对历史补缴与旧制资格；已有提档记录不会被年份工具覆盖',()=>{
  const p=page();p.setData({form:{...p.data.form,...f({birth:'1966-10'})}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.canGXTransition,true);assert.equal(p.data.result.chosen.timeline.receivingAge,70);
- p.reviewTransition();assert.match(p.data.error,/逐年缴费/);assert.equal(p.data.form.gxTransitionEnabled,'no');
- const rows=[{mode:'upgrade',start:'2022',end:'2022',original:200,target:6000}];p.setData({'form.gxMakeupRows':rows});p.openMissingPlan();assert.deepEqual(p.data.form.gxMakeupRows,rows);assert.equal(p.data.gxPlanOpen,false);assert.equal(p.data.gxMakeupOpen,true);
+ p.reviewTransition();assert.equal(p.data.planMode,'confirmed');assert.equal(p.data.planRecords,true);assert.equal(p.data.form.gxTransitionEnabled,'no');
+ const rows=[{mode:'upgrade',start:'2022',end:'2022',original:200,target:6000}];p.setData({'form.gxMakeupRows':rows});p.openMissingPlan();assert.deepEqual(p.data.form.gxMakeupRows,rows);assert.equal(p.data.gxPlanOpen,true);assert.equal(p.data.gxMakeupOpen,true);
 });
 test('改变年份或关键个人信息撤销补缴确认，切市清空年份草稿',()=>{
  const p=page();p.setData({form:{...p.data.form,...f({ageOnly:true,age:'59'})}});p.refreshPolicyQuestions();p.openMissingPlan();p.missingYear({currentTarget:{dataset:{year:2012}}});p.missingConfirm();assert.equal(p.data.form.gxScopeReviewed,'yes');
@@ -44,11 +44,11 @@ test('改变年份或关键个人信息撤销补缴确认，切市清空年份�
 test('年份选择时底部开始计算也走补缴校验，不悄悄返回原69岁方案',()=>{
  const p=page();p.setData({form:{...p.data.form,...f({ageOnly:true,age:'59'})}});p.refreshPolicyQuestions();p.openMissingPlan();
  for(let y=2012;y<=2021;y++)p.missingYear({currentTarget:{dataset:{year:y}}});
- p.calculate({type:'tap'});assert.match(p.data.error,/先确认/);assert.equal(p.data.result,null);
+ p.calculate({type:'tap'});assert.match(p.data.error,/未确认/);assert.equal(p.data.result,null);
  p.missingConfirm();p.calculate({type:'tap'});assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,60);
  const wxml=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.equal((wxml.match(/bindchange="localArea"/g)||[]).length,1);
 });
 test('从未参保先给登记路径，已交满15年也能进入提高旧年档次入口',()=>{
- const p=page();p.setData({form:{...p.data.form,...f({never:true,years:'0',paidThisYear:'no'})}});p.refreshPolicyQuestions();p.openMissingPlan();assert.match(p.data.error,/先到户籍地经办办理登记/);assert.equal(p.data.gxPlanOpen,false);assert.equal(p.data.form.gxScopeReviewed,'unknown');
+ const p=page();p.setData({form:{...p.data.form,...f({never:true,years:'0',paidThisYear:'no'})}});p.refreshPolicyQuestions();p.openMissingPlan();assert.equal(p.data.error,'');assert.equal(p.data.gxPlanOpen,true);p.applyMissingPlan();assert.match(p.data.error,/先登记/);assert.equal(p.data.form.gxScopeReviewed,'unknown');
  const q=page();q.setData({form:{...q.data.form,...f({birth:'1966-10',years:'15'})}});q.refreshPolicyQuestions();q.calculate();assert.equal(q.data.result.chosen.timeline.receivingAge,60);q.reviewUpgrade();assert.equal(q.data.result,null);assert.equal(q.data.gxUiRows.length,1);assert.equal(q.data.gxUiRows[0].mode,'upgrade');assert.equal(q.data.form.gxMakeupRows[0].target,'');assert.equal(q.data.form.gxScopeReviewed,'unknown');
 });
