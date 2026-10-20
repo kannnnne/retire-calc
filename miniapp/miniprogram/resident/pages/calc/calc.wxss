@@ -7,3 +7,5 @@
 .age-entry{gap:14rpx}.age-entry .row-label{width:138rpx}.age-mode-button{width:180rpx!important;flex:0 0 180rpx;min-height:88rpx;padding:8rpx 0 8rpx 8rpx;font-size:25rpx;color:var(--brand)}.age-entry .control,.age-entry .input-wrap{padding-left:16rpx;padding-right:16rpx}
 
 .aid-confirm{display:flex;align-items:center;gap:12rpx;min-height:96rpx;font-size:27rpx;line-height:1.6;padding:12rpx 0}.aid-confirm checkbox{flex:none}
+
+.makeup-review{margin:0 0 28rpx;padding:24rpx;background:var(--surface);border-radius:20rpx;font-size:27rpx;line-height:1.6;color:var(--ink)}.makeup-review button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:88rpx;margin-top:12rpx;padding:12rpx 0;color:var(--brand);font-size:29rpx;text-align:left;background:transparent}.makeup-review button::after{border:0}
