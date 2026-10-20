@@ -25,8 +25,8 @@
 
 ## 当前状态
 
-全国居民目标active：大陆31省级行政区及下属城市；不扩职工/灵活，不纳港澳台。本批2.12.0注册369居民选择项，68可算/301待接入。新增福建九市，浙江陕西复用省级规则；四川不能套成都。职工/灵活注册仍40城。
+全国居民目标active，大陆31省级地区，港澳台暂不纳。2.12.1注册369项，112可算（19为全国下限受限参考）、257待接入；职工／灵活仍40城。福建9市、河北11市、辽宁14市省级参考；河南18项、重庆暂用已核2025全国143下限，必须显示“全国下限参考”，不是当地待遇。
 
-公共引擎与resident-registry.js独立居民注册，national-resident-policies.js按省配置，已有city-policies.js作为地方覆盖保留。地区数据resident-region-data.js为历史公开快照，不认证2026最新。下一批及已研究线索见docs/national-resident-progress.md，避免重复搜索天津/重庆已记录问题。
+national-resident-policies.js每省一份，resident-registry.js共用，保留杭州／西安／成都及两广旧市级覆盖。辽宁2026已变9档、重庆已变13档；不沿用旧档、不认全国2026计划增额已执行、不自动奖励未确认的连续年限。来源publisher已按省区分，监测有下限标记、负补贴、重复档和来源缺失测试。
 
-监测scripts/audit-resident-coverage.js随测试执行，输出output忽略；监测地区码、归属、来源、档次补贴、旧市覆盖及职工隔离。859项测试和原生编译通过，未GUI／手机／上传。全国目标尚未完成，继续省级适配，不逐县扩散。两广交付见docs/two-province-delivery.md；长期边界见docs/product-principles.md。
+864项测试和原生编译通过，未GUI／手机／上传。运行scripts/audit-resident-coverage.js查看当前统计。下一批优先其他省普通覆盖，不再泛搜天津／重庆；已查字段及链接见docs/national-resident-progress.md，复用避免重复Token。全国目标未完成；长期边界见docs/product-principles.md。
