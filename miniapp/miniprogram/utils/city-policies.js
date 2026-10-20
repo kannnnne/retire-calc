@@ -43,7 +43,7 @@ for(const c of cities){
 }
 require('./local-resident-policies').apply(cities);
 // Aid shares the local annual ceiling with collective grants; do not use the province's 4800 everywhere.
-for(const c of cities)if(c.provinceId==='440000'&&!c.resident.legacy)c.resident.socialAidCap=Math.max(...c.resident.tiers);
+for(const c of cities)if(['440000','450000'].includes(c.provinceId)&&!c.resident.legacy)c.resident.socialAidCap=Math.max(...c.resident.tiers);
 // Guangzhou retains its older-date calculator. Only its July 2026 onward
 // future-index reference is shared here; no resident amount or Shenzhen formula.
 const guangzhou=cities.find(c=>c.id==='440100');

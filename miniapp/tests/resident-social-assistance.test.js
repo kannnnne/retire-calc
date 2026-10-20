@@ -21,7 +21,7 @@ test('资助需确认共享上限，非整数合法金额可算；未核地区�
  for(const v of [-1,'NaN','abc','Infinity','1.001'])assert.throws(()=>calculate(form({socialAidAnnual:v})),/资助金额/);
  assert.throws(()=>calculate(form({socialAidConfirmed:'unknown'})),/没有其他集体补助或社会资助/);
  const s=calculate(form({socialAidAnnual:'123.45'})).chosen;assert.equal(s.socialAidCost,'493.80');assert.equal(s.account,'19933.80');
- for(const regionId of ['440100','450100','110100','310100','510100','330100','610100'])assert.throws(()=>calculate(form({regionId,cdResidence:'rural',tier:registry.city(regionId).resident.tiers?.[0]||360})),/社会资助计算/);
+ for(const regionId of ['440100','110100','310100','510100','330100','610100'])assert.throws(()=>calculate(form({regionId,cdResidence:'rural',tier:registry.city(regionId).resident.tiers?.[0]||360})),/社会资助计算/);
 });
 
 test('佛山2026已确认的今年档不增加资助，未来正常年缴才加，不加补足年度',()=>{
@@ -41,7 +41,7 @@ test('居民页面确认与选资助更新主账单、切档保资助、重进�
  const store={},p=page(store);p.regionChoice({detail:{regionId:'440700'}});p.setData({form:{...p.data.form,...form({socialAidAnnual:0,socialAidConfirmed:'unknown'}),ageOnly:false,accountMode:'balance'}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.error,'');const baseline=p.data.result.chosen.account;
  p.fold({currentTarget:{dataset:{key:'extraOpen'}}});assert.equal(p.data.extraOpen,true);p.socialAidConfirm({detail:{value:['yes']}});p.socialAidChoose({detail:{value:p.data.socialAidOptions.indexOf(4800)}});assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.account,'38640.00');assert.equal(p.data.result.chosen.annualTotal,9600);assert.equal(p.data.baseline.account,baseline);assert.equal(p.data.compare,true);
  p.chooseFuture({currentTarget:{dataset:{annual:180}}});assert.equal(p.data.result.chosen.socialAidAnnual,4800);p.onHide();const reopened=page(store);assert.equal(reopened.data.form.socialAidAnnual,4800);assert.equal(reopened.data.result.chosen.annual,180);
- reopened.socialAidConfirm({detail:{value:[]}});assert.equal(reopened.data.form.socialAidAnnual,0);assert.equal(reopened.data.result.chosen.socialAidCost,'0.00');reopened.regionChoice({detail:{regionId:'450100'}});assert.equal(reopened.data.form.socialAidAnnual,0);assert.equal(reopened.data.form.socialAidConfirmed,'unknown');assert.equal(reopened.data.region.socialAidCap,undefined);assert.equal(reopened.data.result,null);
+ reopened.socialAidConfirm({detail:{value:[]}});assert.equal(reopened.data.form.socialAidAnnual,0);assert.equal(reopened.data.result.chosen.socialAidCost,'0.00');reopened.regionChoice({detail:{regionId:'450100'}});assert.equal(reopened.data.form.socialAidAnnual,0);assert.equal(reopened.data.form.socialAidConfirmed,'unknown');assert.equal(reopened.data.region.socialAidCap,6000);assert.equal(reopened.data.result,null);
 });
 
 test('资助条款属于广东居民资料，江门废止通知不作为已核区县补贴或60岁补足授权',()=>{
