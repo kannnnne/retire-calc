@@ -293,8 +293,8 @@ test('珠海按首次领取月份计算年龄，不漏生日当月的年龄加�
  assert.throws(()=>resident(form({regionId:'440400',birth:'1955-10',asOf:'2026-09',years:'15',tier:720,balance:'30000'})),/超过70岁/);
 });
 
-test('阳江新通知九档、补贴、长缴按本地字段，基础额仍注明省下限',()=>{
- for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441700',tier}));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.match(r.referenceText,/省级最低240元/);assert.ok(r.sources.some(s=>s.id==='yj-resident-rule-2026'));}
+test('阳江新通知及市级解读核九档、补贴、长缴和执行省最低',()=>{
+ for(const tier of [180,240,360,600,900,1200,1800,3600,4800]){const r=resident(form({regionId:'441700',tier}));assert.equal(Number(r.chosen.subsidy),(tier<=360?30:60)*9);assert.match(r.referenceText,/全市基础养老金补助执行国家和省最低标准/);assert.ok(r.sources.some(s=>s.id==='yj-resident-rule-2026'));}
  const r=resident(form({regionId:'441700',birth:'1961-10',years:'18',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'249.00');assert.equal(r.chosen.total,'0.00');
 });
 
