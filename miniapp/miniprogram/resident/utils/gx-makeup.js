@@ -14,6 +14,7 @@ function calculate(f,context){
  if(policy.rule!=='GUANGXI_ORDINARY')throw Error('本地区不能使用广西历史补缴方案，请清除补缴记录');
  if(f.gxScopeReviewed!=='yes')throw Error('请先确认尚未领取基本养老保险待遇，并核对可补起始年度及各年原缴费记录');
  if(!/^\d{4}$/.test(String(f.gxStartYear))||Number(f.gxStartYear)<2010||Number(f.gxStartYear)>asYear)throw Error('请填写经办确认的可补起始年度（本页支持2010年起）');
+ if(policy.gxSchemeYear&&Number(f.gxStartYear)<policy.gxSchemeYear)throw Error('所选地区原制度始于'+policy.gxSchemeYear+'年，更早老农保或转入记录请另行核对');
  const earliest=Math.max(Number(f.gxStartYear),birthYear+16),seen=new Set(),known=new Map();
  if(f.historyMode==='segments')for(const r of f.segments||[])for(let y=Number(r.start);y<=Number(r.end);y++)known.set(y,new D(r.annual));
  let cost=new D(0),subsidy=new D(0),original=new D(0),addedYears=0,upgradedYears=0;const entries=[];

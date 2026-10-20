@@ -17,6 +17,7 @@ function validate(f,{policy,age,years,birth,asOf}){
  if(!match||+match[1]<2009||+match[2]<1||+match[2]>12)throw Error('请填写经办确认的新农保或城居保建立年月（2009至2012年）');
  if(schemeStart<FIRST_PILOT_MONTH)throw Error('广西新农保试点从2009年10月起启动，请核对当地原制度年月，不是此前老农保或本人首次缴费时间');
  if(+match[1]>COVERAGE_YEAR)throw Error('广西2012年已实现新农保和城居保全覆盖；请填写当地原制度年月，不是2014年合并或本人首次缴费年月');
+ if(policy.gxSchemeYear&&+match[1]!==policy.gxSchemeYear)throw Error('所选地区原制度建立年份为'+policy.gxSchemeYear+'年，请核对具体月份');
  const start=+match[1]*12+(+match[2]-1);
  if(start<=birth+45*12||start>=birth+60*12)throw Error('制度建立时须未满60岁、距60岁不足15年，不能按现在年龄判断');
  const sixtyYear=Math.floor((birth+720)/12),asYear=Math.floor(asOf/12),normalCurrentYear=asYear===sixtyYear&&f.paidThisYear==='no',requiredYears=sixtyYear-Number(match[1])+1-(normalCurrentYear?1:0)+(asYear>sixtyYear&&f.paidThisYear==='yes'?1:0);
