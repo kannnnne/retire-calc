@@ -1,0 +1,9 @@
+const fs=require('node:fs'),path=require('node:path');
+const registry=require('../miniprogram/utils/resident-registry'),legacy=require('../miniprogram/utils/city-policies'),data=require('../miniprogram/utils/resident-region-data');
+function audit(){const errors=[],ids=new Set(),provinceRows=[];if(registry.provinces.length!==31)errors.push('大陆省级行政区数量不是31');
+ for(const p of registry.provinces){let ready=0;for(const c of p.cities){if(ids.has(c.id))errors.push('重复地区 '+c.id);ids.add(c.id);if(c.provinceId!==p.id)errors.push('跨省归属 '+c.id);const rule=c.resident;if(rule.status==='READY'){ready++;if(!rule.legacy){if(!Number.isFinite(rule.base)||rule.base<=0)errors.push('缺基础额 '+c.id);if(!rule.tiers?.length||rule.tiers.length!==rule.subsidies?.length)errors.push('档次补贴错配 '+c.id);if(!rule.sources?.length||rule.sources.some(s=>!s.id||!/^https?:/.test(s.url)))errors.push('来源缺失 '+c.id);}}else if(rule.status!=='PENDING'||!rule.reason)errors.push('无明确待办 '+c.id);if(!legacy.city(c.id)&&legacy.capability(c.id,'employee'))errors.push('居民扩展误开放职工 '+c.id);}
+ provinceRows.push({id:p.id,name:p.name,total:p.cities.length,ready,pending:p.cities.length-ready});}
+ for(const c of legacy.cities)if(registry.city(c.id)!==c)errors.push('已有市级规则被替换 '+c.id);
+ return {checkedAt:new Date().toISOString(),strategy:'公共引擎＋省级规则＋必要城市覆盖；本批不增加逐市重复研究',regionSnapshot:data.snapshot,provinces:provinceRows.length,selectionEntries:ids.size,ready:provinceRows.reduce((n,p)=>n+p.ready,0),pending:provinceRows.reduce((n,p)=>n+p.pending,0),provinceRows,errors};}
+if(require.main===module){const report=audit(),dir=path.join(__dirname,'../output');fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'national-resident-audit.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({provinces:report.provinces,selectionEntries:report.selectionEntries,ready:report.ready,pending:report.pending,errors:report.errors}));if(report.errors.length)process.exitCode=1;}
+module.exports={audit};

@@ -1,7 +1,7 @@
 // Ordinary annual payments; Guangdong extension is configured separately.
 // Historical make-up payments are intentionally not inferred from age alone.
 const D=require('../../vendor/decimal');
-const {city,capability}=require('../../utils/city-policies');
+const {city,capability}=require('../../utils/resident-registry');
 const localRules=require('../../utils/local-resident-policies');
 const gxMakeup=require('./gx-makeup');
 const ageDivisors=require('../../utils/policy-data').accountMonths;

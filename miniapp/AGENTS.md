@@ -25,6 +25,8 @@
 
 ## 当前状态
 
-2.11.0：两广35市三入口核心覆盖验收完成，853项测试及原生编译通过，未GUI／手机／上传。补缴办法折叠在“换个方案”，广东只有一次补足时也可换档，广西三种路径可直达且保留确认和取消。广东历史断缴仅条件指引，未生成通用旧年报价。见docs/two-province-delivery.md。
+全国居民目标active：大陆31省级行政区及下属城市；不扩职工/灵活，不纳港澳台。本批2.12.0注册369居民选择项，68可算/301待接入。新增福建九市，浙江陕西复用省级规则；四川不能套成都。职工/灵活注册仍40城。
 
-本轮交付结束，不自动继续逐市深挖。其他热门城市留待后续用户指定。长期规矩见docs/product-principles.md，地方细节候选见docs/two-province-progress.md，历史版本见docs/release.md。
+公共引擎与resident-registry.js独立居民注册，national-resident-policies.js按省配置，已有city-policies.js作为地方覆盖保留。地区数据resident-region-data.js为历史公开快照，不认证2026最新。下一批及已研究线索见docs/national-resident-progress.md，避免重复搜索天津/重庆已记录问题。
+
+监测scripts/audit-resident-coverage.js随测试执行，输出output忽略；监测地区码、归属、来源、档次补贴、旧市覆盖及职工隔离。859项测试和原生编译通过，未GUI／手机／上传。全国目标尚未完成，继续省级适配，不逐县扩散。两广交付见docs/two-province-delivery.md；长期边界见docs/product-principles.md。
