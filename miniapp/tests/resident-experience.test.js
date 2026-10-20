@@ -45,10 +45,19 @@ test('单一修改入口、三项结果顺序及主表不出现专业资格字�
  const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');
  assert.equal((w.match(/bindtap="openPaymentPlanner"/g)||[]).length,1);assert.equal(w.includes('不只一种交法'),false);assert.equal(w.includes('data-key="ordinary"'),false);assert.equal(w.includes('data-key="eligible"'),false);
  const main=w.slice(w.indexOf('<block wx:if="{{region.status'),w.indexOf('<view wx:if="{{result.referenceLabel}}"'));
- assert.equal(main.includes('data-key="gxTransitionStart"'),false);assert.equal(main.includes('data-key="gxStartYear"'),false);assert.ok(w.indexOf('退休后，每月约领')<w.indexOf('接下来这样交'));assert.ok(w.indexOf('接下来这样交')<w.indexOf('<view>调整交法</view>'));
+ assert.equal(main.includes('data-key="gxTransitionStart"'),false);assert.equal(main.includes('data-key="gxStartYear"'),false);assert.ok(w.indexOf('退休后，每月约领')<w.indexOf('接下来这样交'));assert.ok(w.indexOf('接下来这样交')<w.indexOf('<view>换个方案</view>'));
 });
 test('同一入口保留既有提档，不把已交年份再次选成漏缴，不吞掉已有费用',()=>{
  const p=guiping();p.setData({'form.gxStartYear':'2012','form.gxScopeReviewed':'yes','form.gxMakeupRows':[{mode:'upgrade',start:'2022',end:'2022',original:200,target:6000}]});p.calculate();assert.equal(p.data.error,'');
  p.openPaymentPlanner();assert.equal(p.data.gxPlan.years.find(x=>x.year===2022).paid,true);p.missingYear({currentTarget:{dataset:{year:2022}}});assert.equal(p.data.gxPlan.selected.includes(2022),false);
  for(let y=2012;y<=2021;y++)p.missingYear({currentTarget:{dataset:{year:y}}});p.missingConfirm();p.applyMissingPlan();assert.equal(p.data.error,'');assert.equal(p.data.result.makeup.upgradedYears,1);assert.equal(p.data.result.makeup.addedYears,10);assert.equal(p.data.result.chosen.total,'7800.00');assert.equal(p.data.result.chosen.timeline.receivingAge,60);
+});
+
+// 贵港仅显示市级入口；桂平旧记录保留校验，不再单独突出为一个地区。
+test('贵港隐藏单独桂平选择，新旧方案统一显示市名且保留制度起点校验',()=>{
+ const city=getRegion('450800'),old=getRegion('450800','guiping');
+ assert.equal(city.hideAreaPicker,true);assert.equal(old.hideAreaPicker,true);assert.equal(old.gxSchemeYear,2012);assert.equal(old.areaName,'');assert.equal(city.referenceLabel,old.referenceLabel);assert.equal(old.referenceLabel.includes('桂平'),false);
+ const p=guiping();p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.region,'贵港市');assert.equal(p.data.result.chosen.timeline.receivingAge,69);
+ const open=browser(),saved=guiping(open);saved.calculate();saved.setData({'result.region':'贵港市 · 桂平市','result.referenceLabel':'桂平缴费／补缴 · 自治区待遇参考'});const total=saved.data.result.chosen.total;saved.onHide();const restored=open();assert.equal(restored.data.result.region,'贵港市');assert.equal(restored.data.result.referenceLabel,city.referenceLabel);assert.equal(restored.data.result.chosen.total,total);assert.equal(restored.data.form.localArea,'guiping');
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.ok(w.includes('region.areas && !region.hideAreaPicker'));assert.ok(w.includes('<view>换个方案</view>'));assert.equal(w.includes('调整交法'),false);
 });
