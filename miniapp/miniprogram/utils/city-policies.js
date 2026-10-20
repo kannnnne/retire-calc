@@ -42,9 +42,12 @@ for(const c of cities){
  }
 }
 require('./local-resident-policies').apply(cities);
+// Aid shares the local annual ceiling with collective grants; do not use the province's 4800 everywhere.
+for(const c of cities)if(c.provinceId==='440000'&&!c.resident.legacy)c.resident.socialAidCap=Math.max(...c.resident.tiers);
 // Guangzhou retains its older-date calculator. Only its July 2026 onward
 // future-index reference is shared here; no resident amount or Shenzhen formula.
 const guangzhou=cities.find(c=>c.id==='440100');
+guangzhou.resident.sources.push(provincial.gdResidentSources.find(s=>s.id==='gd-resident-social-aid-2024'));
 guangzhou.employee.indexWage=provincial.gdEmployee.indexWage;
 guangzhou.employee.referenceText=provincial.gdEmployee.referenceText;
 guangzhou.employee.sources=[...guangzhou.employee.sources,...provincial.gdEmployeeSources.filter(s=>['gd-pooling-2020','gd-index-explanation-2024','gd-index-upper-rule'].includes(s.id))];

@@ -11,6 +11,7 @@ const gdResidentSources=[
  source('gd-resident-floor','2025年广东居民基础养老金省级最低标准','https://www.xinxing.gov.cn/xxxrmzf/xxdt/bmdt/content/post_1990541.html','公布2025年全省基础养老金最低标准为240元/月。这里只计算省级参考，不等于每个市县实际标准，也未加入未来上调。'),
  source('gd-resident-example','省级九档与补贴的经办说明','https://www.gdwc.gov.cn/zjwcsbj/gkmlpt/content/2/2154/post_2154595.html','吴川社保说明九档180、240、360、600、900、1200、1800、3600、4800元，低三档补30元、其余补60元；当地2025年7月基础养老金240元。其他城市加发另行核对。')
 ];
+gdResidentSources.push({...source('gd-resident-social-aid-2024','广东居民养老集体补助与社会资助年度上限','https://www.thnet.gov.cn/thqzdlyxxgkzl/jycy/zczy/bszc/content/post_9494597.html','省人社厅2024年2月9日印发，实施五年。第四条规定当年集体补助与社会资助合计不超过当地最高个人缴费档次，不替代个人缴费；第六条要求先完成当年个人缴费、补助到账后记入账户。本工具只比较以后正常年缴年度由家人等资助的计划，默认0且须确认没有其他补助；不增加年限、不补过去、不加到到龄补足，资助不另享个人缴费补贴。广州原自费集体档另按本地模型处理。'),publisher:'广东省人力资源和社会保障厅（天河区政府转载）',checkedAt:'2026-10-20'});
 gdResidentSources.push({...source('gd-resident-procedure-2025','广东居民养老2025经办规程','http://rsj.huizhou.gov.cn/zdlyxx/jycyxx/zczy/zc/content/post_5563290.html','粤人社规〔2025〕20号，2025年6月16日印发起实施、有效期5年，适用于全省。第四十二条可线上线下查询打印个人账户对账单；第四十八条符合领取条件次月起领。规程没有另行开放普遍的60岁一次补足或历史提档，不凭表格中的一次性缴费栏推定补缴资格；本地金额仍按各市已核标准或明确标注的省级参考。'),publisher:'广东省人力资源和社会保障厅文件（惠州市人社局公开原始PDF）',checkedAt:'2026-10-19'});
 const gxEmployeeSources=[
  {...source('gx-2026-range','广西2026年社会保险缴费基数通知','http://rst.gxzf.gov.cn/zwgk/xxgkzcfg/fgfxlm/t28152939.shtml','桂人社发〔2026〕32号，2026年9月18日签发：2026年度核定缴费基数上下限指标7008元/月，养老缴费范围4204.8—21024元/月。已读取自治区人社厅原文；核定缴费指标不是养老金待遇计发基数。'),publisher:'广西壮族自治区人力资源和社会保障厅等四部门',checkedAt:'2026-10-19'},
