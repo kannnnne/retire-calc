@@ -2,6 +2,22 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const registry=require('../miniprogram/utils/city-policies'),documents=require('../miniprogram/utils/city-documents');
 const {calculate}=require('../miniprogram/resident/utils/calculate');
 const form=(patch={})=>({regionId:'440700',birth:'1966-10',asOf:'2026-10',years:'15',balance:'30000',pastAnnual:'360',tier:360,never:false,paidThisYear:'yes',eligible:'yes',ordinary:'yes',...patch});
+test('鹤山当前披露只核本地基础，困难代缴120元不混入普通缴费和月领金额',()=>{
+ const p=registry.capability('440700','resident');
+ const disclosure=p.sources.find(s=>s.id==='hs-resident-disclosure-2025');
+ assert.match(disclosure.text,/2026年4月23日/);assert.match(disclosure.text,/2025年7月1日/);assert.match(disclosure.text,/242.5元／月/);
+ const aid=p.sources.find(s=>s.id==='hs-resident-special-aid-2025');
+ assert.match(aid.text,/第52项/);assert.match(aid.text,/仅限列明的困难群体/);assert.match(aid.text,/不是月养老金加发/);assert.match(aid.text,/不把代缴款作为本人费用/);
+ for(const s of [disclosure,aid]){
+  assert.deepEqual(documents.find(d=>d.id===s.id).cityIds,['440700']);
+  assert.equal(s.checkedAt,'2026-10-20');
+  for(const c of registry.cities){assert.equal(c.employee.sources.some(x=>x.id===s.id),false);if(c.id!=='440700')assert.equal(c.resident.sources.some(x=>x.id===s.id),false);}
+ }
+ // 困难代缴资料只用于说明范围，普通年缴仍按下限参考，历史已知账户不重加补贴。
+ const s=calculate(form({birth:'1971-10',years:'14',tier:180})).chosen;
+ assert.equal(s.total,'180.00');assert.equal(s.subsidy,'30.00');assert.equal(s.account,'30210.00');assert.equal(s.base,'242.50');
+ assert.equal(s.low,(242.5+30210/139).toFixed(2));
+});
 test('江门2026公布的2025年度披露只确认全市基础额，不等同本年调标或区县补贴已核',()=>{
  const p=registry.capability('440700','resident');assert.equal(p.base,242.5);assert.equal(p.baseYear,2025);assert.equal(p.provincial,false);assert.match(p.referenceLabel,/补贴下限参考/);assert.match(p.referenceText,/当前额待核/);assert.match(p.referenceText,/开平2025/);
  const s=p.sources.find(s=>s.id==='jm-resident-disclosure-2025');assert.match(s.text,/2026年4月28日/);assert.match(s.text,/2025年7月1日/);assert.match(s.text,/未披露各区县当前缴费补贴/);

@@ -246,6 +246,9 @@ test('汕尾和河源市级最低额、九档及补贴逐档校验，不改历�
 });
 
 test('河源新办法按生效月份使用，65岁补足须核对延缴，不能重新开放旧趸缴',()=>{
+ const original=registry.capability('441600','resident').sources.find(s=>s.id==='hy-resident-original-2026');
+ assert.match(original.url,/118668\/709920.pdf$/);assert.match(original.text,/第十条/);assert.match(original.text,/次月领取/);assert.match(original.text,/中断补缴无政府补贴/);assert.match(original.text,/当前4800元补缴的权限/);
+
  assert.throws(()=>resident(form({regionId:'441600',asOf:'2026-07',tier:360})),/2026-08/);
  assert.ok(resident(form({regionId:'441600',asOf:'2026-08',tier:360})).chosen);
  assert.throws(()=>resident(form({regionId:'441600',birth:'1961-10',tier:360})),/已按规定延缴/);
@@ -253,7 +256,7 @@ test('河源新办法按生效月份使用，65岁补足须核对延缴，不能
 });
 
 test('汕尾和河源长缴下限及新来源只出现在相应城市政策页',()=>{
- for(const [id,ids]of [['441500',['sw-resident-rule-2026','sw-resident-base-2025']],['441600',['hy-resident-rule-2026','hy-resident-base-2025','hy-zijin-old-lump-deadline']]]){
+ for(const [id,ids]of [['441500',['sw-resident-rule-2026','sw-resident-base-2025']],['441600',['hy-resident-rule-2026','hy-resident-original-2026','hy-resident-base-2025','hy-zijin-old-lump-deadline']]]){
   const r=resident(form({regionId:id,birth:'1961-10',years:'18',tier:360,balance:'30000'}));assert.equal(r.chosen.base,'249.00');assert.equal(r.chosen.total,'0.00');
   const p=page('pages/policy/policy.js');p.onLoad({city:id,kind:'resident'});for(const source of ids)assert.ok(p.data.documents.some(x=>x.id===source));assert.ok(p.data.documents.every(x=>x.cityIds.includes(id)));
  }
