@@ -1,7 +1,7 @@
 <view class="shell {{region.status!=='PENDING'?'has-submit':''}}"><view class="mast"><view class="title">居民养老</view></view>
 <region-picker value="{{form.regionId}}" kind="resident" resident-area="{{form.localArea}}" bindchange="regionChoice"/>
 <block wx:if="{{planning}}"><view class="card planning-screen"><view class="card-top"><view class="card-title">以前的缴费</view><button class="text-button" bindtap="cancelPaymentPlanner">返回原方案</button></view><view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
-<view wx:if="{{form.never}}" class="notice-box">还没参加过居民养老，需先登记并确认可补年份。这里先看费用参考。</view><view class="segment"><button class="{{planMode==='missing'?'selected':''}}" data-value="missing" bindtap="plannerMode">补漏交的年份</button><button class="{{planMode==='upgrade'?'selected':''}}" data-value="upgrade" bindtap="plannerMode">补以前的差额</button></view>
+<view wx:if="{{form.never}}" class="notice-box">还没参加过居民养老，需先登记并确认可补年份。这里先看费用参考。</view><view class="segment"><button class="{{planMode==='missing'?'selected':''}}" data-value="missing" bindtap="plannerMode">补漏交的年份</button><button class="{{planMode==='upgrade'?'selected':''}}" data-value="upgrade" bindtap="plannerMode">补以前的差额</button><button wx:if="{{canGXTransition}}" class="{{planMode==='confirmed'?'selected':''}}" data-value="confirmed" bindtap="plannerMode">一次补足</button></view>
 <view wx:if="{{gxPlanOpen && planIllustration && !gxPlan.years.length}}" class="conditional-example">
 <view wx:if="{{planIllustration.limited}}">{{planIllustration.note}}</view><block wx:else><view class="option-heading">补缴费用参考</view><view>如果允许补足{{planIllustration.years}}年</view><view class="example-cost">共{{planIllustration.cost}}元<text>按200元／年</text></view><view>{{planIllustration.age}}岁起每月约{{planIllustration.monthly}}元</view><view class="hint">{{planIllustration.note}}</view></block>
 </view><view wx:if="{{gxPlanOpen}}" class="missing-planner">
@@ -59,11 +59,12 @@
 <view class="card result-section future-plans">
  <button class="fold result-fold" data-key="compare" bindtap="fold"><view>换个方案</view><text>{{compare?'收起 −':'展开 ＋'}}</text></button>
  <view wx:if="{{compare}}" class="section-body">
+<block wx:if="{{paymentGuide}}"><button class="fold" data-key="paymentGuideOpen" bindtap="fold">补缴办法<text>{{paymentGuideOpen?'收起 −':'展开 ＋'}}</text></button><view wx:if="{{paymentGuideOpen}}" class="detail-text"><view class="detail-group" wx:for="{{paymentGuide.rows}}" wx:key="id"><view class="option-heading">{{item.title}}</view><view>{{item.text}}</view><view wx:if="{{item.quote}}">{{item.quote}}</view><button wx:if="{{item.action}}" class="text-button" data-mode="{{item.mode}}" bindtap="guideAction">{{item.action}} ›</button></view><view class="hint">{{paymentGuide.note}}</view><button class="text-button" data-id="{{paymentGuide.sourceId}}" bindtap="policyDocument">查看缴费规定 ›</button></view></block>
 <button wx:if="{{region.rule==='GUANGXI_ORDINARY'}}" class="planner-entry" bindtap="openPaymentPlanner"><view>补缴或提高以前的金额<text>看看能否早点领，或每月多领些</text></view><text>›</text></button>
   <view wx:if="{{canContinueTo60}}" class="entry-row"><text class="row-label">缴费时间</text><picker class="row-entry" range="{{payUntilLabels}}" value="{{payUntilIndex}}" bindchange="payUntil"><view class="control">{{payUntilLabels[payUntilIndex]}}</view></picker></view>
- <view class="fixed-history">{{result.transition?'已交的'+result.paidYears+'年不变，比较核定补足'+result.transition.years+'年的档次':result.makeup?'补缴方案不变，只选以后每年交多少':'以前交的'+result.paidYears+'年不变，只选以后怎么交'}}</view>
+ <view class="fixed-history">{{result.transition?'已交的'+result.paidYears+'年不变，比较核定补足'+result.transition.years+'年的档次':result.makeup?'补缴方案不变，只选以后每年交多少':result.chosen.lumpYears?'已交的'+result.paidYears+'年不变，比较以后缴费和补足档次':'以前交的'+result.paidYears+'年不变，只选以后怎么交'}}</view>
   <view wx:if="{{result.chosen.selfCollective}}" class="active-extra">已包含每年额外交{{result.chosen.selfCollective}}元</view>
-  <view wx:if="{{(!result.chosen.timeline.normalYears || result.chosen.timeline.futureNormalYears===0) && !(region.lumpAt60 && result.chosen.lumpYears)}}" class="notice-box">{{result.makeup?'已按上面记录安排补缴／提档，没有待缴的以后年度。':result.chosen.timeline.lockedYear?'今年按已确认档次交，没有可更换的以后年度。':'没有待缴的正常年度。本页不把过去缴费改成高档；到龄补缴的可选档须先向经办核定。'}}</view>
+  <view wx:if="{{!canComparePayment}}" class="notice-box">{{result.makeup?'已按上面记录安排补缴／提档，没有待缴的以后年度。':result.chosen.timeline.lockedYear?'今年按已确认档次交，没有可更换的以后年度。':'没有待缴的正常年度。本页不把过去缴费改成高档；到龄补缴的可选档须先向经办核定。'}}</view>
   <block wx:else>
    <view class="option-heading">退休后，每月约领多少？<text>{{region.provincial?'省级参考档':region.continuous?'常用金额':planOptions.length+'档可选'}}</text></view>
    <view class="income-options">

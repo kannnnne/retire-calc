@@ -25,4 +25,6 @@
 
 ## 当前状态
 
-2.10.2：847项自动测试和原生编译通过，未上传／手机实测。三入口回收时间改为上限整数年，详细计算不变。长期约束见docs/product-principles.md；现状见README.md，本地增强候选见docs/two-province-progress.md，历史版本见docs/release.md。后续不得把历史待办重新升级成无限目标。
+2.11.0：两广35市三入口核心覆盖验收完成，853项测试及原生编译通过，未GUI／手机／上传。补缴办法折叠在“换个方案”，广东只有一次补足时也可换档，广西三种路径可直达且保留确认和取消。广东历史断缴仅条件指引，未生成通用旧年报价。见docs/two-province-delivery.md。
+
+本轮交付结束，不自动继续逐市深挖。其他热门城市留待后续用户指定。长期规矩见docs/product-principles.md，地方细节候选见docs/two-province-progress.md，历史版本见docs/release.md。
