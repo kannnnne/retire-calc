@@ -74,5 +74,22 @@ const hainan=limited('海南','HAINAN_ORDINARY',[200,300,400,500,600,700,800,900
  source('han-resident-rule-2023','海南城乡居民养老办法原文：年度选额、补贴及领取条件','https://qionghai.hainan.gov.cn/zfxxgkzl/bm/bgt/gkml/202310/P020231013583607868425.pdf','琼府2023年15号原文第四、六、十三、十四条：200元起按100整数倍自选，上限随上年度灵活就业最低年额变动；补贴按区间40至320。账户用首次领取年龄计发月数。2026起60岁不足15年需逐年延缴，延缴5年至65仍不足才可补足，已领人员不得补缴，补缴无补贴。','琼海市人民政府公开海南省政府原文')
 ],'目前提供原文补贴表中的17个常用金额，不冒称全部可选金额或2026法定最高额；年度实际缴费上限、完整基础额及特殊视同年限另核。65岁补足还需确认延缴记录，本轮只开放普通逐年方案。');
 hainan.ageDivisor=true;
+function localAnnual(name,rule,sources,base=143,baseYear=2025){
+ const p=limited(name,rule,[],[],sources,'年度金额须按参保地缴费页面确认，不使用其他城市档表。未核实的缴费补贴暂不计入；本页不认定你填写的金额具备缴费或补缴资格。');
+ p.annualInput={kind:'LOCAL_CONFIRMED'};
+ if(base!==143)Object.assign(p,{base,baseYear,parameterStatus:'LOCAL_AMOUNT_REFERENCE',referenceLabel:name+'省级基础 · 年缴按当地填',referenceText:'基础采用已核'+baseYear+'年省最低'+base+'元，未计市县提高；年缴金额按当地缴费页面确认，未核实的缴费补贴暂不计入。不把填写金额视为本地法定档次或补缴许可。',sources});
+ return p;
+}
+const jiangsu=localAnnual('江苏','JIANGSU_ORDINARY',[
+ source('js-resident-framework','江苏城乡居民社会养老保险办法：地方确定具体标准','https://www.jiangsu.gov.cn/art/2013/12/11/art_46143_2542643.html','苏政发2013年144号现页标有效：省定基本原则，地方制定具体办法；本页不把旧省列档或泰州、苏州的现行档次当作全省一致。','江苏省人民政府'),
+ source('js-resident-base-2026','江苏2026居民养老宣传月：省基础最低248元','https://jshrss.jiangsu.gov.cn/art/2026/2/3/art_78497_11725363.html','2026年2月省人社报道明确目前省定基础养老金最低248元；各市县提高另核，不当完整地方待遇。','江苏省人力资源和社会保障厅')
+],248,2026);
+const shandong=localAnnual('山东','SHANDONG_ORDINARY',[
+ source('sd-resident-payment-2024','山东省规范居民养老缴费及领取政策','https://www.sdqixia.gov.cn/art/2024/5/31/art_40605_2950229.html','省四部门通知：年缴总额不得超过当地最高档，允许当年差额缴费，迁户按新户籍地档次和补贴；不以济南8000元或某市最低档替代全省。历史年限及补缴另核。','栖霞市人民政府公开山东省四部门通知')
+]);
+const hubei=localAnnual('湖北','HUBEI_ORDINARY',[
+ source('hub-resident-annual-framework','湖北缴费政策：次年标准由各市州确定报备','https://rst.hubei.gov.cn/zfxxgk/zc/zcjd/202301/t20230118_4492653.shtml','2023起各市州逐年确定次年标准并报备，最低与本市州上年农村收入挂钩；补贴六档随缴费区间动态调整。不能固定套宜昌400或潜江600到全省，补贴未确认区间时不自动加。','湖北省人力资源和社会保障厅')
+]);
 const profiles={'350000':fujian,'130000':hebei,'210000':liaoning,'410000':henan,'500000':chongqing,'340000':anhui,'360000':jiangxi,'430000':hunan,'530000':yunnan,'520000':guizhou,'620000':gansu,'140000':shanxi,'150000':innerMongolia,'220000':jilin,'230000':heilongjiang,'120000':tianjin,'640000':ningxia,'540000':tibet,'460000':hainan};
+Object.assign(profiles,{'320000':jiangsu,'370000':shandong,'420000':hubei});
 module.exports=profiles;
