@@ -5,6 +5,8 @@ function validate(policy,form){
  if(reported(policy)){
   // Technical input bound only; legal limits remain local and must be checked by the user.
   if(!/^\d+$/.test(String(form.tier))||annual<1||annual>100000)throw Error('请填写当地缴费页面可选的每年金额（整数元）');
+  const {min,max}=policy.annualInput;
+  if(min!=null&&annual<min||max!=null&&annual>max)throw Error('请按已核范围填写年度金额（'+(min||1)+'至'+(max||100000)+'元），具体可选档仍以当地为准');
   if(form.localAnnualConfirmed!=='yes')throw Error('请确认这个年缴金额在当地可以选择');
  }
  return annual;

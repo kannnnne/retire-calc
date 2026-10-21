@@ -90,6 +90,24 @@ const shandong=localAnnual('山东','SHANDONG_ORDINARY',[
 const hubei=localAnnual('湖北','HUBEI_ORDINARY',[
  source('hub-resident-annual-framework','湖北缴费政策：次年标准由各市州确定报备','https://rst.hubei.gov.cn/zfxxgk/zc/zcjd/202301/t20230118_4492653.shtml','2023起各市州逐年确定次年标准并报备，最低与本市州上年农村收入挂钩；补贴六档随缴费区间动态调整。不能固定套宜昌400或潜江600到全省，补贴未确认区间时不自动加。','湖北省人力资源和社会保障厅')
 ]);
+const sichuan=localAnnual('四川','SICHUAN_ORDINARY',[
+ source('sc-resident-base-2026','四川2026基础最低223元及80岁加发通知','https://cncaprc.gov.cn/xwllxw/773250.jhtml','川人社规2026年5号：2026年7月起最低223，80岁以上最低233；7月以后到80岁从次月加发。不得冲抵市县已提高部分。','中国老龄协会公开四川省人社、财政原文'),
+ source('sc-resident-tier-scope','四川省普通缴费范围及补缴办理说明','https://luojiang.gov.cn/gk/xwzx/bmdt/1566589.htm','罗江人社2025年4月说明省普通15档200至6000；本参考只限该范围，须确认当地可选年度金额，不伪造未齐的中间档和补贴。补缴政策有施行期限，未据这一地方说明开放全省补缴。','德阳市罗江区人民政府／区人社局')
+],223,2026);
+Object.assign(sichuan,{effectiveFrom:'2026-07',ageExtras:[[80,10]],ageExtraNextMonth:true,annualInput:{kind:'LOCAL_CONFIRMED',min:200,max:6000}});
+const qinghai=localAnnual('青海','QINGHAI_ORDINARY',[
+ source('qh-resident-budget-2025','青海2025预算相关政策：基础额、缴费范围及高龄加发','https://czt.qinghai.gov.cn/static/media/20250207/20250207062854_635.pdf','省2025预算PDF第156页相关政策明确基础210、65—69加5、70岁起加10；普通最低200、最高4000，含困难100共16档。未核完整中档补贴对应表，不由预算金额反推金额。','青海省财政厅')
+],210,2025);
+Object.assign(qinghai,{ageExtras:[[65,5],[70,10]],annualInput:{kind:'LOCAL_CONFIRMED',min:200,max:4000}});
+const xinjiang=provincial('新疆','XINJIANG_ORDINARY',185,[200,300,500,800,1000,1500,2000,2500,3000,3500,4500,5500],Array(12).fill(0),[
+ source('xj-resident-base-2024','新疆自治区2024基础最低185及十二档范围','https://www.xinjiang.gov.cn/xinjiang/bmdt/202410/50bde6cb6e504dd99fec7c9d52e4cfb3.shtml','自治区社保中心公开：2024年7月起最低185；十二档200至5500，最低档补55、最高档补270。完整中档表和后续调标未齐，不套尉犁245或其县配套。','新疆维吾尔自治区人民政府／自治区社保中心'),
+ source('xj-resident-tiers','新疆自治区十二档具体金额','https://www.xinjiang.gov.cn/xinjiang/dzdt/202401/91fe35d332e44a97a0bdce058d1595ed.shtml','乌鲁木齐2024年起统一执行自治区十二档：200/300/500/800/1000/1500/2000/2500/3000/3500/4500/5500。不据乌市补缴说明授予自治区各地或兵团同样权限。','新疆维吾尔自治区人民政府')
+],'',{baseYear:2024,jurisdiction:'XINJIANG',subsidiesKnown:false,parameterStatus:'HISTORICAL_BASE_REFERENCE',referenceLabel:'新疆自治区 · 2024基础下限参考',referenceText:'基础仅采用已核2024最低185元，不是当前完整地方待遇，后续调标未加入；十二档采用自治区标准。完整各档缴费补贴未齐，本页暂均不计入，不代表没有补贴。兵团另用独立参考，不借尉犁县补贴或245元。'});
+const corps=localAnnual('兵团','CORPS_ORDINARY',[
+ source('corps-resident-framework','兵团城乡居民基本养老保险待遇职权依据','https://www.xjbt.gov.cn/c/2018-07-16/8041215.shtml','兵团公开行政给付依据国发2014年8号第六条，待遇由基础与个人账户构成；师市当前基础额、可选档及补贴未核齐，不套自治区12档或185元。','新疆生产建设兵团'),
+ source('national-resident-formula','全国居民养老普通年限与账户计发规则','https://fgk.chinatax.gov.cn/zcfgk/c102440/c5194451/content.html','国发2014年8号普通满60、累计15年；个人账户除139。仅用于普通参考，不将旧全国档表当兵团当前档次，历史过渡及补缴资格另核。','国家税务总局法规库（国务院文件）')
+]);
+Object.assign(corps,{jurisdiction:'XJBT',referenceLabel:'兵团 · 全国下限参考',referenceText:'兵团师市当前完整基础额、档次及补贴未核齐，本页仅用全国最低143元，不是兵团实际待遇。年缴金额须先核对当地可选值，未核补贴暂不计入；自治区185元和12档不适用本页。'});
 const profiles={'350000':fujian,'130000':hebei,'210000':liaoning,'410000':henan,'500000':chongqing,'340000':anhui,'360000':jiangxi,'430000':hunan,'530000':yunnan,'520000':guizhou,'620000':gansu,'140000':shanxi,'150000':innerMongolia,'220000':jilin,'230000':heilongjiang,'120000':tianjin,'640000':ningxia,'540000':tibet,'460000':hainan};
-Object.assign(profiles,{'320000':jiangsu,'370000':shandong,'420000':hubei});
+Object.assign(profiles,{'320000':jiangsu,'370000':shandong,'420000':hubei,'510000':sichuan,'630000':qinghai,'650000':xinjiang,XJBT:corps});
 module.exports=profiles;
