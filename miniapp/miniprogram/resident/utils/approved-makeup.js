@@ -13,6 +13,7 @@ function calculateOne(f,ctx){
  const noTransitionFee=plan.mode==='transition'&&/^\d+$/.test(String(plan.requiredYears))&&Number(plan.requiredYears)>=1&&Number(plan.requiredYears)<=15&&ctx.years>=Number(plan.requiredYears)&&String(plan.annual)==='0';
  const unit=noTransitionFee?new D(0):amount(plan.annual,'社保确认的每年补缴金额');if(rule.min&&unit.lt(rule.min)||rule.max&&unit.gt(rule.max))throw Error('补缴金额超出已核政策范围');
  if(rule.tiers&&!rule.tiers.includes(unit.toNumber()))throw Error('补缴金额不在已核可选档次中');
+ if(ctx.policy.lumpCap&&['transition','extension','lump'].includes(plan.mode)&&unit.gt(ctx.policy.lumpCap))throw Error('本地到龄补缴每年最高'+ctx.policy.lumpCap+'元，共用方案不能超过本地上限');
  if(plan.mode==='lump'){
   if(ctx.years>=15)throw Error('已交够15年，无需补足年限');
   const at=Math.max(serial(f.asOf),serial(f.birth)+720);if(rule.validThrough&&at>serial(rule.validThrough))throw Error('到60岁时已超过这份规定的有效期，不能按本规定预排补足');
