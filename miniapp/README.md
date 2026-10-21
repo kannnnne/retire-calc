@@ -1,16 +1,16 @@
 # 退休算盘 微信小程序
 
-免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；最新本地2.14.0已测试编译，未上传。上一开发体验版2.3.0于2026-10-17 22:45上传成功。用户负责开发者工具、手机验收及上传，详见docs/extended-coverage.md。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
+免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；最新本地2.14.1已测试编译，未上传。上一开发体验版2.3.0于2026-10-17 22:45上传成功。用户负责开发者工具、手机验收及上传，详见docs/extended-coverage.md。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
 
 本轮界面约定及验收步骤见[产品规矩](docs/product-principles.md)：先填已知事实，结果集中显示领取时间、每月金额和后续费用；补缴参考示例与已确认方案分开。
 
 ## 运行
 
-微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行917项检查。随包decimal.js 10.6.0（MIT）。
+微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行919项检查。随包decimal.js 10.6.0（MIT）。
 
-## 地区规则（2.14.0）
+## 地区规则（2.14.1）
 
-居民养老新增‘记不清，先看大概’及今年‘不记得’；广西结果先比较逐年与条件补缴，并提供三问查记录卡。实际补缴资格不自动确认。参见[本轮体验与验证](docs/resident-simple-experience.md)。
+居民养老新增‘记不清，先看大概’及今年‘不记得’；各地共用简洁结果页，明确区分每月领取与每年交费，补缴从“换个方案”进入；保留查记录入口。实际补缴资格不自动确认。参见[本轮体验与验证](docs/resident-simple-experience.md)。
 
 全国参考覆盖按约定边界已验收；[交付与限制](docs/national-delivery.md)、[31省字段及来源](docs/national-policy-matrix.md)。222项补缴仍是有条件的国家过渡参考，不是地方全部细则已核齐。
 

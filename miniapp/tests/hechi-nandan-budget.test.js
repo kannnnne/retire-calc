@@ -11,7 +11,7 @@ test('南丹2026预算下限只供河池居民查证，不作全市完整标准�
 test('河池普通及65岁参考不混入旧南丹20元或特殊困难代缴，历史账户不重加',()=>{
  const p=registry.capability('451200','resident');
  for(const [birth,base]of [['1966-10',186],['1961-10',191]]){
-  const r=calculate(form({birth})),s=r.chosen;assert.equal(r.openingAmount,'30000.00');assert.equal(s.account,'30000.00');assert.equal(s.total,'0.00');assert.equal(s.base,base.toFixed(2));assert.equal(s.low,(base+30000/139).toFixed(2));assert.match(r.referenceLabel,/自治区待遇参考/);assert.ok(r.warnings.some(s=>s.includes('南丹2026预算')));
+  const r=calculate(form({birth})),s=r.chosen;assert.equal(r.openingAmount,'30000.00');assert.equal(s.account,'30000.00');assert.equal(s.total,'0.00');assert.equal(s.base,base.toFixed(2));assert.equal(s.low,(base+30000/139).toFixed(2));assert.match(r.referenceLabel,/广西标准参考/);assert.ok(r.warnings.some(s=>s.includes('南丹2026预算')));
  }
  for(const [i,tier]of p.tiers.entries()){
   const s=calculate(form({birth:'1971-10',years:'14',paidThisYear:'no',tier})).chosen;assert.equal(s.total,tier.toFixed(2));assert.equal(s.subsidy,p.subsidies[i].toFixed(2));assert.equal(s.account,(30000+tier+p.subsidies[i]).toFixed(2));assert.equal(s.base,'186.00');

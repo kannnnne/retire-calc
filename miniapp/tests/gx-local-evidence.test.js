@@ -31,7 +31,7 @@ test('梧州2026文的旧166不当当前数，先登记后具体年度补费无�
 test('河池2018原件的100元只属困难保留，不给普通人员增加100档或旧期限锁',()=>{
  const p=registry.capability('451200','resident');assert.equal(p.provincial,true);assert.deepEqual(p.tiers,fees);assert.equal(p.currentYearTierLock,undefined);
  assert.throws(()=>calculate(form({regionId:'451200',localArea:'',tier:100})),/当地缴费档次/);
- for(const [i,tier]of fees.entries()){const r=calculate(form({regionId:'451200',localArea:'',birth:'1971-10',years:'14',paidThisYear:'no',tier}));assert.equal(r.chosen.total,tier.toFixed(2));assert.equal(r.chosen.subsidy,grants[i].toFixed(2));assert.match(r.referenceLabel,/河池本地15档/);}
+ for(const [i,tier]of fees.entries()){const r=calculate(form({regionId:'451200',localArea:'',birth:'1971-10',years:'14',paidThisYear:'no',tier}));assert.equal(r.chosen.total,tier.toFixed(2));assert.equal(r.chosen.subsidy,grants[i].toFixed(2));assert.match(r.referenceLabel,/河池市 · 广西标准参考/);}
 });
 
 test('新增五份地方原件在政策列表按市和居民类型隔离，不泄漏为职工公式依据',()=>{

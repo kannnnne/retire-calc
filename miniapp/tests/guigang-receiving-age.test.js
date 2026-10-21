@@ -37,5 +37,5 @@ test('贵港结果可返回核对补缴，保留原输入，不自动填可补�
  p.reviewMakeup();assert.equal(p.data.result,null);assert.equal(p.data.gxMakeupOpen,true);assert.equal(p.data.planRecords,true);
  assert.equal(p.data.form.age,'59');assert.equal(p.data.form.years,'5');assert.equal(p.data.form.tier,200);
  assert.equal(p.data.form.gxStartYear,'');assert.equal(p.data.form.gxScopeReviewed,'unknown');assert.equal(p.data.form.gxTransitionEnabled,'no');
- const wxml=fs.readFileSync(path.join(base,'calc.wxml'),'utf8');assert.match(wxml,/按逐年交费/);assert.match(wxml,/以前实际漏交的年份/);assert.match(wxml,/bindtap="openPaymentPlanner"/);
+ const wxml=fs.readFileSync(path.join(base,'calc.wxml'),'utf8');assert.match(wxml,/逐年交费/);assert.match(wxml,/以前实际漏交的年份/);assert.match(wxml,/bindtap="openPaymentPlanner"/);
 });

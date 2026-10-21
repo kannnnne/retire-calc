@@ -7,7 +7,7 @@ const form=(patch={})=>({regionId:'450100',localArea:'qingxiu',birth:'1966-10',a
 
 test('青秀用本地长缴4元，不继承兴宁满15加10或完整基础211',()=>{
  for(const [years,base] of [['15',186],['16',190],['20',206]]){
-  const r=calculate(form({years}));assert.equal(r.chosen.base,base.toFixed(2));assert.equal(r.chosen.low,(base+30000/139).toFixed(2));assert.equal(r.chosen.total,'0.00');assert.match(r.referenceLabel,/自治区基础额参考/);assert.match(r.referenceText,/不等于青秀完整待遇/);
+  const r=calculate(form({years}));assert.equal(r.chosen.base,base.toFixed(2));assert.equal(r.chosen.low,(base+30000/139).toFixed(2));assert.equal(r.chosen.total,'0.00');assert.match(r.referenceLabel,/基础额按广西标准/);assert.match(r.referenceText,/不等于青秀完整待遇/);
  }
  const p=getRegion('450100','qingxiu');assert.equal(p.provincial,true);assert.equal(p.tenureBonus,undefined);assert.equal(p.base,186);assert.equal(p.extraYear,4);
  assert.equal(calculate(form({birth:'1961-10',years:'20'})).chosen.base,'211.00');assert.equal(calculate(form({localArea:'xingning',years:'20'})).chosen.base,'231.00');assert.equal(calculate(form({localArea:'',years:'20'})).chosen.base,'196.00');

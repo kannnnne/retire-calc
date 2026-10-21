@@ -484,7 +484,7 @@ test('肇庆九档下限与65岁普通补足，本地资料不串到揭阳或职
 
 
 test('玉林本地长缴4元不套自治区2元，领取年龄加发及历史年数独立计算',()=>{
- const p=registry.city('450900').resident;assert.equal(p.extraYear,4);assert.equal(p.provincial,true);assert.match(p.referenceLabel,/自治区基础额参考/);
+ const p=registry.city('450900').resident;assert.equal(p.extraYear,4);assert.equal(p.provincial,true);assert.match(p.referenceLabel,/基础额按广西标准/);
  for(const years of [15,16,20,25])for(const [birth,base]of [['1966-10',186],['1961-10',191]]){
   const f=form({regionId:'450900',birth,years:String(years),tier:6000,balance:'30000'}),s=resident(f).chosen;
   const expected=base+(years-15)*4;assert.equal(Number(s.base),expected);assert.equal(s.total,'0.00');assert.equal(s.low,(expected+30000/139).toFixed(2));
@@ -605,7 +605,7 @@ test('南宁区县切换：兴宁完整额与青秀自治区底额及长缴规�
  const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450100'}});assert.match(p.data.areaLabels[2],/青秀区/);
  p.localArea({detail:{value:1}});p.setData({'form.eligible':'yes','form.ordinary':'yes','form.years':'20'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'231.00');
  p.localArea({detail:{value:2}});assert.equal(p.data.result,null);assert.equal(p.data.baseline,null);assert.equal(p.data.region.base,186);assert.equal(p.data.region.tenureBonus,undefined);assert.equal(p.data.region.extraYear,4);
- p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'206.00');assert.match(p.data.result.referenceLabel,/自治区基础额参考/);
+ p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'206.00');assert.match(p.data.result.referenceLabel,/基础额按广西标准/);
  p.localArea({detail:{value:1}});assert.equal(p.data.result,null);assert.equal(p.data.region.base,211);assert.equal(p.data.region.extraYear,2);assert.equal(p.data.region.tenureBonus.amount,10);
 });
 
