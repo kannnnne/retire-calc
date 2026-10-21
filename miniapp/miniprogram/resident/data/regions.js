@@ -6,5 +6,6 @@ const reviewed=require('../../utils/resident-registry');
 // Keep the legacy Guangzhou data, while exposing the current province-wide procedure.
 gz.sources.push(...reviewed.city('440100').resident.sources.filter(s=>['gd-resident-procedure-2025','gd-resident-social-aid-2024'].includes(s.id)));
 for(const city of reviewed.cities){if(city.id==='440100')continue;let p=provinces.find(p=>p.id===city.provinceId);if(!p){p={id:city.provinceId,name:city.province,cities:[]};provinces.push(p);}const r={...city.resident,id:city.id,name:city.name,checked:'2026-10-17',status:city.resident.status==='READY'?'REFERENCE':'PENDING'};const i=p.cities.findIndex(c=>c.id===city.id);if(i>=0)p.cities[i]=r;else p.cities.push(r);}
+provinces.sort((a,b)=>Number(a.id)-Number(b.id));
 function getRegion(id,area){for(const p of provinces)for(const c of p.cities){if(c.id===id)return require('../../utils/local-resident-policies').resolve(c,area);for(const d of c.districts||[])if(d.id===id)return d;}return null;}
 module.exports={provinces,getRegion};
