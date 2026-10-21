@@ -92,9 +92,12 @@ const hubei=localAnnual('湖北','HUBEI_ORDINARY',[
 ]);
 const sichuan=localAnnual('四川','SICHUAN_ORDINARY',[
  source('sc-resident-base-2026','四川2026基础最低223元及80岁加发通知','https://cncaprc.gov.cn/xwllxw/773250.jhtml','川人社规2026年5号：2026年7月起最低223，80岁以上最低233；7月以后到80岁从次月加发。不得冲抵市县已提高部分。','中国老龄协会公开四川省人社、财政原文'),
- source('sc-resident-tier-scope','四川省普通缴费范围及补缴办理说明','https://luojiang.gov.cn/gk/xwzx/bmdt/1566589.htm','罗江人社2025年4月说明省普通15档200至6000；本参考只限该范围，须确认当地可选年度金额，不伪造未齐的中间档和补贴。补缴政策有施行期限，未据这一地方说明开放全省补缴。','德阳市罗江区人民政府／区人社局')
+ source('sc-resident-tier-scope','四川省普通缴费范围及补缴办理说明','https://luojiang.gov.cn/gk/xwzx/bmdt/1566589.htm','罗江人社2025年4月说明省普通15档200至6000；初期先核范围，后由引用省通知的正式答复核齐完整15档及对应补贴，见新增来源。补缴政策另有施行期限与资格条件。','德阳市罗江区人民政府／区人社局')
 ],223,2026);
 Object.assign(sichuan,{effectiveFrom:'2026-07',ageExtras:[[80,10]],ageExtraNextMonth:true,annualInput:{kind:'LOCAL_CONFIRMED',min:200,max:6000}});
+// The formal reply quotes the provincial notification and complete ordinary table.
+Object.assign(sichuan,{annualInput:undefined,parameterStatus:undefined,tiers:[200,300,400,500,600,700,800,900,1000,1500,2000,3000,4000,5000,6000],subsidies:[40,45,50,60,60,65,70,75,80,100,120,160,200,240,280],referenceLabel:'四川省级参考 · 未计市县加发',referenceText:'基础按2026年7月起省最低223元，普通15档及对应补贴采用省通知明确引文；80岁加10从次月。未计市县额外提高、未来调标及长缴加发；成都使用独立模型。'});
+sichuan.sources.push(source('sc-resident-tiers-2025','四川省十五档及逐年缴费补贴完整引文','https://www.luojiang.gov.cn/gk/cdgk/fdzdgknr/jtfdxx/jyca/grddbjyhdb/1567739.htm?slb=1','区人社正式答复引用川人社规2024年12号，列省普通15档200至6000及补贴40/45/50/60/60/65/70/75/80/100/120/160/200/240/280。正常当年缴费有补贴，历史补缴不加；不将地方基础额外推。','德阳市罗江区人社局（省通知明确引文）'));
 const qinghai=localAnnual('青海','QINGHAI_ORDINARY',[
  source('qh-resident-budget-2025','青海2025预算相关政策：基础额、缴费范围及高龄加发','https://czt.qinghai.gov.cn/static/media/20250207/20250207062854_635.pdf','省2025预算PDF第156页相关政策明确基础210、65—69加5、70岁起加10；普通最低200、最高4000，含困难100共16档。未核完整中档补贴对应表，不由预算金额反推金额。','青海省财政厅')
 ],210,2025);

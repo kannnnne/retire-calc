@@ -4,6 +4,7 @@ const divisors={60:139,61:132,62:125,63:117,64:109,65:101,66:93,67:84,68:75,69:6
 function month(s,label){if(!/^\d{4}-\d{2}$/.test(s||'')||+s.slice(5)<1||+s.slice(5)>12)throw Error('请选择'+label);return +s.slice(0,4)*12+(+s.slice(5)-1);}
 function money(v,label,blank=false){if(blank&&v==='')return null;if(!/^\d+(\.\d{1,2})?$/.test(String(v))||new D(v).gt(100000000))throw Error('请检查'+label);return new D(v);}
 function calculate(f){
+ if(f.approvedPlan&&f.regionId==='440100')throw Error('广州不能套用其他省份的核定补缴方案');
  if(f.payUntil!=null&&!['MINIMUM','SIXTY'].includes(f.payUntil))throw Error('请选择缴费时间');
  if(f.regionId==='440100'&&f.payUntil==='SIXTY')throw Error('本地区尚未接入交够年限后继续缴费方案');
  if(f.regionId==='440100'&&f.gxMakeupRows&&f.gxMakeupRows.length)throw Error('本地区不能使用广西历史补缴方案，请清除补缴记录');
