@@ -2,7 +2,7 @@
 function build(policy,form,result){
  if(!policy||!result)return null;
  const id=String(form.regionId),s=result.chosen,missing=Math.max(0,15-Number(result.paidYears));
- if(!id.startsWith('44')&&!id.startsWith('45')){const rule=require('../../utils/resident-makeup-policies').get(id,policy.rule);if(!rule)return null;return {province:rule.name,sourceId:rule.sources[0].id,rows:rule.modes.map(mode=>({id:mode,title:mode==='lump'?'到60岁补足年限':mode==='missing'?'补以前漏交的年份':'提高以前已交的金额',text:mode==='lump'?'补足费用按社保核定单价计算，不自动加补贴。':mode==='upgrade'?'只补原金额与核定目标金额的差额，已交年数不变。':'只补社保确认可补的漏缴年度；今年未缴在填写页选择。',action:'填写核定方案',mode:'approved'})),note:rule.note};}
+ if(!id.startsWith('44')&&!id.startsWith('45')){const rule=require('../../utils/resident-makeup-policies').get(id,policy.rule);if(!rule)return null;return {province:rule.name,sourceId:rule.sources[0].id,rows:rule.modes.map(mode=>({id:mode,title:mode==='transition'?'原制度过渡办法':mode==='extension'?'延缴五年后补足':mode==='lump'?'到60岁补足年限':mode==='missing'?'补以前漏交的年份':'提高以前已交的金额',text:mode==='transition'?'先核定原制度日期和所需总年数，符合条件才比较补费。':mode==='extension'?'先核对60岁以后已正常交的年数，未满五年继续交，不能仅按65岁直接补。':mode==='lump'?'补足费用按社保核定单价计算，不自动加补贴。':mode==='upgrade'?'只补原金额与核定目标金额的差额，已交年数不变。':'只补社保确认可补的漏缴年度；今年未缴在填写页选择。',action:'填写核定方案',mode:'approved'})),note:rule.note};}
  if(id.startsWith('45'))return {province:'广西',sourceId:'gx-resident-makeup-2023',rows:[
   {id:'missing',title:'补以前漏交的年份',text:'按漏交那一年的档次补，不超过当年最高档；旧年补缴没有政府补贴。',action:'选择漏交年份',mode:'missing'},
   {id:'upgrade',title:'补以前低档的差额',text:'已交年数不变，按原年度允许的高档补差额；旧年无补贴，今年只补应享补贴的差额。',action:'填写原缴费记录',mode:'upgrade'},
