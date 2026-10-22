@@ -7,6 +7,6 @@ function referenceWage(local,asOf){
  return m&&Number(m[1])*12+Number(m[2])-1>=2026*12+6?local.indexWage:null;
 }
 function stale(result,local,asOf){
- return !!(result&&local&&((local.legacy||['GUANGDONG','SHENZHEN_NONLOCAL'].includes(local.rule))&&result.indexWage!==referenceWage(local,asOf)||local.employeeOnly&&(result.indexWage!==local.indexWage||result.parameter?.pensionBase!==local.pensionBase)));
+ return !!(result&&local&&(local.calculationVersion&&result.calculationVersion!==local.calculationVersion||(local.legacy||['GUANGDONG','SHENZHEN_NONLOCAL'].includes(local.rule))&&result.indexWage!==referenceWage(local,asOf)||local.employeeOnly&&(result.indexWage!==local.indexWage||result.parameter?.pensionBase!==local.pensionBase)));
 }
 module.exports={referenceWage,stale};

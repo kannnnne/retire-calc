@@ -33,11 +33,6 @@ test('合并推算在主结果和来源中明示，不冒充已核实的年度�
  const d=documents.find(d=>d.id==='xinjiang-employee-wage-merge-media');assert.equal(d.kind,'employee');assert.equal(d.cityIds.length,14);assert.ok(d.cityIds.includes('653100'));assert.ok(!d.cityIds.includes('659001'));assert.match(d.sections[0].text,/未取得/);
 });
 
-test('西藏7项保留地方退休年龄和高原补贴缺项，不以零补贴生成普通金额',()=>{
- const cities=registry.provinces.find(p=>p.id==='540000').cities;assert.equal(cities.length,7);
- for(const c of cities){assert.equal(c.employee.status,'PENDING');assert.equal(c.employee.pensionBase,undefined);assert.match(c.employee.reason,/实际在藏工作年限/);assert.match(c.employee.reason,/退休年龄/);assert.throws(()=>forecast(input(c.id)),/暂不提供金额/);}
-});
-
 test('本轮不扩大灵活就业或居民规则，也不允许新疆历史特殊权益',()=>{
  for(const id of ['650100','653100','659001','540100']){assert.equal(registry.capability(id,'flexible'),null);assert.throws(()=>forecast(input(id,{contributionType:'FLEXIBLE'})),/开放/);}
  assert.throws(()=>forecast(input('650100',{historicalRights:true})),/历史|视同|特殊/);

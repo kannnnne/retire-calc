@@ -33,10 +33,10 @@ test('转载、PDF副本、政府搜索正文和推导参数保留来源状态',
  assert.equal(registry.capability('520100').pensionBaseMethod,'UNIFIED_FULL_SCOPE_WAGE');assert.equal(registry.capability('340100').indexWageMethod,'UPPER_LIMIT_THIRD');
 });
 test('未核地区不用缴费工资或网传数值冒充待遇基数',()=>{
- for(const id of ['420200','540100','659001']){const p=registry.capability(id);assert.equal(p.status,'PENDING');assert.equal(p.pensionBase,undefined);assert.throws(()=>forecast({...input('320100'),regionId:id}),/暂未开放/);}
- assert.match(registry.capability('540100').reason,/高原补贴/);assert.match(registry.capability('659001').reason,/兵团/);
+ for(const id of ['420200','659001']){const p=registry.capability(id);assert.equal(p.status,'PENDING');assert.equal(p.pensionBase,undefined);assert.throws(()=>forecast({...input('320100'),regionId:id}),/暂未开放/);}
+ assert.match(registry.capability('659001').reason,/兵团/);
 });
 test('覆盖审计正确接受混合参考年份，统计部分开放省而非宣称全覆盖',()=>{
- const a=audit();assert.deepEqual(a.errors,[]);assert.equal(a.ready,334);assert.equal(a.pending,35);assert.equal(a.readyProvinces,30);assert.equal(a.rows.find(r=>r.id==='370000').pending,1);
+ const a=audit();assert.deepEqual(a.errors,[]);assert.equal(a.ready,341);assert.equal(a.pending,28);assert.equal(a.readyProvinces,31);assert.equal(a.rows.find(r=>r.id==='370000').pending,1);
  const md=report().markdown;assert.match(md,/菏泽/);assert.match(md,/2024年待遇/);assert.match(md,/不宣称全国已全开/);
 });

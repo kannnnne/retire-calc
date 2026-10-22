@@ -72,5 +72,6 @@ delete skipped['650000'];
 for(const c of require('./resident-region-data').provinces.find(p=>p.id==='650000').cities){
  if(c.id.startsWith('659'))overrides[c.id]={status:'PENDING',reason:'本地区暂未开放：兵团有独立计发办法和最低保证待遇，现行参数尚未核齐，不能套用自治区工资合并口径，暂不提供金额。',sources:[]};
 }
-skipped['540000']='已核2025年工资11777元及高原补贴按实际在藏工作年限计算，但在藏满15年人员的地方退休年龄与2025年延迟退休如何衔接尚未核实；不能把补贴当零或直接套全国年龄';
+profiles['540000']=require('./employee-policies-tibet')(profile,source);
+delete skipped['540000'];
 module.exports={profiles,cityProfiles,overrides,skipped};

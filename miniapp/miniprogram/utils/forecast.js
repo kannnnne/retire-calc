@@ -40,7 +40,8 @@ function forecast(r,now) {
   if(local.nonLocalOnly&&r.szScopeConfirmed!=='yes')throw Error('请确认非深圳户籍、退休时在深圳实缴累计满10年且领取地为深圳，并无地方补充养老权益；其他情况暂不支持深圳本市公式');
   const today=now||new Date(), current=today.getFullYear()*12+today.getMonth();
   const b=month(r.birthMonth,'出生年月','birthMonth'),first=month(r.firstInsuredMonth,'首次参保年月','firstInsuredMonth'),asof=month(r.dataAsOf,'数据截至月份','dataAsOf');
-  const ret=retirement(r.birthMonth,r.category),retMonth=month(ret.month);
+  const tibet=local.rule==='TIBET_CONFIRMED_REFERENCE'?require('./tibet-employee').context(r,{birth:b,first,asof,month,date}):null;
+  const ret=tibet?tibet.retirement:retirement(r.birthMonth,r.category),retMonth=month(ret.month);
   const paid=number(r.paidMonths,'累计缴费月数',0,960,true);
   if((r.contributionType||'FLEXIBLE')==='FLEXIBLE')require('./flexible-category').validate(regionId,r.category,r.pastEmployeeMonths,paid);
   if(b>first) invalid('首次参保年月'+date(first)+'早于出生年月'+date(b)+'，请重新选择首次参保年月','firstInsuredMonth');
@@ -84,18 +85,21 @@ function forecast(r,now) {
     const payment=future?base.mul(rate):D(0),cost=payment.mul(future);
     const common={plan,futureMonths:future,totalMonths:total,minimumMonths:target,lastPaymentMonth:date(last),qualified,shortMonths:Math.max(0,target-total),monthlyBase:money(base),monthlyPersonalPayment:money(payment),futurePersonalCost:money(cost),futureAccountCredit:money(credit),account:money(account)};
     if(lo<40||hi>70) return {...common,qualified:false,unsupported:true,error:'领取年龄超出40—70岁支持范围',totalLow:null,totalHigh:null};
+    if(tibet&&last>retMonth)return {...common,qualified:false,unsupported:true,error:'缴费需超过已核对的退休年月，请先核对延缴后的领取时间',totalLow:null,totalHigh:null};
+    const plateau=tibet?require('./tibet-employee').subsidy(parameter.pensionBase,index,tibet.rate):D(0);
     const bs=localBasic(parameter.pensionBase,index,total),low=account.div(policy.accountMonths[lo]),high=account.div(policy.accountMonths[hi]);
     // Guangxi rounds the final monthly pension up to one decimal, not each component.
     const pension=v=>local.rule==='GUANGXI'?v.toDecimalPlaces(1,Decimal.ROUND_CEIL):v;
-    const tl=qualified?pension(bs.plus(low)):null,th=qualified?pension(bs.plus(high)):null;
+    const tl=qualified?pension(bs.plus(plateau).plus(low)):null,th=qualified?pension(bs.plus(plateau).plus(high)):null;
     let il=null,ih=null;
     if(qualified&&paid>=target) {
       const prior=localBasic(parameter.pensionBase,historic,paid);
-      il=bs.minus(prior).plus(credit.div(policy.accountMonths[lo]));
-      ih=bs.minus(prior).plus(credit.div(policy.accountMonths[hi]));
+      const plateauDelta=tibet?plateau.minus(require('./tibet-employee').subsidy(parameter.pensionBase,historic,tibet.rate)):D(0);
+      il=bs.minus(prior).plus(plateauDelta).plus(credit.div(policy.accountMonths[lo]));
+      ih=bs.minus(prior).plus(plateauDelta).plus(credit.div(policy.accountMonths[hi]));
     }
-    return {...common,receiptMonth:qualified?date(eligible+1):null,index:index.toFixed(4),basic:money(bs),personalLow:money(low),personalHigh:money(high),totalLow:money(tl),totalHigh:money(th),divisorRange:lo!==hi,recoveryMonthsFast:recovery(cost,th),recoveryMonthsSlow:recovery(cost,tl),incrementalLow:money(il),incrementalHigh:money(ih),incrementalRecoveryFast:recovery(cost,ih),incrementalRecoverySlow:recovery(cost,il)};
+    return {...common,...(tibet?{plateau:money(plateau),plateauRate:tibet.rate,tibetWorkYears:tibet.years}:{}),receiptMonth:qualified?date(eligible+1):null,index:index.toFixed(4),basic:money(bs),personalLow:money(low),personalHigh:money(high),totalLow:money(tl),totalHigh:money(th),divisorRange:lo!==hi,recoveryMonthsFast:recovery(cost,th),recoveryMonthsSlow:recovery(cost,tl),incrementalLow:money(il),incrementalHigh:money(ih),incrementalRecoveryFast:recovery(cost,ih),incrementalRecoverySlow:recovery(cost,il)};
   });
-  return {regionId,region:registry.city(regionId).name,referenceNote,indexWage,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
+  return {regionId,region:registry.city(regionId).name,referenceNote,indexWage,...(tibet?{calculationVersion:local.calculationVersion}:{}),sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
 }
 module.exports={forecast,retirement,minimum,basic,policy};
