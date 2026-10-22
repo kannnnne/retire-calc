@@ -36,7 +36,7 @@ function number(value,label,min,max,integer=false,optional=false) {
 }
 function recovery(cost,pension) { return pension && D(pension).gt(0)?cost.div(pension).ceil().toNumber():null; }
 function forecast(r,now) {
-  const regionId=r.regionId||'440100',local=require('./city-policies').requireEmployee(regionId,r.dataAsOf),legacy=!!local.legacy;
+  const regionId=r.regionId||'440100',registry=r.contributionType==='EMPLOYEE'?require('./employee-registry'):require('./city-policies'),local=registry.requireEmployee(regionId,r.dataAsOf),legacy=!!local.legacy;
   if(local.nonLocalOnly&&r.szScopeConfirmed!=='yes')throw Error('请确认非深圳户籍、退休时在深圳实缴累计满10年且领取地为深圳，并无地方补充养老权益；其他情况暂不支持深圳本市公式');
   const today=now||new Date(), current=today.getFullYear()*12+today.getMonth();
   const b=month(r.birthMonth,'出生年月','birthMonth'),first=month(r.firstInsuredMonth,'首次参保年月','firstInsuredMonth'),asof=month(r.dataAsOf,'数据截至月份','dataAsOf');
@@ -64,7 +64,7 @@ function forecast(r,now) {
   if(!plans.includes(r.plan)) throw Error('请选择缴费方案');
   const parameter=legacy?policy.pensionParameters.filter(p=>p.status==='OFFICIAL'&&p.pensionBase).sort((a,b)=>b.year-a.year)[0]:{status:local.parameterStatus||'OFFICIAL',year:local.year,pensionBase:local.pensionBase};
   const indexWage=referenceWage(local,r.dataAsOf);
-  const referenceNote=legacy?(indexWage?local.referenceText:''):local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
+  const referenceNote=legacy?(indexWage?local.referenceText:''):local.resultNote||local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
   const localBasic=(base,index,months)=>{
     if(legacy||local.rule==='GUANGDONG')return basic(base,index,months);
     const years=local.rule==='GUANGXI'?D(months).div(12).toDecimalPlaces(2,Decimal.ROUND_UP):D(months).div(12);
@@ -95,6 +95,6 @@ function forecast(r,now) {
     }
     return {...common,receiptMonth:qualified?date(eligible+1):null,index:index.toFixed(4),basic:money(bs),personalLow:money(low),personalHigh:money(high),totalLow:money(tl),totalHigh:money(th),divisorRange:lo!==hi,recoveryMonthsFast:recovery(cost,th),recoveryMonthsSlow:recovery(cost,tl),incrementalLow:money(il),incrementalHigh:money(ih),incrementalRecoveryFast:recovery(cost,ih),incrementalRecoverySlow:recovery(cost,il)};
   });
-  return {regionId,region:require('./city-policies').city(regionId).name,referenceNote,indexWage,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
+  return {regionId,region:registry.city(regionId).name,referenceNote,indexWage,sources:local.sources,retirement:ret,selected:r.plan,scenarios,parameter,contributionType:type,pauseMonths:pause,warnings,limits};
 }
 module.exports={forecast,retirement,minimum,basic,policy};
