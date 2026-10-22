@@ -67,7 +67,7 @@ function forecast(r,now) {
   const referenceNote=legacy?(indexWage?local.referenceText:''):local.resultNote||local.referenceText||'缴费按'+limits.effectiveFrom+'标准；待遇按'+parameter.year+'年参数，未来调整未计入。';
   const localBasic=(base,index,months)=>{
     if(legacy||local.rule==='GUANGDONG')return basic(base,index,months);
-    const years=local.rule==='GUANGXI'?D(months).div(12).toDecimalPlaces(2,Decimal.ROUND_UP):D(months).div(12);
+    const years=local.rule==='GUANGXI'?D(months).div(12).toDecimalPlaces(2,Decimal.ROUND_UP):local.serviceYearDecimals?D(months).div(12).toDecimalPlaces(local.serviceYearDecimals):D(months).div(12);
     return D(base).mul(D(1).plus(local.rule==='GUANGXI'?D(index).toDecimalPlaces(4):index)).div(2).mul(years).mul('.01');
   };
   const target=minimum(Math.floor(retMonth/12)), gap=Math.max(0,target-paid);

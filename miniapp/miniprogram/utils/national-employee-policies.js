@@ -63,4 +63,7 @@ Object.assign(profiles,batch3.profiles);
 for(const id of Object.keys(batch3.profiles))delete skipped[id];
 const cityProfiles=batch3.cityProfiles;
 skipped['420000']='湖北仅开放武汉、荆门历史参考，本市计发基数未核实，不能套其他城市标准';
+const henanHainan=require('./employee-policies-henan-hainan')(profile,source);
+Object.assign(profiles,henanHainan);
+for(const id of Object.keys(henanHainan))delete skipped[id];
 module.exports={profiles,cityProfiles,overrides,skipped};
