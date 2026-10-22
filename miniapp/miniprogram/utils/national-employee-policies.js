@@ -29,7 +29,7 @@ const overrides={
  '210200':{pensionBase:8956,referenceLabel:'大连 · 2025年参数参考'},
  '220100':{pensionBase:95739/12,referenceLabel:'长春 · 2025年参数参考'}
 };
-// This round stops here: missing key inputs are not substituted with neighbours.
+// Remaining gaps are not substituted with neighbours or unsourced web figures.
 const skipped={
  '140000':'缴费上下限已找到，计发基数未取得可靠原文',
  '150000':'缴费上下限已找到，普通职工计发基数未核齐',
@@ -48,4 +48,14 @@ const skipped={
  '630000':'缴费通知已有线索，年度计发基数未核齐',
  '650000':'已取得2026缴费范围，计发工资及兵团独立口径未核齐'
 };
+const batch2=require('./employee-policies-batch2')(profile,source);
+Object.assign(profiles,batch2.profiles);
+Object.assign(overrides,batch2.overrides);
+for(const id of Object.keys(batch2.profiles))delete skipped[id];
+skipped['410000']='缴费3831—19155元已找到，网传计发6738元未取得可追溯正式依据';
+skipped['420000']='已核三组缴费标准，计发工资仍有市级差异，不能把武汉标准套全省';
+skipped['460000']='已核缴费工资8188元，尚未核实其与养老计发工资相同的正式规定';
+skipped['500000']='已找到2025计发8240元的裁判转载线索，通知原文及指数上限仍需核对';
+skipped['540000']='已核缴费工资11777元，官方明确另有高原补贴养老金，缺少完整适配参数';
+skipped['650000']='缴费通知已找到，待遇计发口径尚未核实；兵团不能借用自治区规则';
 module.exports={profiles,overrides,skipped};
