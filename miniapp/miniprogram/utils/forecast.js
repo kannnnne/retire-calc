@@ -55,7 +55,7 @@ function forecast(r,now) {
   const interest=number(r.interest,'账户利息',0,100000000,false,true)||D(0);
   const limits=contributionRange(r.dataAsOf,regionId);
   const currentBase=number(r.currentBase,'缴费基数',limits.min,limits.max,false,true)||D(limits.min);
-  const historic=number(r.historicalIndex,'平均缴费指数','.0001',10,false,true)||D('.6');
+  const historic=number(r.historicalIndex,'平均缴费指数','.0001',local.historicalIndexMax||10,false,true)||D('.6');
   const pause=number(r.pauseMonths==null?0:r.pauseMonths,'暂停月数',0,480,true);
   const custom=number(r.customMonths==null?60:r.customMonths,'自定义月数',0,960,true);
   const type=r.contributionType||'FLEXIBLE';
@@ -77,7 +77,8 @@ function forecast(r,now) {
     const future=plan==='CUSTOM'?custom:plan==='MINIMUM_STOP'?gap:Math.max(0,retMonth-asof-pause,gap);
     const total=paid+future,last=future?asof+pause+future:asof,eligible=Math.max(last,retMonth),age=eligible-b;
     const lo=Math.floor(age/12),hi=Math.ceil(age/12), qualified=total>=target;
-    const futureIndex=legacy&&indexWage===null?D('.6').mul(base).div(5510):base.div(indexWage);
+    const rawFutureIndex=legacy&&indexWage===null?D('.6').mul(base).div(5510):base.div(indexWage);
+    const futureIndex=local.futureIndexMax?Decimal.min(rawFutureIndex,local.futureIndexMax):rawFutureIndex;
     const index=total?historic.mul(paid).plus(futureIndex.mul(future)).div(total):historic;
     const credit=base.mul('.08').mul(future),account=principal.plus(interest).plus(credit);
     const payment=future?base.mul(rate):D(0),cost=payment.mul(future);

@@ -58,4 +58,9 @@ skipped['460000']='已核缴费工资8188元，尚未核实其与养老计发工
 skipped['500000']='已找到2025计发8240元的裁判转载线索，通知原文及指数上限仍需核对';
 skipped['540000']='已核缴费工资11777元，官方明确另有高原补贴养老金，缺少完整适配参数';
 skipped['650000']='缴费通知已找到，待遇计发口径尚未核实；兵团不能借用自治区规则';
-module.exports={profiles,overrides,skipped};
+const batch3=require('./employee-policies-batch3')(profile,source);
+Object.assign(profiles,batch3.profiles);
+for(const id of Object.keys(batch3.profiles))delete skipped[id];
+const cityProfiles=batch3.cityProfiles;
+skipped['420000']='湖北仅开放武汉、荆门历史参考，本市计发基数未核实，不能套其他城市标准';
+module.exports={profiles,cityProfiles,overrides,skipped};

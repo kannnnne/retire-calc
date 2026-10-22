@@ -4,7 +4,7 @@ const national=require('./national-employee-policies'),extended=require('./exten
 const provinces=data.provinces.map(p=>({...p,cities:p.cities.map(c=>{
  const existing=legacy.city(c.id),province=extended.provinceReferences[p.id];
  const known=existing&&existing.employee&&existing.employee.status==='READY'?existing.employee:null;
- const profile=known||(province&&province.employee)||national.profiles[p.id];
+ const profile=known||(province&&province.employee)||national.cityProfiles[c.id]||national.profiles[p.id];
  const override=!known&&national.overrides[c.id];
  const employee=override&&override.status==='PENDING'?{...override,policyProvinceId:p.id}:profile?{...profile,...(override||{}),policyProvinceId:p.id}:{status:'PENDING',reason:'本地区暂未开放：'+(national.skipped[p.id]||'关键参数尚未核齐')+'，暂不提供金额。',sources:[]};
  return {...existing,...c,provinceId:p.id,province:p.name,employee};

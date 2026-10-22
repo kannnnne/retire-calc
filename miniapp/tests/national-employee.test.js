@@ -4,8 +4,8 @@ const profiles=require('../miniprogram/utils/national-employee-policies'),{forec
 const D=require('../miniprogram/vendor/decimal');
 const input=(id,patch={})=>({regionId:id,birthMonth:'1985-06',firstInsuredMonth:'2005-07',dataAsOf:'2026-10',paidMonths:240,principal:80000,interest:0,currentBase:registry.capability(id).min,historicalIndex:'0.6',contributionType:'EMPLOYEE',pauseMonths:0,customMonths:0,plan:'CUSTOM',category:'MALE',historicalRights:false,szScopeConfirmed:'yes',...patch});
 function page(relative='pages/index/index.js',store){let def;const file=path.join(__dirname,'../miniprogram',relative),modals=[];vm.runInNewContext(fs.readFileSync(file,'utf8'),{Date,JSON,wx:{pageScrollTo(){},showModal(v){modals.push(v);},navigateTo(){},redirectTo(){}},Page:x=>def=x,require:x=>x.endsWith('/session')&&store?{load:k=>store[k],save:(k,v)=>{store[k]=JSON.parse(JSON.stringify(v));}}:require(path.resolve(path.dirname(file),x))});return {...def,modals,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const[k,v]of Object.entries(patch)){let o=this.data;const a=k.split('.');for(const n of a.slice(0,-1))o=o[n];o[a.at(-1)]=v;}}};}
-test('职工31省369项选择、280项可算，缺项明确跳过；居民369项与灵活40城不被暗中改范围',()=>{
- assert.equal(registry.provinces.length,31);assert.equal(registry.cities.length,369);assert.equal(new Set(registry.cities.map(c=>c.id)).size,369);assert.equal(registry.cities.filter(c=>c.employee.status==='READY').length,280);assert.equal(registry.provinces.filter(p=>p.cities.some(c=>c.employee.status==='READY')).length,25);assert.equal(legacy.cities.length,40);assert.equal(residents.cities.length,369);
+test('职工31省369项选择、283项可算，缺项明确跳过；居民369项与灵活40城不被暗中改范围',()=>{
+ assert.equal(registry.provinces.length,31);assert.equal(registry.cities.length,369);assert.equal(new Set(registry.cities.map(c=>c.id)).size,369);assert.equal(registry.cities.filter(c=>c.employee.status==='READY').length,283);assert.equal(registry.provinces.filter(p=>p.cities.some(c=>c.employee.status==='READY')).length,27);assert.equal(legacy.cities.length,40);assert.equal(residents.cities.length,369);
  for(const c of registry.cities.filter(c=>c.employee.status!=='READY')){assert.match(c.employee.reason,/暂未开放/);assert.match(c.employee.reason,/暂不提供金额/);assert.equal(c.employee.pensionBase,undefined);assert.throws(()=>forecast({...input('350100'),regionId:c.id}),/暂未开放/);}
  assert.equal(registry.capability('350100','flexible'),null);assert.throws(()=>forecast(input('350100',{contributionType:'FLEXIBLE'})),/开放/);
 });
@@ -20,7 +20,7 @@ test('新增年度参数、城市差异、年转月和指数工资分离，有�
  }
  assert.match(profiles.profiles['220000'].referenceText,/农垦/);assert.equal(profiles.profiles['220000'].contributionEnd,'2026-06');assert.equal(profiles.profiles['130000'].sourceStatus,'GOVERNMENT_TEXT_REPRINT');
 });
-test('280地区均可用相同职工页面计算、改方案、修改和重填；未开放不回落广州',()=>{
+test('283地区均可用相同职工页面计算、改方案、修改和重填；未开放不回落广州',()=>{
  for(const c of registry.cities.filter(c=>c.employee.status==='READY')){const p=page();p.onLoad();p.regionChanged({detail:{regionId:c.id}});if(c.id==='440300')p.szScope({detail:{value:['yes']}});p.calculate();assert.equal(p.data.error,'',c.name);assert.equal(p.data.result.regionId,c.id);p.choosePlan({currentTarget:{dataset:{plan:'MINIMUM_STOP'}}});assert.equal(p.data.result.chosen.plan,'MINIMUM_STOP');p.edit();assert.equal(p.data.result,null);assert.equal(p.data.form.regionId,c.id);p.reset();assert.equal(p.data.form.regionId,c.id);}
  const p=page();p.onLoad();p.regionChanged({detail:{regionId:'540100'}});p.calculate();assert.equal(p.data.result,null);assert.match(p.data.baseError,/暂未开放/);p.regionChanged({detail:{regionId:'350100'}});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.regionId,'350100');
 });
