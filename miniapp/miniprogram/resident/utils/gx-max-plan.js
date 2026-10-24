@@ -15,15 +15,23 @@ function groups(map){const result=[];for(const [y,v]of [...map.entries()].sort((
 function setup(f,p){
  if(p.rule!=='GUANGXI_ORDINARY')throw Error('这个快捷方案目前只用于广西居民养老');
  if(f.receiving==='yes'||f.never||Number(f.years)===0)throw Error('快捷方案用于已参保且尚未领取养老金的人员');
- if(f.historyUncertain||f.paidThisYear==='unknown')throw Error('请先填清已交年数和今年是否已缴，再配补缴方案');
+ if(f.historyUncertain)throw Error('请先填清已交年数，再配补缴方案');
  if(f.gxTransitionEnabled==='yes'||f.approvedPlan)throw Error('请先取消原核定补足方案，再比较历史年度补缴');
- const a=Number(f.asOf.slice(0,4)),b=f.ageOnly?a-Number(f.age):Number(f.birth.slice(0,4)),start=f.gxStartYear||String(Math.max(2012,p.gxSchemeYear||0,b+16)),r=records(f);
- return {start,complete:r.complete,selected:[...r.map.keys()],annual:f.pastMonthly?'':String(f.pastAnnual||''),years:Array.from({length:Math.max(0,a-Number(start)+1)},(_,i)=>({year:Number(start)+i,selected:r.map.has(Number(start)+i)}))};
+ const a=Number(f.asOf.slice(0,4)),b=f.ageOnly?a-Number(f.age):Number(f.birth.slice(0,4)),start=f.gxStartYear||String(Math.max(2012,p.gxSchemeYear||0,b+16)),r=records(f),count=Number(f.years);
+ if(!Number.isInteger(count)||count<1||count>55)throw Error('请填写已交几年');
+ const paidThisYear=['yes','no'].includes(f.paidThisYear)?f.paidThisYear:r.map.size===count?(r.map.has(a)?'yes':'no'):'yes';
+ const complete=r.map.size===count&&(paidThisYear==='yes')===r.map.has(a),selected=[...r.map.keys()];
+ // With only a year count, use a visible recent-years assumption for a draft.
+ // Preserve every known year; never claim the inferred years are queried records.
+ for(let y=paidThisYear==='yes'?a:a-1;!complete&&selected.length<count&&y>=Number(start);y--)if(!selected.includes(y))selected.push(y);
+ if(selected.length!==count)throw Error('当前参考范围不足以匹配已交年数，请核对可补起点或历史记录');
+ return {start,complete,inferred:!complete,currentAssumed:!['yes','no'].includes(f.paidThisYear)&&r.map.size!==count,paidThisYear,selected,annual:f.pastMonthly?'':String(f.pastAnnual||200),amountAssumed:!f.pastAnnual,years:Array.from({length:Math.max(0,a-Number(start)+1)},(_,i)=>({year:Number(start)+i,selected:selected.includes(Number(start)+i)}))};
 }
 function build(f,p,{mode='TO_SIXTY',selected,annual,currentSubsidy}={}){
  if(!['TO_SIXTY','NOW'].includes(mode))throw Error('请选择到60岁交够或现在补够');
- const config=setup(f,p),r=records(f,selected,annual);if(!r.complete)throw Error('请点齐已交的'+f.years+'个年份，并核对今年是否已含');
- const segments=groups(r.map),base={...f,gxStartYear:config.start,historyMode:'segments',segments,payUntil:'MINIMUM',gxTransitionEnabled:'no',gxTransitionReviewed:'unknown',approvedPlan:null};
+ const config=setup(f,p);f={...f,paidThisYear:config.paidThisYear};
+ const r=records(f,selected===undefined&&!config.complete?config.selected:selected,annual===undefined?config.annual:annual);if(!r.complete)throw Error('已匹配年份与已交年数或今年缴费不符，请修改参考年份');
+ const segments=groups(r.map),base={...f,birth:f.ageOnly?String(Number(f.asOf.slice(0,4))-Number(f.age))+f.asOf.slice(4):f.birth,gxStartYear:config.start,historyMode:'segments',segments,payUntil:'MINIMUM',gxTransitionEnabled:'no',gxTransitionReviewed:'unknown',approvedPlan:null};
  const plan=planner.build(base,[],200,p);if(plan.error)throw Error(plan.error);
  const need=mode==='NOW'?Math.max(0,15-Number(f.years)):planner.suggest(base,p).needed;
  const available=plan.years.filter(x=>!x.paid).map(x=>x.year).sort((a,b)=>b-a);if(available.length<need)throw Error('可用漏缴年份不足，请先核对可补起点；不会虚构年份补足');
@@ -34,6 +42,6 @@ function build(f,p,{mode='TO_SIXTY',selected,annual,currentSubsidy}={}){
    subsidyReference=entered===undefined||entered==='';subsidyUsed=subsidyReference?p.subsidies[p.tiers.indexOf(original)]:Number(entered);if(subsidyUsed==null)throw Error('请填今年原档已享受的补贴');row.subsidyAlready=subsidyUsed;
   }rows.push(row);
  }
- return {form:{...base,tier:p.tiers[p.tiers.length-1],gxMakeupRows:rows,gxScopeReviewed:'unknown'},rows,addedYears:missing.count,upgradedYears:rows.filter(x=>x.mode==='upgrade').length,subsidyUsed,subsidyReference,mode};
+ return {form:{...base,tier:p.tiers[p.tiers.length-1],gxMakeupRows:rows,gxScopeReviewed:'unknown'},inferred:config.inferred,currentAssumed:config.currentAssumed,rows,addedYears:missing.count,upgradedYears:rows.filter(x=>x.mode==='upgrade').length,subsidyUsed,subsidyReference,mode};
 }
 module.exports={setup,build};

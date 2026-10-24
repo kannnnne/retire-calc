@@ -21,10 +21,10 @@ test('已有手填提档也可直接识别完整5年；原补贴沿用，查询�
  assert.equal(result(max.build(f,p,{mode:'NOW',currentSubsidy:'35'})).chosen.low,(186+(60000+165)/139).toFixed(2));
 });
 
-test('只知5年每年200时不猜是哪5年，点选已交年份后自动生成全部补漏及提档',()=>{
- const f=form({historyMode:'simple',segments:[]}),s=max.setup(f,p);assert.equal(s.complete,false);assert.deepEqual(s.selected,[]);assert.throws(()=>max.build(f,p),/点齐/);
+test('只知5年每年200时自动推定最近5年，一键生成并标记参考假设',()=>{
+ const f=form({historyMode:'simple',segments:[]}),s=max.setup(f,p);assert.equal(s.complete,false);assert.deepEqual(s.selected,[2026,2025,2024,2023,2022]);assert.equal(s.inferred,true);assert.equal(result(max.build(f,p)).chosen.total,'64000.00');
  const d=max.build(f,p,{selected:[2021,2023,2024,2025,2026],annual:'200'});assert.equal(result(d).chosen.total,'64000.00');assert.equal(d.form.segments.length,2);assert.equal(d.form.segments[1].end,'2026');
- assert.throws(()=>max.build(f,p,{selected:[2021,2022,2023,2024,2025],annual:'200'}),/点齐/);
+ assert.throws(()=>max.build(f,p,{selected:[2021,2022,2023,2024,2025],annual:'200'}),/已匹配/);
 });
 
 test('不同旧年金额与已最高档原样保留；余额模式不把原缴费再次加入账户',()=>{
@@ -33,7 +33,7 @@ test('不同旧年金额与已最高档原样保留；余额模式不把原缴�
 });
 
 test('不越过领取状态、模糊记录、原有特殊方案及真实可用年份边界',()=>{
- for(const patch of [{receiving:'yes'},{never:true},{years:'0'},{historyUncertain:true},{paidThisYear:'unknown'},{approvedPlan:{}},{gxTransitionEnabled:'yes'},{segments:[{start:'2021',end:'2021',annual:'360'}]},{gxStartYear:'2021'}])assert.throws(()=>max.build(form(patch),p));
+ for(const patch of [{receiving:'yes'},{never:true},{years:'0'},{historyUncertain:true},{approvedPlan:{}},{gxTransitionEnabled:'yes'},{segments:[{start:'2021',end:'2021',annual:'360'}]},{gxStartYear:'2021'}])assert.throws(()=>max.build(form(patch),p));
  assert.throws(()=>max.build(form(),getRegion('440100')),/广西/);assert.throws(()=>max.build(form(),p,{mode:'wrong'}),/请选择/);
  const f=form({historyMode:'simple',segments:[],gxMakeupRows:[{mode:'upgrade',start:'2021',end:'2021',original:200,target:6000}]});assert.throws(()=>max.build(f,p,{selected:[2022,2023,2024,2025,2026],annual:'200'}),/不能.*删除/);
 });
@@ -47,8 +47,26 @@ test('真实页面预览不改变旧方案，模式及补贴可改，核对后�
 });
 
 test('点年份不用键盘、原年缴额复用、应用失败回到原输入，确认不会由快捷预览自动勾上',()=>{
- const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.form);q.openMaxPlan();assert.equal(q.data.quickPlan.annual,'200');assert.equal(q.data.quickPlan.summary,null);
+ const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.form);q.openMaxPlan();assert.equal(q.data.quickPlan.annual,'200');assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.editYears,false);q.quickEditYears();for(const y of [...q.data.quickPlan.selected])q.quickYear({currentTarget:{dataset:{year:y}}});
  for(const y of [2021,2023,2024,2025,2026])q.quickYear({currentTarget:{dataset:{year:y}}});q.quickGenerate();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.confirmed,false);
  q.quickConfirm();q.data.quickPlan.draft.form.birth='bad';q.applyMaxPlan();assert.equal(JSON.stringify(q.data.form),old);assert.ok(q.data.quickPlan.error);assert.equal(q.data.result.chosen.timeline.receivingAge,69);
  const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/bindtap="quickYear"/);assert.match(w,/confirm-type="done" bindconfirm="quickGenerate"/);assert.match(w,/最高档，一键配好/);assert.match(w,/尚未领养老金/);
+});
+
+test('只有出生年月或年龄与年数也直接生成，未知本年状态显式默认已含，原表单不改',()=>{
+ const f=form({historyMode:'simple',segments:[],paidThisYear:'unknown'}),snapshot=JSON.stringify(f),config=max.setup(f,p);assert.equal(config.currentAssumed,true);assert.equal(config.paidThisYear,'yes');assert.equal(config.selected.length,5);assert.equal(result(max.build(f,p)).chosen.total,'64000.00');assert.equal(JSON.stringify(f),snapshot);
+ const q=page();q.setData({form:{...q.data.form,...f}});q.refreshPolicyQuestions();q.openMaxPlan();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.summary.currentAssumed,true);assert.equal(q.data.quickPlan.editYears,false);assert.equal(q.data.form.paidThisYear,'unknown');assert.equal(q.data.form.historyMode,'simple');
+ q.quickMode({currentTarget:{dataset:{mode:'NOW'}}});assert.equal(q.data.quickPlan.summary.total,'59000.00');q.quickEditYears();q.quickPaid({currentTarget:{dataset:{value:'no'}}});assert.match(q.data.quickPlan.error,/可用漏缴年份不足/);q.quickMode({currentTarget:{dataset:{mode:'TO_SIXTY'}}});assert.ok(q.data.quickPlan.summary,q.data.quickPlan.error);assert.equal(q.data.quickPlan.config.selected.includes(2026),false);assert.equal(q.data.form.paidThisYear,'unknown');
+ const age=form({historyMode:'simple',segments:[],ageOnly:true,age:'59',birth:''});assert.equal(result(max.build(age,p)).chosen.timeline.finalYears,15);
+});
+
+test('已知部分历史优先保留，不用最近年覆盖；没有年缴金额时按最低200明确参考',()=>{
+ const f=form({historyMode:'simple',segments:[],gxMakeupRows:[{mode:'upgrade',start:'2021',end:'2021',original:200,target:6000}]}),config=max.setup(f,p);assert.ok(config.selected.includes(2021));assert.equal(config.selected.length,5);const d=max.build(f,p);assert.ok(d.form.segments.some(s=>Number(s.start)<=2021&&Number(s.end)>=2021));assert.equal(d.inferred,true);
+ const empty=form({historyMode:'simple',segments:[],pastAnnual:''});assert.equal(max.setup(empty,p).amountAssumed,true);assert.equal(max.setup(empty,p).annual,'200');assert.equal(result(max.build(empty,p)).pastPaid,'1000.00');
+});
+
+test('从手填补缴页直接一键得到金额，无年份点击、确认不自动勾选且取消返回手填',()=>{
+ const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.calculate();q.openPaymentPlanner();assert.equal(q.data.planning,true);q.openMaxPlan();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.confirmed,false);q.cancelMaxPlan();assert.equal(q.data.planning,true);assert.equal(q.data.form.gxMakeupRows.length,0);
+ q.openMaxPlan();q.quickConfirm();q.applyMaxPlan();assert.equal(q.data.quickPlan,null);assert.equal(q.data.planning,false);assert.equal(q.data.result.chosen.total,'64000.00');
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/一键按最高档填好/);assert.match(w,/!quickPlan.config.complete && quickPlan.editYears/);assert.match(w,/参考假设，不是查询记录/);
 });
