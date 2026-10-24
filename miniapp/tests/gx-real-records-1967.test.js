@@ -44,5 +44,5 @@ test('真实页面事件保留已交记录和提档，漏年草稿需确认，�
 
 test('广西14市复用年份上限，首屏唯一补缴入口在换方案折叠前，未到60不伪造过渡资格',()=>{
  for(const c of require('../miniprogram/utils/resident-registry').cities.filter(c=>c.provinceId==='450000')){const p=planner.build(form({regionId:c.id}),[2013,2014,2019],'MAX',c.resident);assert.equal(p.cost,'9000.00');}
- const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.equal((w.match(/bindtap="openPaymentPlanner"/g)||[]).length,1);assert.ok(w.indexOf('bindtap="openPaymentPlanner"')<w.indexOf('<view>换个方案</view>'));assert.match(w,/可补年份从/);assert.match(w,/不是只有逐年交/);assert.match(w,/历史补缴不加补贴/);
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.equal((w.match(/bindtap="openPaymentPlanner"/g)||[]).length,1);assert.ok(w.indexOf('bindtap="openPaymentPlanner"')<w.indexOf('<view>换个方案</view>'));assert.match(w,/可补年份从/);assert.match(w,/补多少钱、什么时候领/);assert.match(w,/历史补缴不加补贴/);
 });

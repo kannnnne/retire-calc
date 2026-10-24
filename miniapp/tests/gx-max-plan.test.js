@@ -50,7 +50,7 @@ test('点年份不用键盘、原年缴额复用、应用失败回到原输入�
  const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.form);q.openMaxPlan();assert.equal(q.data.quickPlan.annual,'200');assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.editYears,false);q.quickEditYears();for(const y of [...q.data.quickPlan.selected])q.quickYear({currentTarget:{dataset:{year:y}}});
  for(const y of [2021,2023,2024,2025,2026])q.quickYear({currentTarget:{dataset:{year:y}}});q.quickGenerate();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.confirmed,false);
  q.quickConfirm();q.data.quickPlan.draft.form.birth='bad';q.applyMaxPlan();assert.equal(JSON.stringify(q.data.form),old);assert.ok(q.data.quickPlan.error);assert.equal(q.data.result.chosen.timeline.receivingAge,69);
- const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/bindtap="quickYear"/);assert.match(w,/confirm-type="done" bindconfirm="quickGenerate"/);assert.match(w,/先选每月领多少/);assert.match(w,/尚未领养老金/);
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/bindtap="quickYear"/);assert.match(w,/confirm-type="done" bindconfirm="quickGenerate"/);assert.match(w,/补缴方案/);assert.match(w,/尚未领养老金/);
 });
 
 test('只有出生年月或年龄与年数也直接生成，未知本年状态显式默认已含，原表单不改',()=>{
@@ -68,7 +68,7 @@ test('已知部分历史优先保留，不用最近年覆盖；没有年缴金�
 test('从手填补缴页直接一键得到金额，无年份点击、确认不自动勾选且取消返回手填',()=>{
  const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.calculate();q.openPaymentPlanner();assert.equal(q.data.planning,true);q.openMaxPlan();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.confirmed,false);q.cancelMaxPlan();assert.equal(q.data.planning,true);assert.equal(q.data.form.gxMakeupRows.length,0);
  q.openMaxPlan();q.quickConfirm();q.applyMaxPlan();assert.equal(q.data.quickPlan,null);assert.equal(q.data.planning,false);assert.equal(q.data.result.chosen.total,'64000.00');
- const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/先选每月领多少/);assert.match(w,/!quickPlan.config.complete && quickPlan.editYears/);assert.match(w,/参考假设，不是查询记录/);
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/补缴方案/);assert.match(w,/!quickPlan.config.complete && quickPlan.editYears/);assert.match(w,/参考假设，不是查询记录/);
 });
 
 test('低中高档真实反算，各旧年封顶，已缴本金固定而不是按卡片写死月额',()=>{
@@ -104,4 +104,33 @@ test('自己输入非预设合法档可算，非法档不应用；输入过程�
 test('切补足方式重算选项和时间，不把未来年费留在现在补满路线；取消不覆盖结果',()=>{
  const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.result);q.openMaxPlan();q.quickChoice({currentTarget:{dataset:{tier:1000}}});q.quickMode({currentTarget:{dataset:{mode:'NOW'}}});assert.equal(q.data.quickPlan.summary.normalYears,0);assert.equal(q.data.quickPlan.summary.total,'14000.00');assert.equal(q.data.quickPlan.options.find(x=>x.tier===6000).total,'59000.00');q.cancelMaxPlan();assert.equal(JSON.stringify(q.data.result),old);
  const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.ok(w.indexOf('quickPlan.options')<w.indexOf('按这份方案，每月约领'));for(const event of ['quickChoice','quickFuture','quickTarget','quickTierSubmit'])assert.ok(w.includes(event));assert.ok(w.includes('自己调整怎么交'));
+});
+test('按地区默认最低历史年档，选档与手填都可用，切地区不覆盖实际输入',()=>{
+ const q=page();q.onLoad();q.regionChoice({detail:{regionId:'450800'}});assert.equal(q.data.form.pastAnnual,'200');assert.equal(q.data.pastTierIndex,0);assert.equal(q.data.pastManual,false);
+ q.pastTier({detail:{value:q.data.pastTiers.indexOf(500)}});assert.equal(q.data.form.pastAnnual,'500');assert.equal(q.data.pastAmountAuto,false);q.regionChoice({detail:{regionId:'440100'}});assert.equal(q.data.form.pastAnnual,'500');assert.equal(q.data.pastManual,true);
+ q.pastTier({detail:{value:q.data.pastTiers.length}});q.input({currentTarget:{dataset:{key:'pastAnnual'}},detail:{value:'333'}});q.refreshPolicyQuestions();assert.equal(q.data.form.pastAnnual,'333');assert.equal(q.data.pastManual,true);q.regionChoice({detail:{regionId:'450800'}});assert.equal(q.data.form.pastAnnual,'333');
+ q.pastTier({detail:{value:0}});assert.equal(q.data.form.pastAnnual,'200');assert.equal(q.data.pastManual,false);q.reset();assert.equal(q.data.form.pastAnnual,'200');assert.equal(q.data.pastAmountAuto,true);
+});
+
+test('历史金额手填可保留平均或旧档，按月记录不被年档下拉误改',()=>{
+ const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[],pastAnnual:'100'})}});q.refreshPolicyQuestions();assert.equal(q.data.pastManual,true);assert.equal(q.data.form.pastAnnual,'100');q.pastPeriod({detail:{value:1}});assert.equal(q.data.form.pastMonthly,true);assert.equal(q.data.form.pastAnnual,'100');assert.equal(q.data.pastTierIndex,q.data.pastTiers.length);
+ q.pastTier({detail:{value:q.data.pastTiers.indexOf(500)}});assert.equal(q.data.form.pastMonthly,false);assert.equal(q.data.form.pastAnnual,'500');assert.equal(q.data.form.gxScopeReviewed,'unknown');
+});
+
+test('以后金额可下拉或手填合法年档，非法输入不能回用旧金额计算',()=>{
+ const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.futureTierChoice({detail:{value:q.data.tiers.length}});assert.equal(q.data.futureManual,true);q.futureDraftInput({detail:{value:'123'}});q.calculate();assert.equal(q.data.result,null);assert.match(q.data.error,/当地档次/);
+ q.futureDraftInput({detail:{value:'500'}});q.calculate();assert.ok(q.data.result,q.data.error);assert.equal(q.data.form.tier,500);assert.equal(q.data.result.chosen.annual,500);q.edit();q.futureTierChoice({detail:{value:q.data.tiers.indexOf(200)}});assert.equal(q.data.futureManual,false);assert.equal(q.data.form.tier,200);q.regionChoice({detail:{regionId:'440100'}});assert.equal(q.data.futureManual,false);
+});
+
+test('结果只有一个补缴方案入口，直接选月领；进入手填可返回原结果',()=>{
+ const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.result);q.openSupplementPlans();assert.equal(q.data.quickPlan.options.length,6);assert.equal(q.data.planning,false);q.openPaymentPlanner();assert.equal(q.data.quickPlan,null);assert.equal(q.data.planning,true);q.cancelPaymentPlanner();assert.equal(JSON.stringify(q.data.result),old);
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.equal((w.match(/bindtap="openSupplementPlans"/g)||[]).length,1);assert.equal(w.includes('先选每月领多少'),false);assert.equal(w.includes('看看补缴后何时领'),false);assert.ok(w.includes('bindchange="pastTier"'));assert.ok(w.includes('bindchange="futureTierChoice"'));
+});
+
+test('补缴统一年档也先下拉，再选自己填写；更换档次重新计算',()=>{
+ const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.openSupplementPlans();q.quickDetails();q.quickUniformTier({detail:{value:p.tiers.indexOf(1000)}});assert.equal(q.data.quickPlan.summary.total,'14000.00');assert.equal(q.data.quickPlan.uniformIndex,p.tiers.indexOf(1000));q.quickUniformTier({detail:{value:p.tiers.length}});assert.equal(q.data.quickPlan.manualTier,true);q.quickTierInput({detail:{value:'1500'}});q.quickTierSubmit();assert.equal(q.data.quickPlan.tier,1500);assert.ok(q.data.quickPlan.summary);
+});
+
+test('旧会话实际金额不会当默认重置，保存恢复自填金额和下拉状态',()=>{
+ const store={resident:{form:form({historyMode:'simple',segments:[],pastAnnual:'333'})}},q=page(store);q.onLoad();assert.equal(q.data.form.pastAnnual,'333');assert.equal(q.data.pastAmountAuto,false);assert.equal(q.data.pastManual,true);q.regionChoice({detail:{regionId:'440100'}});assert.equal(q.data.form.pastAnnual,'333');q.onHide();const restored=page(store);restored.onLoad();assert.equal(restored.data.form.pastAnnual,'333');assert.equal(restored.data.pastTierIndex,restored.data.pastTiers.length);
 });
