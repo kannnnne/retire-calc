@@ -1,6 +1,6 @@
 {
   "name": "retire-calc-mini",
-  "version": "2.20.0",
+  "version": "2.20.1",
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",

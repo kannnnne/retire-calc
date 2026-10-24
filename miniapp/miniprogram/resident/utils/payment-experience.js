@@ -13,8 +13,6 @@ function illustration(form,result,policy){
  const paid=Number(form.years);if(!Number.isInteger(paid)||paid<0||!Number.isInteger(result.age)||!/^\d+(\.\d{1,2})?$/.test(String(result.openingAmount)))return null;
  const missing=Math.max(0,15-paid);if(!missing)return null;
  if(result.age-15<15)return {limited:true,note:'你目前可能参保的年份还不足15年，不能把缺的年数都当成以前漏交。先按每年缴费安排。'};
- const asYear=Number(String(form.asOf).slice(0,4)),first=Number(form.firstPaidYear);
- if(/^\d{4}$/.test(String(form.firstPaidYear||''))&&asYear-first+1<15)return {limited:true,note:'按你记得的'+first+'年起算，记录还不足15年。更早的年度能否补，需要确认，不能直接按相差年数补齐。'};
  const annual=200,cost=new D(annual).mul(missing),age=Math.max(60,result.age),account=new D(result.openingAmount).plus(cost);
  const base=new D(policy.base).plus(local.ageExtra(policy,age));
  return {limited:false,years:missing,annual,cost:cost.toFixed(0),age,monthly:String(Math.round(base.plus(account.div(139)).div(10).toNumber())*10),note:'仅假设这'+missing+'个年份都允许按每年200元补缴，未加补贴和利息；不代表已经符合补缴条件。'};

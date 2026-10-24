@@ -28,7 +28,7 @@ test('桂平2012建制不等于所有当前59岁者能直接按老参保人补�
  assert.throws(()=>calculate(form({birth:'1967-10',asOf:'2027-10',gxTransitionEnabled:'yes',gxTransitionStart:'2012-01',gxTransitionYears:'10',gxTransitionReviewed:'yes'})),/距60岁不足15年/);
 });
 
-test('贵港结果可返回核对补缴，保留原输入，不自动填可补起点或勾资格',()=>{
+test('贵港结果可返回核对补缴，保留原输入，只预填申请范围不自动勾资格',()=>{
  let def;const base=path.join(__dirname,'../miniprogram/resident/pages/calc');
  vm.runInNewContext(fs.readFileSync(path.join(base,'calc.js'),'utf8'),{Date,JSON,wx:{pageScrollTo(){}},Page:x=>def=x,require:x=>require(path.resolve(base,x))});
  const p={...def,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const [k,v]of Object.entries(patch)){const keys=k.split('.');let t=this.data;for(const key of keys.slice(0,-1))t=t[key];t[keys.at(-1)]=v;}}};
@@ -36,6 +36,6 @@ test('贵港结果可返回核对补缴，保留原输入，不自动填可补�
  assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,69);
  p.reviewMakeup();assert.equal(p.data.result,null);assert.equal(p.data.gxMakeupOpen,true);assert.equal(p.data.planRecords,true);
  assert.equal(p.data.form.age,'59');assert.equal(p.data.form.years,'5');assert.equal(p.data.form.tier,200);
- assert.equal(p.data.form.gxStartYear,'');assert.equal(p.data.form.gxScopeReviewed,'unknown');assert.equal(p.data.form.gxTransitionEnabled,'no');
+ assert.equal(p.data.form.gxStartYear,'2012');assert.equal(p.data.form.gxScopeReviewed,'unknown');assert.equal(p.data.form.gxTransitionEnabled,'no');
  const wxml=fs.readFileSync(path.join(base,'calc.wxml'),'utf8');assert.match(wxml,/逐年交费/);assert.match(wxml,/以前实际漏交的年份/);assert.match(wxml,/bindtap="openPaymentPlanner"/);
 });

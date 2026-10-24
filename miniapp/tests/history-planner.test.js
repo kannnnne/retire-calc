@@ -25,7 +25,7 @@ test('桂平分区只核2012年份，不假填月份或开放无条件60岁补�
 });
 test('贵港59岁5年真实页面点选核对10个漏年后，由69岁改为满60岁后领取',()=>{
  const p=page();p.setData({form:{...p.data.form,...f({ageOnly:true,age:'59',gxStartYear:''})}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.result.chosen.timeline.receivingAge,69);
- p.openMissingPlan();assert.equal(p.data.form.gxStartYear,'');assert.equal(p.data.gxPlan.count,0);
+ p.openMissingPlan();assert.equal(p.data.form.gxStartYear,'2012');assert.equal(p.data.gxPlan.count,0);
  p.missingStart({detail:{value:'2012'}});for(let year=2012;year<=2021;year++)p.missingYear({currentTarget:{dataset:{year}}});assert.equal(p.data.gxPlan.cost,'2000.00');
  p.applyMissingPlan();assert.match(p.data.error,/未确认/);assert.equal(p.data.result,null);
  p.missingConfirm();p.applyMissingPlan();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,60);assert.equal(p.data.result.chosen.total,'2000.00');assert.equal(p.data.result.makeup.subsidy,'0.00');assert.equal(p.data.gxPlanOpen,false);

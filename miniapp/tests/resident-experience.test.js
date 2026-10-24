@@ -12,7 +12,7 @@ test('桂平基本事实可以直接算，不要求用户给自己选择政策�
 });
 test('不记得首次年份也有明确假设的费用示例，不捏造记录或替用户确认可补',()=>{
  const p=guiping();p.calculate();const original=JSON.stringify(p.data.form),monthly=p.data.display.monthly;p.openPaymentPlanner();
- assert.equal(p.data.planning,true);assert.equal(p.data.gxPlan.years.length,0);assert.equal(p.data.form.firstPaidYear,'');
+ assert.equal(p.data.planning,true);assert.equal(p.data.gxPlan.years.length,14);assert.equal(p.data.form.firstPaidYear,'');
  assert.equal(p.data.planIllustration.years,10);assert.equal(p.data.planIllustration.cost,'2000');assert.equal(p.data.planIllustration.age,60);assert.equal(p.data.planIllustration.monthly,'210');assert.match(p.data.planIllustration.note,/不代表已经符合/);
  assert.equal(p.data.planReturn.result.chosen.timeline.receivingAge,69);assert.equal(p.data.form.gxMakeupRows.length,0);assert.equal(p.data.form.gxScopeReviewed,'unknown');
  p.cancelPaymentPlanner();assert.equal(JSON.stringify(p.data.form),original);assert.equal(p.data.display.monthly,monthly);assert.equal(p.data.result.chosen.timeline.receivingAge,69);assert.equal(p.data.planning,false);
@@ -26,8 +26,8 @@ test('确认实际十漏年后，复用原引擎算60岁；只有明确的年份
  const p=guiping();p.calculate();p.openPaymentPlanner();p.missingStart({detail:{value:'2012'}});for(let y=2012;y<=2021;y++)p.missingYear({currentTarget:{dataset:{year:y}}});p.missingConfirm();p.applyMissingPlan();
  assert.equal(p.data.error,'');assert.equal(p.data.planning,false);assert.equal(p.data.result.chosen.timeline.receivingAge,60);assert.equal(p.data.result.chosen.total,'2000.00');assert.equal(p.data.result.makeup.addedYears,10);assert.equal(p.data.result.makeup.subsidy,'0.00');assert.equal(p.data.planReturn,null);
 });
-test('已知首次年份太近或年龄太小时，不制造补十五年的早领示例',()=>{
- const p=guiping();p.calculate();p.openPaymentPlanner();p.missingStart({detail:{value:'2021'}});assert.equal(p.data.planIllustration.limited,true);assert.match(p.data.planIllustration.note,/更早的年度能否补/);
+test('可补起点不等于首次缴费年，年轻人仍不制造补十五年的早领示例',()=>{
+ const p=guiping();p.calculate();p.openPaymentPlanner();p.missingStart({detail:{value:'2021'}});assert.equal(p.data.planIllustration.limited,false);assert.match(p.data.planIllustration.note,/不代表已经符合/);
  const policy=getRegion('450800','guiping');assert.equal(experience.illustration(p.data.form,{age:16,openingAmount:'0.00'},policy).limited,true);
  assert.equal(experience.illustration(p.data.form,{age:59,openingAmount:'bad'},policy),null);
  assert.equal(experience.illustration(p.data.form,p.data.planReturn.result,getRegion('440100')),null);
