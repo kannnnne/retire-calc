@@ -27,21 +27,26 @@ function setup(f,p){
  if(selected.length!==count)throw Error('当前参考范围不足以匹配已交年数，请核对可补起点或历史记录');
  return {start,complete,inferred:!complete,currentAssumed:!['yes','no'].includes(f.paidThisYear)&&r.map.size!==count,paidThisYear,selected,annual:f.pastMonthly?'':String(f.pastAnnual||200),amountAssumed:!f.pastAnnual,years:Array.from({length:Math.max(0,a-Number(start)+1)},(_,i)=>({year:Number(start)+i,selected:selected.includes(Number(start)+i)}))};
 }
-function build(f,p,{mode='TO_SIXTY',selected,annual,currentSubsidy}={}){
+function build(f,p,{mode='TO_SIXTY',selected,annual,currentSubsidy,tier=p.tiers[p.tiers.length-1],futureTier=tier,targets={}}={}){
  if(!['TO_SIXTY','NOW'].includes(mode))throw Error('请选择到60岁交够或现在补够');
+ tier=Number(tier);futureTier=Number(futureTier);
+ if(!p.tiers.includes(tier)||!p.tiers.includes(futureTier))throw Error('请选择当地允许的年缴档次');
  const config=setup(f,p);f={...f,paidThisYear:config.paidThisYear};
  const r=records(f,selected===undefined&&!config.complete?config.selected:selected,annual===undefined?config.annual:annual);if(!r.complete)throw Error('已匹配年份与已交年数或今年缴费不符，请修改参考年份');
  const segments=groups(r.map),base={...f,birth:f.ageOnly?String(Number(f.asOf.slice(0,4))-Number(f.age))+f.asOf.slice(4):f.birth,gxStartYear:config.start,historyMode:'segments',segments,payUntil:'MINIMUM',gxTransitionEnabled:'no',gxTransitionReviewed:'unknown',approvedPlan:null};
  const plan=planner.build(base,[],200,p);if(plan.error)throw Error(plan.error);
  const need=mode==='NOW'?Math.max(0,15-Number(f.years)):planner.suggest(base,p).needed;
  const available=plan.years.filter(x=>!x.paid).map(x=>x.year).sort((a,b)=>b-a);if(available.length<need)throw Error('可用漏缴年份不足，请先核对可补起点；不会虚构年份补足');
- const missing=planner.build(base,available.slice(0,need),'MAX',p),rows=[...missing.rows],asYear=Number(f.asOf.slice(0,4));let subsidyReference=false,subsidyUsed=null;
- for(const [year,original]of r.map){const tiers=tiersForYear(year),target=tiers[tiers.length-1];if(original===target)continue;const row={mode:'upgrade',start:String(year),end:String(year),original,target};
+ const missing=planner.build(base,available.slice(0,need),'MAX',p),rows=[],editable=[],asYear=Number(f.asOf.slice(0,4));let subsidyReference=false,subsidyUsed=null;
+ const pick=(year,original)=>{const allowed=tiersForYear(year).filter(v=>v>=original);const target=Object.prototype.hasOwnProperty.call(targets,year)?Number(targets[year]):Math.max(original,...allowed.filter(v=>v<=tier));if(!allowed.includes(target))throw Error(year+'年请按原年度档次选择，不能低于已交金额');editable.push({year,original,target,allowed,index:allowed.indexOf(target),labels:allowed.map(v=>v+'元')});return target;};
+ for(const year of missing.selected){rows.push({mode:'missing',start:String(year),end:String(year),target:pick(year,0)});}
+ for(const [year,original]of r.map){const target=pick(year,original);if(original===target)continue;const row={mode:'upgrade',start:String(year),end:String(year),original,target};
   if(year===asYear){const previous=(f.gxMakeupRows||[]).find(x=>x.mode==='upgrade'&&Number(x.start)<=year&&Number(x.end)>=year);const entered=currentSubsidy!==undefined?currentSubsidy:previous&&previous.subsidyAlready;
    if(entered!==undefined&&entered!==''&&!amount(entered))throw Error('请核对今年已经享受的补贴');
    subsidyReference=entered===undefined||entered==='';subsidyUsed=subsidyReference?p.subsidies[p.tiers.indexOf(original)]:Number(entered);if(subsidyUsed==null)throw Error('请填今年原档已享受的补贴');row.subsidyAlready=subsidyUsed;
   }rows.push(row);
  }
- return {form:{...base,tier:p.tiers[p.tiers.length-1],gxMakeupRows:rows,gxScopeReviewed:'unknown'},inferred:config.inferred,currentAssumed:config.currentAssumed,rows,addedYears:missing.count,upgradedYears:rows.filter(x=>x.mode==='upgrade').length,subsidyUsed,subsidyReference,mode};
+ for(const year of Object.keys(targets))if(!editable.some(x=>String(x.year)===year))throw Error('调整的年份不在当前方案中，请重新选择');
+ return {form:{...base,tier:futureTier,gxMakeupRows:rows,gxScopeReviewed:'unknown'},editable:editable.sort((a,b)=>a.year-b.year),inferred:config.inferred,currentAssumed:config.currentAssumed,rows,addedYears:missing.count,upgradedYears:rows.filter(x=>x.mode==='upgrade').length,subsidyUsed,subsidyReference,mode};
 }
 module.exports={setup,build};
