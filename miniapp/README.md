@@ -4,6 +4,10 @@
 
 本轮界面约定及验收步骤见[产品规矩](docs/product-principles.md)：先填已知事实，结果集中显示领取时间、每月金额和后续费用；补缴参考示例与已确认方案分开。
 
+## 当前体验检查（2026-10-27）
+
+已执行贵港／桂平背景19组页面事件案例；反馈见[第1轮体验记录](docs/resident-ux-round-1-2026-10-27.md)。7项体验问题尚未修复，下一轮优先UX-01／02／03，先读记录再动产品代码。重跑脚本scripts/resident-ux-cases.js，详细结果在output/resident-ux-cases.json（不提交）。这是JS页面流程与文案角色推演，不是微信模拟器、手机或真人使用研究，不把通过测试等同体验合格。
+
 ## 运行
 
 微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行985项检查。随包decimal.js 10.6.0（MIT）。
