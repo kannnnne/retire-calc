@@ -30,7 +30,7 @@ test('监测能发现负补贴与重复档次，而非仅检查数组长度',()=
 
 test('河南18项和重庆使用明确下限参考，不冒充省级完整基础额，不借用广西补缴',()=>{
  for(const [id,total,annual,credit]of [['410000',18,200,30],['500000',1,8000,200]]){const province=national.provinces.find(p=>p.id===id);assert.equal(province.cities.length,total);for(const c of province.cities){const p=c.resident,r=calculate(form({regionId:c.id,tier:annual}));assert.equal(p.parameterStatus,'NATIONAL_FLOOR_REFERENCE');assert.match(r.referenceLabel,/全国下限/);assert.match(r.referenceText,/不是/);assert.equal(r.chosen.low,(143+(1800+annual*10+credit*10)/139).toFixed(2));assert.equal(r.chosen.lumpYears,0);assert.throws(()=>calculate(form({regionId:c.id,tier:annual,gxTransitionEnabled:'yes',gxTransitionReviewed:'yes'})),/广西|本地区/);}}
- assert.equal(audit().provinceRows.filter(p=>['410000','500000'].includes(p.id)).reduce((n,p)=>n+p.limited,0),19);const template=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.ok(template.includes("region.parameterStatus==='NATIONAL_FLOOR_REFERENCE'?'当地缴费档'"));
+ assert.equal(audit().provinceRows.filter(p=>['410000','500000'].includes(p.id)).reduce((n,p)=>n+p.limited,0),19);const template=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8')+fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/plan-choices.wxml'),'utf8');assert.ok(template.includes("region.parameterStatus==='NATIONAL_FLOOR_REFERENCE'?'当地缴费档'"));
  assert.throws(()=>calculate(form({regionId:'500100',tier:600})),/当地缴费档次/);
 });
 

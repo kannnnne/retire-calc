@@ -1,18 +1,18 @@
 # 退休算盘 微信小程序
 
-免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；最新本地2.24.0已测试编译，未上传。上一开发体验版2.3.0于2026-10-17 22:45上传成功。用户负责开发者工具、手机验收及上传，详见docs/extended-coverage.md。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
+免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；最新本地2.25.0已测试编译，未上传。上一开发体验版2.3.0于2026-10-17 22:45上传成功。用户负责开发者工具、手机验收及上传，详见docs/extended-coverage.md。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
 
 本轮界面约定及验收步骤见[产品规矩](docs/product-principles.md)：先填已知事实，结果集中显示领取时间、每月金额和后续费用；补缴参考示例与已确认方案分开。
 
-## 当前体验检查（2026-10-27，第3轮）
+## 体验检查与修复（2026-10-27，4轮完成）
 
-[第3轮反馈](docs/resident-ux-round-3-2026-10-27.md)记录同19例复查。默认延续已选年档，已满15年不再展示补足切换，费用分本年与以后年度；仅换未来年缴不要求核实历史补缴、不覆盖历史记录。旧会话恢复会补齐新显示字段。1001项测试与原生编译通过，未手机／GUI实测、未上传。
+[第4轮反馈与逐项验收](docs/resident-ux-round-4-2026-10-27.md)记录19例复跑、七项反馈修复和实际限制。GX结果统一“调整缴费方案”，分清未来换档与历史补缴；未参保先看登记／正常缴费选择，不进入盲填表。记不清、年均／月记可先比较，默认沿用已选档，本年与以后费用分开，资格不自动确认。
 
-下一轮处理UX-07调整范围及G08未参保支路，再逐项审计已发现反馈。前两轮保留：[第1轮基线](docs/resident-ux-round-1-2026-10-27.md)、[第2轮](docs/resident-ux-round-2-2026-10-27.md)。脚本scripts/resident-ux-cases.js，详细结果output/resident-ux-cases.json不提交。
+1008项测试与原生编译通过，未手机／GUI实测、未上传。无GUI案例反馈循环完成，不默认继续扩大地区或无限优化。历轮：[第1轮](docs/resident-ux-round-1-2026-10-27.md)、[第2轮](docs/resident-ux-round-2-2026-10-27.md)、[第3轮](docs/resident-ux-round-3-2026-10-27.md)。重跑scripts/resident-ux-cases.js；详细结果output/resident-ux-cases.json不提交。
 
 ## 运行
 
-微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行1001项检查。随包decimal.js 10.6.0（MIT）。
+微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行1008项检查。随包decimal.js 10.6.0（MIT）。
 
 ## 金额优先选择、统一补缴入口（2.22.1）
 
