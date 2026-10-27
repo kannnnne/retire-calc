@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {audit}=require('../scripts/resident-ux-cases');
-function page(patch={}){let def;const dir=path.join(__dirname,'../miniprogram/resident/pages/calc');vm.runInNewContext(fs.readFileSync(path.join(dir,'calc.js'),'utf8'),{Date,JSON,wx:{pageScrollTo(){}},Page:v=>def=v,require:id=>id.endsWith('/session')?{load(){},save(){}}:require(path.resolve(dir,id))});const q={...def,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const[k,v]of Object.entries(patch)){const a=k.split('.');let t=this.data;for(const k of a.slice(0,-1))t=t[k];t[a[a.length-1]]=v;}}};q.setData({form:{...q.data.form,regionId:'450800',asOf:'2026-10',ageOnly:true,age:'59',years:'5',pastAnnual:'200',tier:200,paidThisYear:'yes',receiving:'no',...patch}});q.refreshPolicyQuestions();return q;}
+function page(patch={}){let def;const scrolls=[];const dir=path.join(__dirname,'../miniprogram/resident/pages/calc');vm.runInNewContext(fs.readFileSync(path.join(dir,'calc.js'),'utf8'),{Date,JSON,wx:{pageScrollTo(v){scrolls.push(v);}},Page:v=>def=v,require:id=>id.endsWith('/session')?{load(){},save(){}}:require(path.resolve(dir,id))});const q={...def,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const[k,v]of Object.entries(patch)){const a=k.split('.');let t=this.data;for(const k of a.slice(0,-1))t=t[k];t[a[a.length-1]]=v;}}};q.setData({form:{...q.data.form,regionId:'450800',asOf:'2026-10',ageOnly:true,age:'59',years:'5',pastAnnual:'200',tier:200,paidThisYear:'yes',receiving:'no',...patch}});q.refreshPolicyQuestions();q.scrolls=scrolls;return q;}
 
 test('统一调整展开保留原历史，未来换档即时重算，收起后仍可进补缴取消返回',()=>{
  const q=page();q.calculate();const original=JSON.parse(JSON.stringify(q.data.form));q.fold({currentTarget:{dataset:{key:'compare'}}});assert.equal(q.data.compare,true);q.chooseFuture({currentTarget:{dataset:{annual:1000}}});assert.equal(q.data.form.tier,1000);const after={...q.data.form,tier:original.tier};assert.deepEqual(after,original);assert.ok(q.data.display.monthly);q.openSupplementPlans();assert.equal(q.data.quickPlan.tier,1000);q.cancelMaxPlan();assert.equal(q.data.form.tier,1000);assert.equal(q.data.compare,true);assert.equal(q.data.form.pastAnnual,'200');
@@ -31,4 +31,11 @@ test('GX仅一个结果调整入口，公共内容包含资助和缴费时间，
 
 test('同19例全链路均可执行：未来修改不动过去，补缴未核不能加入，未参保有两条路',()=>{
  const r=audit();assert.equal(r.cases.length,19);assert.deepEqual(r.safetyFailures,[]);assert.ok(r.cases.every(c=>!c.runnerError));assert.equal(r.cases.filter(c=>c.preview).length,14);assert.equal(r.cases.filter(c=>c.reference).length,3);assert.equal(r.cases.find(c=>c.id==='G08').route.view,'参保与缴费选择');assert.equal(r.cases.find(c=>c.id==='G08').registration.questions.view,'查记录');assert.ok(r.cases.filter(c=>c.futureOnly).every(c=>c.futureOnly.historyUnchanged));
+});
+
+
+test('南宁47岁已交12年可连续比较，不强制跳页；主动查看结果才滚回顶部',()=>{
+ const q=page({regionId:'450100',age:'47',years:'12',paidThisYear:'unknown'});q.calculate();q.fold({currentTarget:{dataset:{key:'compare'}}});q.scrolls.length=0;const past=q.data.form.pastAnnual;
+ for(const [annual,monthly]of [[2000,'250'],[6000,'340'],[200,'210']]){q.chooseFuture({currentTarget:{dataset:{annual}}});assert.equal(q.data.display.monthly,monthly);assert.equal(q.data.compare,true);assert.equal(q.data.form.pastAnnual,past);assert.equal(q.scrolls.length,0);}
+ q.scrollTop();assert.equal(q.scrolls.length,1);assert.equal(q.scrolls[0].scrollTop,0);
 });

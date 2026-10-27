@@ -6,6 +6,7 @@
   <view wx:if="{{!canComparePayment}}" class="notice-box">{{region.rule==='GUANGXI_ORDINARY'?'没有待缴的正常年份；需要时可比较上面的历史补缴或提档。':result.makeup?'已按上面记录安排补缴／提档，没有待缴的以后年度。':result.chosen.timeline.lockedYear?'今年按已确认档次交，没有可更换的以后年度。':'没有待缴的正常年度。本页不把过去缴费改成高档；到龄补缴的可选档须先向经办核定。'}}</view>
   <block wx:else>
    <view class="option-heading">退休后，每月约领多少？<text>{{region.parameterStatus==='NATIONAL_FLOOR_REFERENCE'?'当地缴费档':region.provincial?'省级参考档':region.continuous?'常用金额':planOptions.length+'档可选'}}</text></view>
+   <view wx:if="{{region.rule==='GUANGXI_ORDINARY'}}" class="future-selection-summary" aria-live="polite"><view>当前选：每月约{{display.monthly}}元<text>正常年缴{{result.chosen.annualTotal}}元</text></view><button class="text-button" bindtap="scrollTop">查看结果 ↑</button></view>
    <view class="income-options">
     <button wx:for="{{planOptions}}" wx:key="annual" class="income-choice {{item.annual===result.chosen.annual?'chosen-option':''}}" data-annual="{{item.annual}}" bindtap="chooseFuture" aria-label="每月约{{item.monthly}}元，{{item.annual===result.chosen.annual?'已选':'点击选择'}}"><view class="choice-number"><text class="approx">约</text>{{item.monthly}}<text>元／月</text></view><view class="choice-state">{{item.annual===result.chosen.annual?'✓ 已选':'选择'}}</view></button>
    </view>
