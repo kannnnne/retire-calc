@@ -39,3 +39,10 @@ test('南宁47岁已交12年可连续比较，不强制跳页；主动查看结�
  for(const [annual,monthly]of [[2000,'250'],[6000,'340'],[200,'210']]){q.chooseFuture({currentTarget:{dataset:{annual}}});assert.equal(q.data.display.monthly,monthly);assert.equal(q.data.compare,true);assert.equal(q.data.form.pastAnnual,past);assert.equal(q.scrolls.length,0);}
  q.scrollTop();assert.equal(q.scrolls.length,1);assert.equal(q.scrolls[0].scrollTop,0);
 });
+
+
+test('到龄已交满且无后续费用，展示已交够；仍需续交时不能误标',()=>{
+ const done=page({regionId:'450100',age:'60',years:'15',paidThisYear:'yes'});done.calculate();assert.equal(done.data.display.noFurtherPayment,true);assert.equal(Number(done.data.result.chosen.total),0);
+ const future=page({regionId:'450100',age:'59',years:'5',paidThisYear:'yes'});future.calculate();assert.equal(future.data.display.noFurtherPayment,false);
+ done.reset();assert.equal(done.data.result,null);assert.equal(done.data.form.regionId,'450100');assert.equal(done.data.form.age,'55');
+});

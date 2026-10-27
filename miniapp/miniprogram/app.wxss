@@ -11,7 +11,7 @@ page{--motion-press:130ms;--motion-enter:220ms}button{transition:background-colo
 /* Shared native picker affordance and result actions. */
 picker .control{gap:18rpx;background:#f8faff;border-color:#bac9dd;padding-right:24rpx;position:relative}
 picker .control::after{content:'';display:block;width:14rpx;height:14rpx;flex:none;border-right:3rpx solid #526984;border-bottom:3rpx solid #526984;transform:rotate(45deg);margin:-7rpx 3rpx 0 14rpx}
-.result-actions{display:flex;align-items:stretch;gap:20rpx;max-width:844rpx;margin:auto}.result-actions .primary{width:auto!important;margin:0;min-width:0}.result-actions .restart-button{flex:none;min-width:196rpx;border:1rpx solid #c8d1de;background:#fff;color:var(--muted)}
+.result-actions{display:flex;align-items:stretch;gap:20rpx;max-width:844rpx;margin:auto}.result-actions .primary{width:auto!important;margin:0;min-width:0}.result-actions .restart-button{flex:none;width:196rpx!important;min-width:0;border:1rpx solid #c8d1de;background:#fff;color:var(--muted)}
 
 /* Employee and resident calculators share the same form and result rhythm. */
 .pension-form{padding:24rpx}.pension-form .card-top{margin-bottom:0}.entry-row{display:flex;align-items:center;gap:18rpx;min-height:88rpx;padding:12rpx 0;border-bottom:0;box-sizing:border-box}.row-label{width:170rpx;flex:none;font-size:29rpx;color:var(--ink)}.row-entry{flex:1;min-width:0}.entry-row .control,.entry-row .input-wrap{margin:0;min-height:88rpx;font-size:29rpx}.form-section-title{font-size:27rpx;color:var(--muted);margin-top:28rpx;padding-top:24rpx;border-top:1rpx solid var(--line)}
