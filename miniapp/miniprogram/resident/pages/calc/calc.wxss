@@ -25,3 +25,5 @@
 .quick-entry{margin:24rpx 0}.quick-income{margin:28rpx 0;padding:28rpx;border-radius:18rpx;background:var(--soft,#edf3ff)}.quick-plan .payment-grid{margin-top:24rpx}.quick-plan .segment{margin-bottom:24rpx}
 
 .income-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16rpx;margin:20rpx 0 28rpx}.income-choice{padding:22rpx 12rpx;min-height:112rpx;border:2rpx solid var(--line);border-radius:16rpx;background:#fff;color:var(--ink);line-height:1.6}.income-choice.active{background:#edf3ff;border-color:var(--brand);color:var(--brand)}.income-choice text{font-size:38rpx;font-weight:650}.choice-note{font-size:24rpx;color:var(--muted);margin-top:4rpx}.quick-adjust{margin:16rpx 0 28rpx;border-top:1rpx solid var(--line)}.year-origin{display:block;font-size:24rpx;color:var(--muted);margin-top:6rpx}
+
+.route-kicker{font-size:29rpx;font-weight:600;line-height:1.6;margin-bottom:12rpx;color:var(--ink)}

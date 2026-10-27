@@ -21,14 +21,17 @@ function build(f,selected=[],target=200,policy={}){
  return {years,selected:chosen,tiers,values,labels,tierIndex:Math.max(0,values.indexOf(target)),target,targetLabel:target==='MAX'?'按各年份最高档':target+'元／年',complete,count:chosen.length,cost:cost.toFixed(2),rows,error:''};
 }
 // This only drafts named years from complete records. It never approves them.
-function suggest(f,policy={}){
- const plan=build(f,[],200,policy);if(plan.error)throw Error(plan.error);
- if(!plan.complete)throw Error('先按分年记录填清已经交过的年份，再自动选漏缴年份；也可以自己逐年点选');
+function minimumMissing(f,policy={}){
  const a=Number(f.asOf.slice(0,4))*12+Number(f.asOf.slice(5))-1,b=f.ageOnly?a-Number(f.age)*12:Number(f.birth.slice(0,4))*12+Number(f.birth.slice(5))-1,sixty=b+720;
  const first=Math.floor(a/12)+(f.paidThisYear==='yes'?1:0);let normal=0;
  for(let y=first;y<=Math.floor(sixty/12);y++)if(Math.max(a,y*12+(policy.annualMonth?policy.annualMonth-1:a%12))<=sixty)normal++;
- const needed=Math.max(0,15-Number(f.years)-normal),available=plan.years.filter(x=>!x.paid).map(x=>x.year).sort((a,b)=>b-a);
- if(available.length<needed)throw Error('当前起点内的漏缴年份还不够，请向社保核对更早年份或其他补缴条件');
- return {selected:available.slice(0,needed),normalYears:normal,needed};
+ return {needed:Math.max(0,15-Number(f.years)-normal),normalYears:normal};
 }
-module.exports={build,suggest};
+function suggest(f,policy={}){
+ const plan=build(f,[],200,policy);if(plan.error)throw Error(plan.error);
+ if(!plan.complete)throw Error('先按分年记录填清已经交过的年份，再自动选漏缴年份；也可以自己逐年点选');
+ const {needed,normalYears}=minimumMissing(f,policy),available=plan.years.filter(x=>!x.paid).map(x=>x.year).sort((a,b)=>b-a);
+ if(available.length<needed)throw Error('当前起点内的漏缴年份还不够，请向社保核对更早年份或其他补缴条件');
+ return {selected:available.slice(0,needed),normalYears,needed};
+}
+module.exports={build,suggest,minimumMissing};
