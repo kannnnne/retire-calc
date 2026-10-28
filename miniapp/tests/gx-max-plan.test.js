@@ -97,13 +97,13 @@ test('选金额后改未来年缴与单年补缴，上方实时重算；重新�
 
 test('自己输入非预设合法档可算，非法档不应用；输入过程中不移除编辑控件',()=>{
  const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.openMaxPlan();q.quickDetails();q.quickTierInput({detail:{value:'1500'}});assert.ok(q.data.quickPlan.summary);assert.ok(q.data.quickPlan.draft.editable.length);assert.equal(q.data.quickPlan.dirty,true);q.quickRefresh();assert.equal(q.data.quickPlan.tier,1500);assert.equal(q.data.quickPlan.dirty,false);assert.equal(q.data.quickPlan.summary.total,result(max.build(form(),p,{tier:1500})).chosen.total);
- q.quickTierInput({detail:{value:'123'}});q.quickTierSubmit();assert.match(q.data.quickPlan.error,/允许的年缴档次/);q.quickConfirm();q.applyMaxPlan();assert.match(q.data.quickPlan.error,/点击更新/);assert.equal(q.data.form.gxScopeReviewed,'unknown');
+ q.quickTierInput({detail:{value:'123'}});q.quickTierSubmit();assert.match(q.data.quickPlan.error,/允许的年缴档次/);q.quickConfirm();q.applyMaxPlan();assert.match(q.data.quickPlan.error,/先按所选方案计算/);assert.equal(q.data.form.gxScopeReviewed,'unknown');
  q.quickFuture({detail:{value:0}});assert.equal(q.data.quickPlan.dirty,true);assert.match(q.data.quickPlan.error,/允许的年缴档次/);
 });
 
 test('切补足方式重算选项和时间，不把未来年费留在现在补满路线；取消不覆盖结果',()=>{
  const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.result);q.openMaxPlan();q.quickChoice({currentTarget:{dataset:{tier:1000}}});q.quickMode({currentTarget:{dataset:{mode:'NOW'}}});assert.equal(q.data.quickPlan.summary.normalYears,0);assert.equal(q.data.quickPlan.summary.total,'14000.00');assert.equal(q.data.quickPlan.options.find(x=>x.tier===6000).total,'59000.00');q.cancelMaxPlan();assert.equal(JSON.stringify(q.data.result),old);
- const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.ok(w.indexOf('quickPlan.options')<w.indexOf('按这份方案，每月约领'));for(const event of ['quickChoice','quickFuture','quickTarget','quickTierSubmit'])assert.ok(w.includes(event));assert.ok(w.includes('自己调整怎么交'));
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.ok(w.indexOf('quickPlan.options')<w.indexOf('按这份方案，每月约领'));for(const event of ['selectQuick','quickFuture','quickTarget','quickTierSubmit'])assert.ok(w.includes(event));assert.ok(w.includes('自己调整怎么交'));
 });
 test('按地区默认最低历史年档，选档与手填都可用，切地区不覆盖实际输入',()=>{
  const q=page();q.onLoad();q.regionChoice({detail:{regionId:'450800'}});assert.equal(q.data.form.pastAnnual,'200');assert.equal(q.data.pastTierIndex,0);assert.equal(q.data.pastManual,false);

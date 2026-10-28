@@ -31,7 +31,7 @@ module.exports={
  quickSubsidy(e){this.setData({'quickPlan.currentSubsidy':e.detail.value,'quickPlan.confirmed':false,'quickPlan.summary':null,'quickPlan.draft':null});},
  quickDetails(){this.setData({'quickPlan.details':!this.data.quickPlan.details});},quickConfirm(){this.setData({'quickPlan.confirmed':!this.data.quickPlan.confirmed,'quickPlan.error':''});},
  cancelMaxPlan(){this.setData({quickPlan:null});this.scrollTop();},
- applyMaxPlan(){const q=this.data.quickPlan;if(!q||!q.draft)return;if(q.dirty){this.setData({'quickPlan.error':'金额修改后，请先点击更新'});return;}if(q.draft.rows.length&&!q.confirmed){this.setData({'quickPlan.error':'请先核对原记录、拟补年份和补贴，确认尚未领取养老金'});return;}
+ applyMaxPlan(){const q=this.data.quickPlan;if(!q||!q.draft)return;if(q.dirty||q.pendingTier!==null&&q.pendingTier!==undefined||q.pendingMode){this.setData({'quickPlan.error':'请先按所选方案计算，再使用方案'});return;}if(q.draft.rows.length&&!q.confirmed){this.setData({'quickPlan.error':'请先核对原记录、拟补年份和补贴，确认尚未领取养老金'});return;}
   const previous={};for(const k of ['form','result','baseline','display','planOptions','compare'])previous[k]=this.data[k];this.setData({form:q.draft.rows.length?{...q.draft.form,gxScopeReviewed:'yes'}:{...this.data.form,tier:q.futureTier},result:null,error:''});this.refreshPolicyQuestions();this.calculate(true);
   if(this.data.result&&!this.data.error)this.setData({quickPlan:null});else {const error=this.data.error;this.setData({...previous,error:'','quickPlan.error':error});this.refreshPolicyQuestions();}
  }

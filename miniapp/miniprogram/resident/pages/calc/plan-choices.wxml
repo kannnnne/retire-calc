@@ -1,29 +1,30 @@
-<block wx:if="{{paymentGuide && region.rule!=='GUANGXI_ORDINARY'}}"><button class="fold" data-key="paymentGuideOpen" bindtap="fold">补缴办法<text>{{paymentGuideOpen?'收起 −':'展开 ＋'}}</text></button><view wx:if="{{paymentGuideOpen}}" class="detail-text"><view class="detail-group" wx:for="{{paymentGuide.rows}}" wx:key="id"><view class="option-heading">{{item.title}}</view><view>{{item.text}}</view><view wx:if="{{item.quote}}">{{item.quote}}</view><button wx:if="{{item.action}}" class="text-button" data-mode="{{item.mode}}" bindtap="guideAction">{{item.action}} ›</button></view><view class="hint">{{paymentGuide.note}}</view><button class="text-button" data-id="{{paymentGuide.sourceId}}" bindtap="policyDocument">查看缴费规定 ›</button></view></block>
 
-  <view wx:if="{{canContinueTo60}}" class="entry-row"><text class="row-label">缴费时间</text><picker class="row-entry" range="{{payUntilLabels}}" value="{{payUntilIndex}}" bindchange="payUntil"><view class="control">{{payUntilLabels[payUntilIndex]}}</view></picker></view>
- <button wx:if="{{form.approvedPlan}}" class="text-button" bindtap="removeApprovedPlan">取消这次补缴，查看原方案</button><view class="fixed-history">{{form.never?'还没参保，这里只比较从现在开始每年交费。':result.transition?'已交的'+result.paidYears+'年不变，比较核定补足'+result.transition.years+'年的档次':result.makeup?'补缴方案不变，只选以后每年交多少':result.chosen.lumpYears?'已交的'+result.paidYears+'年不变，比较以后缴费和补足档次':'以前交的'+paymentSummary.paid+'年不变，只选以后每年交多少'}}</view>
+
+  <view wx:if="{{canContinueTo60}}" class="entry-row"><text class="row-label">缴费时间</text><picker class="row-entry" range="{{payUntilLabels}}" value="{{pendingPayUntil===null || pendingPayUntil===undefined?payUntilIndex:pendingPayUntil}}" bindchange="selectPayUntil"><view class="control">{{payUntilLabels[pendingPayUntil===null || pendingPayUntil===undefined?payUntilIndex:pendingPayUntil]}}</view></picker></view>
+ <button wx:if="{{form.approvedPlan}}" class="text-button" bindtap="removeApprovedPlan">取消这次补缴，查看原方案</button>
   <view wx:if="{{result.chosen.selfCollective}}" class="active-extra">已包含每年额外交{{result.chosen.selfCollective}}元</view>
   <view wx:if="{{!canComparePayment}}" class="notice-box">{{region.rule==='GUANGXI_ORDINARY'?'没有待缴的正常年份；需要时可比较上面的历史补缴或提档。':result.makeup?'已按上面记录安排补缴／提档，没有待缴的以后年度。':result.chosen.timeline.lockedYear?'今年按已确认档次交，没有可更换的以后年度。':'没有待缴的正常年度。本页不把过去缴费改成高档；到龄补缴的可选档须先向经办核定。'}}</view>
   <block wx:else>
    <view class="option-heading">退休后，每月约领多少？<text>{{region.parameterStatus==='NATIONAL_FLOOR_REFERENCE'?'当地缴费档':region.provincial?'省级参考档':region.continuous?'常用金额':planOptions.length+'档可选'}}</text></view>
-   <view wx:if="{{region.rule==='GUANGXI_ORDINARY'}}" class="future-selection-summary" aria-live="polite"><view>当前选：每月约{{display.monthly}}元<text>正常年缴{{result.chosen.annualTotal}}元</text></view><button class="text-button" bindtap="scrollTop">查看结果 ↑</button></view>
+
    <view class="income-options">
-    <button wx:for="{{planOptions}}" wx:key="annual" class="income-choice {{item.annual===result.chosen.annual?'chosen-option':''}}" data-annual="{{item.annual}}" bindtap="chooseFuture" aria-label="每月约{{item.monthly}}元，{{item.annual===result.chosen.annual?'已选':'点击选择'}}"><view class="choice-number"><text class="approx">约</text>{{item.monthly}}<text>元／月</text></view><view class="choice-state">{{item.annual===result.chosen.annual?'✓ 已选':'选择'}}</view></button>
+    <button wx:for="{{planOptions}}" wx:key="annual" class="income-choice {{item.annual===(pendingAnnual===null || pendingAnnual===undefined?result.chosen.annual:pendingAnnual)?'chosen-option':''}}" data-annual="{{item.annual}}" bindtap="selectFuture" aria-label="每月约{{item.monthly}}元，{{item.annual===(pendingAnnual===null || pendingAnnual===undefined?result.chosen.annual:pendingAnnual)?'已选':'点击选择'}}"><view class="choice-number"><text class="approx">约</text>{{item.monthly}}<text>元／月</text></view><view class="choice-state">{{item.annual===(pendingAnnual===null || pendingAnnual===undefined?result.chosen.annual:pendingAnnual)?(pendingAnnual===null || pendingAnnual===undefined?'✓ 当前方案':'待确认'):'选择'}}</view></button>
    </view>
+   <button class="primary confirm-plan" bindtap="confirmFuture" disabled="{{(pendingAnnual===null || pendingAnnual===undefined) && (pendingPayUntil===null || pendingPayUntil===undefined)}}">按所选方案计算</button>
    <block wx:if="{{region.socialAidCap && result.chosen.timeline.normalYears && result.chosen.timeline.futureNormalYears!==0}}">
     <button class="extra-toggle" data-key="extraOpen" bindtap="fold">家人还能帮你加一笔（选填）<text>{{extraOpen?'收起 −':'展开 ＋'}}</text></button>
     <view wx:if="{{extraOpen}}" class="extra-options">
      <view class="hint">先交当年养老费，再由子女等申请资助。每年与集体补助合计最多{{region.socialAidCap}}元，不增加缴费年数。</view>
-     <checkbox-group bindchange="socialAidConfirm"><label class="aid-confirm"><checkbox value="yes" checked="{{form.socialAidConfirmed==='yes'}}" color="#2463eb"/>没有其他集体补助或社会资助</label></checkbox-group>
-     <view wx:if="{{form.socialAidConfirmed==='yes'}}" class="field"><text>以后每年资助 · 常用金额</text><picker range="{{socialAidLabels}}" value="{{socialAidIndex}}" bindchange="socialAidChoose"><view class="control">{{socialAidLabels[socialAidIndex]}}</view></picker></view>
+     <checkbox-group bindchange="selectAidConfirm"><label class="aid-confirm"><checkbox value="yes" checked="{{(pendingAidConfirmed===null || pendingAidConfirmed===undefined?form.socialAidConfirmed:pendingAidConfirmed)==='yes'}}" color="#2463eb"/>没有其他集体补助或社会资助</label></checkbox-group>
+     <view wx:if="{{(pendingAidConfirmed===null || pendingAidConfirmed===undefined?form.socialAidConfirmed:pendingAidConfirmed)==='yes'}}" class="field"><text>以后每年资助 · 常用金额</text><picker range="{{socialAidLabels}}" value="{{socialAidIndex}}" bindchange="selectAid"><view class="control">{{socialAidLabels[socialAidIndex]}}</view></picker></view>
      <view class="hint">只计上面尚待缴费的正常年度，不补过去、不加到到龄补费；没有额外政府补贴。</view>
     </view>
    </block>
    <button wx:if="{{form.regionId==='440100'}}" class="extra-toggle" data-key="extraOpen" bindtap="fold">其他增额方式（选填）<text>{{extraOpen?'收起 −':'展开 ＋'}}</text></button>
    <view wx:if="{{extraOpen && form.regionId==='440100'}}" class="extra-options">
     <view class="hint">村集体没有给你补助时，才可选这一项。</view>
-    <button class="collective-check" bindtap="toggleCollective">{{form.noCollective==='yes'?'☑':'□'}} 我确认没有村集体补助，想额外交费</button>
-    <picker wx:if="{{form.noCollective==='yes'}}" range="{{['不加交','另外360元／年','另外600元／年','另外900元／年','另外1200元／年','另外1800元／年','另外3600元／年','另外4800元／年']}}" value="{{collectiveIndex||0}}" bindchange="collectiveTier"><view class="control">以后每年额外交：{{form.selfCollectiveTier||0}}元</view></picker>
+    <button class="collective-check" bindtap="selectCollectiveToggle">{{(pendingNoCollective===null || pendingNoCollective===undefined?form.noCollective:pendingNoCollective)==='yes'?'☑':'□'}} 我确认没有村集体补助，想额外交费</button>
+    <picker wx:if="{{(pendingNoCollective===null || pendingNoCollective===undefined?form.noCollective:pendingNoCollective)==='yes'}}" range="{{['不加交','另外360元／年','另外600元／年','另外900元／年','另外1200元／年','另外1800元／年','另外3600元／年','另外4800元／年']}}" value="{{collectiveIndex||0}}" bindchange="selectCollective"><view class="control">以后每年额外交：{{pendingCollective===null || pendingCollective===undefined?form.selfCollectiveTier||0:pendingCollective}}元</view></picker>
     <view class="hint">这笔钱也由你承担，属于自费集体档；只加到以后每年缴费，不补以前的年份，也不加入到龄补缴。</view>
-   </view><button wx:if="{{moreFutureAvailable}}" class="text-button" bindtap="moreFutureOptions">{{allFuturePlans?'收起金额':'查看更多金额'}} {{allFuturePlans?'−':'＋'}}</button>
+   </view><button wx:if="{{extraOpen}}" class="primary confirm-plan" bindtap="confirmExtra" disabled="{{(pendingCollective===null || pendingCollective===undefined) && (pendingAid===null || pendingAid===undefined)}}">按所选方案计算</button><button wx:if="{{moreFutureAvailable}}" class="text-button" bindtap="moreFutureOptions">{{allFuturePlans?'收起金额':'查看更多金额'}} {{allFuturePlans?'−':'＋'}}</button>
   </block>

@@ -25,7 +25,7 @@ test('登记引导不能给已领取者、新参保者制造即时补足或批�
 
 test('GX仅一个结果调整入口，公共内容包含资助和缴费时间，非GX仍用原卡片',()=>{
  const dir=path.join(__dirname,'../miniprogram/resident/pages/calc'),w=fs.readFileSync(path.join(dir,'calc.wxml'),'utf8'),shared=fs.readFileSync(path.join(dir,'plan-choices.wxml'),'utf8');assert.ok(w.includes('调整缴费方案'));assert.ok(w.includes('只改以后每年交'));assert.ok(w.includes('补以前的漏缴或差额'));assert.ok(w.includes('region.rule!==\'GUANGXI_ORDINARY\''));assert.equal((w.match(/bindtap="openSupplementPlans"/g)||[]).length,1);assert.equal((w.match(/<include src="plan-choices.wxml"\/>/g)||[]).length,2);
- for(const token of ['bindtap="chooseFuture"','bindchange="payUntil"','bindchange="socialAidChoose"','bindtap="moreFutureOptions"','补缴方案不变，只选以后每年交多少'])assert.ok(shared.includes(token),token);
+ for(const token of ['bindtap="selectFuture"','bindchange="selectPayUntil"','bindchange="selectAid"','bindtap="moreFutureOptions"','bindtap="confirmFuture"'])assert.ok(shared.includes(token),token);
  assert.ok(w.includes('我还没参加，可以登记参保吗？'));assert.ok(w.includes('我这类情况有没有补缴办法？'));assert.ok(w.includes('wx:if="{{!form.never}}" class="primary" bindtap="recordsReady"'));
 });
 
