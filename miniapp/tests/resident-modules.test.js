@@ -22,3 +22,6 @@ test('有截止日地区显示今年实际档；未来最高档不改今年经�
 
 
 test('带新资料进入补缴不继承上次已打开的核定面板或个人确认',()=>{const old=page('calc');old.onLoad({module:'makeup'});old.setData({approvedPlanning:true,approvedReturn:{form:{regionId:'110100'}},'form.gxScopeReviewed':'yes'});old.onHide();old.sessions['resident-transfer']=flow.context(flow.defaults({regionId:'450800'}));const fresh=page('calc',old.sessions);fresh.onLoad({module:'makeup',transfer:'1'});assert.equal(fresh.data.approvedPlanning,false);assert.equal(fresh.data.approvedReturn,null);assert.equal(fresh.data.form.gxScopeReviewed,'unknown');assert.equal(fresh.data.form.regionId,'450800');});
+
+
+test('独立补缴只把展示金额取整，原始费用不改；无历史补缴不展示多余资格勾选',()=>{const q=page('calc');q.onLoad({module:'makeup'});q.regionChoice({detail:{regionId:'450800'}});q.moduleCalculate();assert.ok(q.data.quickPlan,q.data.error);const p=q.data.quickPlan;assert.equal(p.display.now,Math.round(Number(p.summary.nowCost)));assert.equal(p.display.total,Math.round(Number(p.summary.total)));assert.equal(typeof p.summary.total,'string');assert.equal(p.confirmed,false);const source=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/makeup-preview.wxml'),'utf8');assert.match(source,/<button wx:if="{{quickPlan.draft.rows.length}}" class="eligibility-check/);assert.ok(source.includes('quickPlan.display.total'));});
