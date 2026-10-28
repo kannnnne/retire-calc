@@ -34,3 +34,5 @@
 .future-selection-summary .text-button{width:auto!important;min-width:0;white-space:nowrap}.future-selection-summary view{overflow-wrap:normal}.future-selection-summary view text{white-space:nowrap}
 
 .registration-choice{width:100%!important;margin-left:0;margin-right:0}
+
+.makeup-intake .entry-row{margin-top:24rpx}.basic-shortcut{width:100%!important;min-height:96rpx;text-align:left;color:var(--brand);font-size:28rpx;padding:24rpx 4rpx}.mast .text-button{width:auto!important}.makeup-intake .settings-fold{background:#f7f9fc;border:0;border-radius:12rpx;padding:16rpx;margin-top:28rpx}

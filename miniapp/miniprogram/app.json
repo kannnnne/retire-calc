@@ -15,7 +15,10 @@
     {
       "root": "resident",
       "pages": [
-        "pages/calc/calc"
+        "pages/calc/calc",
+        "pages/home/home",
+        "pages/basic/basic",
+        "pages/policy/policy"
       ]
     },
     {

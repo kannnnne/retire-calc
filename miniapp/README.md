@@ -1,8 +1,12 @@
 # 退休算盘 微信小程序
 
-免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；最新本地2.25.2已测试编译，未上传。上一开发体验版2.3.0于2026-10-17 22:45上传成功。用户负责开发者工具、手机验收及上传，详见docs/extended-coverage.md。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
+免费离线养老计算工具，原生WXML/WXSS/JavaScript，无服务器、域名、云开发、登录、支付或输入磁盘保存。用户确认1.1.0已上线；最新本地2.26.0已测试编译，未上传。上一开发体验版2.3.0于2026-10-17 22:45上传成功。用户负责开发者工具、手机验收及上传，详见docs/extended-coverage.md。正式名称“退休算盘”由utils/brand.js集中配置，运行scripts/sync-brand.js同步导航标题。
 
 本轮界面约定及验收步骤见[产品规矩](docs/product-principles.md)：先填已知事实，结果集中显示领取时间、每月金额和后续费用；补缴参考示例与已确认方案分开。
+
+## 居民养老分模块（2.26.0）
+
+居民入口分为养老金计算／补缴断缴。新参保页只填地区、年龄和年缴，默认本地已核最高档；补缴页独立，专业记录折叠，两个入口可带资料互跳。当地政策新增缴费档次／正常补贴表，未知金额不造最高档。1024项测试、原生编译与角色事件演练通过；GUI窗口两次无法激活，模拟器视觉及手机验收待完成，未上传。详见[本轮交付与验收](docs/resident-modules-delivery-2026-10-28.md)、[计划](docs/resident-modules-plan-2026-10-28.md)。
 
 ## 小屏续查（2.25.2）
 
@@ -20,7 +24,7 @@
 
 ## 运行
 
-微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行1010项检查。随包decimal.js 10.6.0（MIT）。
+微信开发者工具导入D:\project\retire-calc-mini，AppID wx1e58d0b9d6cdf939，启动页pages/home/home。无需npm安装或构建，npm test执行1024项检查。随包decimal.js 10.6.0（MIT）。
 
 ## 金额优先选择、统一补缴入口（2.22.1）
 

@@ -1,0 +1,12 @@
+const session=require('../../utils/session');
+const {getRegion}=require('../data/regions');
+const keys=['regionId','localArea','ageOnly','age','birth','asOf','tier','cdResidence','currentYearTier'];
+function context(form){const f={};for(const k of keys)if(form[k]!==undefined)f[k]=form[k];return f;}
+function send(form){session.save('resident-transfer',context(form));}
+function take(){const f=session.load('resident-transfer');session.save('resident-transfer',null);return f;}
+function age(form){if(form.ageOnly)return Number(form.age);const a=String(form.asOf).split('-').map(Number),b=String(form.birth).split('-').map(Number);return Math.floor(((a[0]-b[0])*12+a[1]-b[1])/12);}
+function choices(form){const r=getRegion(form.regionId,form.localArea);if(!r)return {region:null,tiers:[]};let tiers=(r.tiers||[]).slice();if(r.residenceRequired&&form.cdResidence==='urban')tiers=tiers.slice(3);if(r.lumpCap&&age(form)>=60)tiers=tiers.filter(v=>v<=r.lumpCap);return {region:r,tiers:r.annualInput?[]:tiers};}
+function defaults(seed={}){const d=new Date(),asOf=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),form={regionId:'440100',localArea:'',ageOnly:true,age:'55',birth:'',asOf,cdResidence:'rural',...context(seed)};const {tiers}=choices(form);form.tier=tiers.includes(Number(seed.tier))?Number(seed.tier):tiers.length?Math.max(...tiers):'';return form;}
+function input(form){const f={...form,never:true,years:'0',balance:'0',pastAnnual:'',accountMode:'estimate',historyMode:'simple',paidThisYear:'no',budget:'',receiving:'no',eligible:'yes',ordinary:'yes',transition:'unknown',extended:'unknown',payUntil:'MINIMUM',usedSubsidy:'0',socialAidAnnual:0,selfCollectiveTier:0,gxTransitionEnabled:'no',gxMakeupRows:[]};if(f.ageOnly){if(!/^\d+$/.test(String(f.age))||age(f)<16||age(f)>70)throw Error('请填写16至70岁的年龄');f.birth=(Number(f.asOf.slice(0,4))-Number(f.age))+'-'+f.asOf.slice(5);}else if(!/^\d{4}-\d{2}$/.test(f.birth))throw Error('请选择出生年月');return f;}
+function display(result){const s=result.chosen,t=s.timeline,normal=s.schedule.filter(x=>x.type.startsWith('正常年缴'));return {monthly:Math.round((Number(s.low)+Number(s.high))/20)*10,age:t.receivingAge,receipt:s.receiptMonth||s.receiptYear+'年',annual:s.annual,years:t.normalYears,first:normal[0]?.year,last:normal[normal.length-1]?.year,total:Math.round(Number(s.total)),lumpYears:s.lumpYears,lumpCost:Math.round(Number(s.lumpCost)),lumpAge:t.lumpAge,lumpMonth:t.lumpMonth,required:result.requiredYears||15};}
+module.exports={context,send,take,age,choices,defaults,input,display};
