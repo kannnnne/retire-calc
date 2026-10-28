@@ -124,7 +124,7 @@ test('以后金额可下拉或手填合法年档，非法输入不能回用旧�
 
 test('结果只有一个补缴方案入口，直接选月领；进入手填可返回原结果',()=>{
  const q=page();q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.result);q.openSupplementPlans();assert.equal(q.data.quickPlan.options.length,6);assert.equal(q.data.planning,false);q.openPaymentPlanner();assert.equal(q.data.quickPlan,null);assert.equal(q.data.planning,true);q.cancelPaymentPlanner();assert.equal(JSON.stringify(q.data.result),old);
- const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.equal((w.match(/bindtap="openSupplementPlans"/g)||[]).length,1);assert.equal(w.includes('先选每月领多少'),false);assert.equal(w.includes('看看补缴后何时领'),false);assert.ok(w.includes('bindchange="pastTier"'));assert.ok(w.includes('bindchange="futureTierChoice"'));
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.equal((w.match(/data-route="past"/g)||[]).length,1);assert.equal(w.includes('先选每月领多少'),false);assert.equal(w.includes('看看补缴后何时领'),false);assert.ok(w.includes('bindchange="pastTier"'));assert.ok(w.includes('bindchange="futureTierChoice"'));
 });
 
 test('补缴统一年档也先下拉，再选自己填写；更换档次重新计算',()=>{

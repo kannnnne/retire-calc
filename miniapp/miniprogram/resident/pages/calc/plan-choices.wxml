@@ -11,7 +11,7 @@
     <button wx:for="{{planOptions}}" wx:key="annual" class="income-choice {{item.annual===(pendingAnnual===null || pendingAnnual===undefined?result.chosen.annual:pendingAnnual)?'chosen-option':''}}" data-annual="{{item.annual}}" bindtap="selectFuture" aria-label="每月约{{item.monthly}}元，{{item.annual===(pendingAnnual===null || pendingAnnual===undefined?result.chosen.annual:pendingAnnual)?'已选':'点击选择'}}"><view class="choice-number"><text class="approx">约</text>{{item.monthly}}<text>元／月</text></view><view class="choice-state">{{item.annual===(pendingAnnual===null || pendingAnnual===undefined?result.chosen.annual:pendingAnnual)?(pendingAnnual===null || pendingAnnual===undefined?'✓ 当前方案':'待确认'):'选择'}}</view></button>
    </view>
    <button class="primary confirm-plan" bindtap="confirmFuture" disabled="{{(pendingAnnual===null || pendingAnnual===undefined) && (pendingPayUntil===null || pendingPayUntil===undefined)}}">按所选方案计算</button>
-   <block wx:if="{{region.socialAidCap && result.chosen.timeline.normalYears && result.chosen.timeline.futureNormalYears!==0}}">
+<button wx:if="{{moreFutureAvailable || region.socialAidCap || form.regionId==='440100'}}" class="extra-toggle" data-key="advancedFuture" bindtap="fold">更多选择<text>{{advancedFuture?'收起 −':'展开 ＋'}}</text></button><block wx:if="{{advancedFuture}}">   <block wx:if="{{region.socialAidCap && result.chosen.timeline.normalYears && result.chosen.timeline.futureNormalYears!==0}}">
     <button class="extra-toggle" data-key="extraOpen" bindtap="fold">家人还能帮你加一笔（选填）<text>{{extraOpen?'收起 −':'展开 ＋'}}</text></button>
     <view wx:if="{{extraOpen}}" class="extra-options">
      <view class="hint">先交当年养老费，再由子女等申请资助。每年与集体补助合计最多{{region.socialAidCap}}元，不增加缴费年数。</view>
@@ -27,4 +27,4 @@
     <picker wx:if="{{(pendingNoCollective===null || pendingNoCollective===undefined?form.noCollective:pendingNoCollective)==='yes'}}" range="{{['不加交','另外360元／年','另外600元／年','另外900元／年','另外1200元／年','另外1800元／年','另外3600元／年','另外4800元／年']}}" value="{{collectiveIndex||0}}" bindchange="selectCollective"><view class="control">以后每年额外交：{{pendingCollective===null || pendingCollective===undefined?form.selfCollectiveTier||0:pendingCollective}}元</view></picker>
     <view class="hint">这笔钱也由你承担，属于自费集体档；只加到以后每年缴费，不补以前的年份，也不加入到龄补缴。</view>
    </view><button wx:if="{{extraOpen}}" class="primary confirm-plan" bindtap="confirmExtra" disabled="{{(pendingCollective===null || pendingCollective===undefined) && (pendingAid===null || pendingAid===undefined)}}">按所选方案计算</button><button wx:if="{{moreFutureAvailable}}" class="text-button" bindtap="moreFutureOptions">{{allFuturePlans?'收起金额':'查看更多金额'}} {{allFuturePlans?'−':'＋'}}</button>
-  </block>
+  </block></block>
