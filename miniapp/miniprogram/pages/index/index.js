@@ -1,3 +1,4 @@
+const navigation=require('../../utils/root-navigation');
 const {recoveryYears}=require('../../utils/recovery-display');
 const indexRules=require('../../utils/employee-index');
 const cities=require('../../utils/employee-registry');
@@ -44,7 +45,7 @@ Page({
  help(e){wx.navigateTo({url:'/guide/pages/help/help?section='+(e.currentTarget.dataset.section||'guide')});},
  parameterInfo(){const p=this.data.referenceParameter,c=cities.city(this.data.form.regionId||'440100');wx.showModal({title:'平均工资有什么影响？',content:c.name+'本工具采用'+p.year+'年计发参考参数'+p.pensionBase+'元/月。它不是你的工资，也不是最低缴费基数。历史平均缴费指数未知时按0.6估算，不能用当前工资还原历年指数。未来参数调整未计入。可在地区栏查看当地政策。',showCancel:false});},
  info(e){if((this.data.form.regionId||'440100')!=='440100'&&e.currentTarget.dataset.key==='principal'){wx.showModal({title:'账户金额去哪查？',content:'可在电子社保卡、国家社会保险公共服务平台或当地人社服务中查询养老保险个人权益记录。填写个人账户金额，不是单位与个人累计缴费总额。使用含利息的余额时，不要再重复添加利息。',showCancel:false});return;}const texts={index:'平均缴费指数反映各年缴费工资相对当地规定平均工资的比例。正式值由社保核定，不能仅用当前工资算出来。未知时按0.6估算，可查询个人权益记录或咨询12333。',principal:'粤省事 → 社保·就业 → 养老 → 参保缴费状态查询 → 职工社保。填写个人缴费（划入个人账户）总额与单位划入个账金额之和。利息另填，避免重复计入。',base:'缴费基数是计算养老保险费用的工资数，不是公司或个人缴费金额。单月在职养老保险个人扣款÷8%可以反推；不要填医保、公积金、社保合计或补缴金额。'+salaryGuidance(this.data.form.regionId).detail+'最低档只是计算选项；单位应依法申报。灵活就业可在上下限内选择。',months:'连续缴费月数=截至月−首次参保月+1，首尾月份都计入。例如2016年7月至2026年9月是123个月；中间停交2个月则为121个月。月份跨度不能证明实际到账，若有断缴、欠费或跨地记录，请按养老保险查询记录填写。',recovery:'后续自付总额÷每月总养老金，从领取后开始算。含已有权益，不等同投资回报。只有当前已满足门槛时，才额外显示按新增待遇计算的回收时间。',category:'女性原50/55岁类别与岗位、身份和参保经历有关。不能只凭当前是否灵活就业选择，有疑问请向社保确认。'};wx.showModal({title:'怎么填？',content:texts[e.currentTarget.dataset.key]||'',showCancel:false});},
- openFlexible(){wx.redirectTo({url:'/flexible/pages/calc/calc'});},
+ openFlexible(){navigation.open('flexible',wx);},
  onShareAppMessage(){return {title:brand.name+' · 职工养老',path:'/pages/index/index'};}
 });
 
