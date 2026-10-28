@@ -412,7 +412,7 @@ test('梅州及潮州地区选择重确认资格，结果和地区会话可恢�
  for(const [id,areaIndex,area]of [['441400',1,'xingning'],['441400',2,'meixian'],['445100',1,'chaoan']]){
   const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:id}});p.localArea({detail:{value:areaIndex}});assert.equal(p.data.form.localArea,area);assert.equal(p.data.form.eligible,'unknown');p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.base,'240.00');p.onHide();const r=page('resident/pages/calc/calc.js',store);assert.equal(r.data.form.localArea,area);assert.equal(r.data.result.regionId,id);r.regionChoice({detail:{regionId:'441300'}});assert.equal(r.data.form.localArea,'');assert.equal(r.data.region.areas,undefined);
  }
- const policy=page('pages/policy/policy.js');policy.onLoad({city:'445100',kind:'resident'});assert.match(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').publisher,/官方账号/);assert.equal(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').date,'核对于2026-10-19');
+ const policy=page('pages/policy/policy.js');policy.onLoad({city:'445100',kind:'resident'});assert.match(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').publisher,/官方账号/);assert.equal(policy.data.documents.find(x=>x.id==='cz-chaoan-resident-reference-2026').date,'资料核对日期：2026-10-19');
 });
 
 test('防城港市级最低基础额不是人均实发额，广西本地追溯不改变自治区缴费补贴',()=>{
@@ -426,7 +426,7 @@ test('防城港市级最低基础额不是人均实发额，广西本地追溯�
 
 test('防城港、来宾、钦州官方来源仅归本市，新增本地参考保留广西历史补缴能力',()=>{
  for(const [city,id]of [['450600','fcg-resident-base-2025-q4'],['451300','lb-resident-tier-local'],['450700','qz-resident-tier-local']]){
-  const p=page('pages/policy/policy.js');p.onLoad({city,kind:'resident'});assert.ok(p.data.documents.some(x=>x.id===id&&x.date==='核对于2026-10-19'));assert.ok(p.data.documents.every(x=>x.cityIds.includes(city)));
+  const p=page('pages/policy/policy.js');p.onLoad({city,kind:'resident'});assert.ok(p.data.documents.some(x=>x.id===id&&x.date==='资料核对日期：2026-10-19'));assert.ok(p.data.documents.every(x=>x.cityIds.includes(city)));
   const r=resident(form({regionId:city,pastAnnual:'200',paidThisYear:'no',gxStartYear:'2012',gxScopeReviewed:'yes',tier:200,gxMakeupRows:[{mode:'upgrade',start:'2019',end:'2023',original:'200',target:6000}]}));assert.equal(r.makeup.cost,'29000.00');assert.equal(r.chosen.account,'32350.00');assert.equal(r.chosen.immediateCost,'29000.00');
  }
  const other=page('pages/policy/policy.js');other.onLoad({city:'450100',kind:'resident'});assert.ok(other.data.documents.every(x=>!/^fcg-|^lb-|^qz-/.test(x.id)));
@@ -544,7 +544,7 @@ test('江门续缴页面换档与恢复保持本市补贴，政策出处不串�
  p.payUntil({detail:{value:1}});assert.equal(p.data.result.chosen.total,'1440.00');assert.equal(p.data.result.chosen.subsidy,'120.00');assert.equal(p.data.result.chosen.base,'254.50');assert.equal(p.data.baseline.low,original);
  p.chooseFuture({currentTarget:{dataset:{annual:600}}});assert.equal(p.data.result.chosen.total,'2400.00');assert.equal(p.data.result.chosen.subsidy,'240.00');p.onHide();const restored=page('resident/pages/calc/calc.js',store);assert.equal(restored.data.form.payUntil,'SIXTY');assert.equal(restored.data.result.chosen.annual,600);assert.equal(restored.data.form.balance,'30000');
  restored.regionChoice({detail:{regionId:'445300'}});assert.equal(restored.data.form.payUntil,'MINIMUM');assert.equal(restored.data.result,null);
- const policy=page('pages/policy/policy.js');policy.onLoad({city:'440700',kind:'resident'});const d=policy.data.documents.find(x=>x.id==='jm-resident-continue-2025');assert.ok(d);assert.deepEqual(d.cityIds,['440700']);assert.equal(d.date,'核对于2026-10-19');for(const other of registry.cities.filter(x=>x.id!=='440700'))assert.ok(!other.resident.sources.some(s=>s.id===d.id));
+ const policy=page('pages/policy/policy.js');policy.onLoad({city:'440700',kind:'resident'});const d=policy.data.documents.find(x=>x.id==='jm-resident-continue-2025');assert.ok(d);assert.deepEqual(d.cityIds,['440700']);assert.equal(d.date,'资料核对日期：2026-10-19');for(const other of registry.cities.filter(x=>x.id!=='440700'))assert.ok(!other.resident.sources.some(s=>s.id===d.id));
 });
 
 test('百色居民领取年龄和年限不套职工改革或按性别延迟',()=>{
@@ -624,7 +624,7 @@ test('深圳旧指数缓存回到填写页，两入口保留新指数结果且�
  for(const [file,key]of [['pages/index/index.js','employee'],['flexible/pages/calc/calc.js','flexible']]){
   const p=page(file);p.regionChanged({detail:{regionId:'440300'}});p.szScope({detail:{value:['yes']}});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.indexWage,9201);
   const saved=JSON.parse(JSON.stringify(p.data)),old=JSON.parse(JSON.stringify(saved));delete old.result.indexWage;
-  const restored=page(file,{[key]:old});assert.equal(restored.data.result,null);assert.match(restored.data.error,/标准已更新/);assert.equal(restored.data.form.birthMonth,saved.form.birthMonth);assert.equal(restored.data.form.szScopeConfirmed,'yes');
+  const restored=page(file,{[key]:old});assert.equal(restored.data.result,null);assert.match(restored.data.error,/重新计算.*当前参数/);assert.equal(restored.data.form.birthMonth,saved.form.birthMonth);assert.equal(restored.data.form.szScopeConfirmed,'yes');
   const current=page(file,{[key]:saved});assert.ok(current.data.result);assert.equal(current.data.result.indexWage,9201);
   const wrong=JSON.parse(JSON.stringify(saved));wrong.result.indexWage=9493;assert.equal(page(file,{[key]:wrong}).data.result,null);
  }
@@ -678,7 +678,7 @@ test('广东省模型两入口清除旧9493指数缓存，新结果及已填信�
  for(const c of registry.cities.filter(c=>c.employee.rule==='GUANGDONG'||c.id==='440100'))for(const [file,key]of [['pages/index/index.js','employee'],['flexible/pages/calc/calc.js','flexible']]){
   const p=page(file);p.regionChanged({detail:{regionId:c.id}});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.indexWage,9201);
   const saved=JSON.parse(JSON.stringify(p.data)),old=JSON.parse(JSON.stringify(saved));old.result.indexWage=9493;old.compare=true;
-  const restored=page(file,{[key]:old});assert.equal(restored.data.result,null);assert.equal(restored.data.compare,false);assert.match(restored.data.error,/标准已更新/);assert.equal(restored.data.form.birthMonth,saved.form.birthMonth);assert.equal(restored.data.form.regionId,c.id);assert.equal(restored.data.form.principal,saved.form.principal);
+  const restored=page(file,{[key]:old});assert.equal(restored.data.result,null);assert.equal(restored.data.compare,false);assert.match(restored.data.error,/重新计算.*当前参数/);assert.equal(restored.data.form.birthMonth,saved.form.birthMonth);assert.equal(restored.data.form.regionId,c.id);assert.equal(restored.data.form.principal,saved.form.principal);
   const current=page(file,{[key]:saved});assert.ok(current.data.result);assert.equal(current.data.result.indexWage,9201);assert.equal(current.data.result.scenarios[0].totalLow,saved.result.scenarios[0].totalLow);
  }
 });
