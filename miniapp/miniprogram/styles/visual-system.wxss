@@ -15,9 +15,9 @@ picker .control{background:#f9fbff;border-color:#c5d0df}
 .notice-box,.payback,.auto-summary{border-radius:20rpx}
 .payment-grid>view{border-radius:20rpx;background:#f6f8fc}
 .share-entry{display:flex;flex-direction:column;gap:16rpx}
-.result-maintenance{gap:20rpx;margin-top:28rpx;padding-top:24rpx;border-top:0}
-.result-maintenance .result-quiet{display:flex;gap:12rpx;min-width:0;min-height:44px;padding:12rpx 24rpx;border:1rpx solid #cdd7e5;background:#fff;border-radius:999rpx;color:var(--muted);font-size:28rpx;box-shadow:0 3rpx 10rpx rgba(29,47,76,.025)}
-.result-maintenance .result-quiet.button-hover{background:#eaf0f8;opacity:1}
+
+
+
 .action-glyph{width:32rpx;height:32rpx;flex:none}
 .edit-return{border:0;margin-bottom:24rpx}
 .edit-return button{border:1rpx solid #d7e0ec;border-radius:999rpx;background:#edf2f8;gap:12rpx;padding:14rpx 24rpx}
@@ -27,3 +27,12 @@ button.button-hover{opacity:.82}
 .primary.button-hover{background:#1f50be;opacity:1}
 
 .result-region-link{border:1rpx solid #dce5f3;border-radius:999rpx;background:#f0f5fd;padding:10rpx 18rpx;min-height:44px}
+
+/* The result has one action row; reset belongs to the form footer. */
+.result-tools{margin-top:28rpx}
+.result-action-row{display:flex;align-items:stretch;gap:16rpx}
+.result-action-row .result-save{flex:1;min-width:0;width:auto!important;font-size:29rpx;padding:18rpx 12rpx;min-height:48px}
+.result-action-row .result-edit{flex:none;width:auto!important;padding:16rpx 22rpx;gap:10rpx;border-color:#cdd7e5;background:#fff;color:var(--muted);font-size:27rpx;min-height:48px}
+.compare-entry{width:100%!important;display:flex;align-items:center;justify-content:space-between;gap:16rpx;background:#fff;border:1rpx solid var(--line);border-radius:22rpx;min-height:48px;padding:18rpx 24rpx;margin-bottom:20rpx;text-align:left;color:var(--ink);font-size:29rpx}
+.compare-entry text{font-size:25rpx;color:var(--muted);flex:none}
+.form-reset-row{text-align:center;margin-top:24rpx}.form-reset-row .form-reset{display:inline-flex;justify-content:center;align-items:center;background:transparent;border:0;box-shadow:none;border-radius:0;width:auto!important;min-height:44px;font-size:26rpx;color:var(--muted);padding:12rpx 24rpx}

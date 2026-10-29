@@ -2,3 +2,5 @@
 
 .tool-card{border-radius:28rpx;min-height:164rpx;box-shadow:0 6rpx 20rpx rgba(29,47,76,.035)}.entry-icon{border-radius:24rpx;width:84rpx;height:84rpx}.tool-glyph{width:52rpx;height:52rpx}.help-row{border:1rpx solid #dce4ef;background:#fff;border-radius:999rpx;padding:14rpx 30rpx;min-height:44px}
 .help-row{margin-left:auto;margin-right:auto}
+
+.home-bottom .help-row{border:0;border-radius:0;background:transparent;box-shadow:none;font-size:25rpx;min-height:44px;padding:12rpx 20rpx;color:var(--muted)}

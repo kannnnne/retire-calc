@@ -11,7 +11,7 @@ page{--motion-press:130ms;--motion-enter:220ms}button{transition:background-colo
 /* Shared native picker affordance and result actions. */
 picker .control{gap:18rpx;background:#f8faff;border-color:#bac9dd;padding-right:24rpx;position:relative}
 picker .control::after{content:'';display:block;width:14rpx;height:14rpx;flex:none;border-right:3rpx solid #526984;border-bottom:3rpx solid #526984;transform:rotate(45deg);margin:-7rpx 3rpx 0 14rpx}
-.result-actions{display:flex;align-items:stretch;gap:20rpx;max-width:844rpx;margin:auto}.result-actions .primary{width:auto!important;margin:0;min-width:0}.result-actions .restart-button{flex:none;width:196rpx!important;min-width:0;border:1rpx solid #c8d1de;background:#fff;color:var(--muted)}
+
 
 /* Employee and resident calculators share the same form and result rhythm. */
 .pension-form{padding:24rpx}.pension-form .card-top{margin-bottom:0}.entry-row{display:flex;align-items:center;gap:18rpx;min-height:88rpx;padding:12rpx 0;border-bottom:0;box-sizing:border-box}.row-label{width:170rpx;flex:none;font-size:29rpx;color:var(--ink)}.row-entry{flex:1;min-width:0}.entry-row .control,.entry-row .input-wrap{margin:0;min-height:88rpx;font-size:29rpx}.form-section-title{font-size:27rpx;color:var(--muted);margin-top:28rpx;padding-top:24rpx;border-top:1rpx solid var(--line)}
@@ -26,8 +26,8 @@ picker .control::after{content:'';display:block;width:14rpx;height:14rpx;flex:no
 .share-entry{padding:24rpx 0 0;max-width:680px;margin:auto}.share-entry button{font-size:28rpx;min-height:48px}
 
 /* Result maintenance is deliberately quiet and stays in normal document flow. */
-.result-maintenance{display:flex;align-items:center;justify-content:center;gap:24rpx;margin:28rpx 0 8rpx;padding-top:16rpx;border-top:1rpx solid var(--line);color:var(--muted)}
-.result-maintenance .result-quiet{width:auto!important;flex:none;min-height:44px;padding:8rpx 16rpx;background:transparent;border:0;color:var(--muted);font-size:28rpx;font-weight:400;display:flex;align-items:center;justify-content:center}
+
+
 .edit-return{margin-bottom:20rpx;border-bottom:1rpx solid var(--line)}
 .edit-return button{width:100%!important;min-height:44px;padding:12rpx 16rpx;color:var(--muted);font-size:27rpx;background:transparent;text-align:left;display:flex;align-items:center}
 

@@ -17,3 +17,5 @@ for(const [name,key,field,invalid] of [['pages/index/index','employee','birthMon
   q.beginResultEdit();q.calculate();assert.ok(q.data.result,q.data.error);assert.equal(q.data.editingResult,false);assert.equal(q._resultBackup,null);q.requestResultReset();calls.at(-1).success({confirm:true});assert.equal(q.data.result,null);assert.equal(q._resultBackup,null);assert.equal(q.data.form.regionId,'440100');
  });
 }
+
+test('居民补缴参考修改可撤销，计算表单重置统一使用取消／重置',()=>{const q=require('../scripts/resident-module-harness').page('calc');q.onLoad({module:'makeup'});q.regionChoice({detail:{regionId:'450800'}});q.moduleCalculate();assert.ok(q.data.quickPlan&&q.data.quickPlan.summary,q.data.error);const original=JSON.stringify(q.data.quickPlan);q.beginResultEdit();assert.equal(q.data.quickPlan,null);assert.equal(q.data.editingResult,true);q.cancelResultEdit();assert.equal(JSON.stringify(q.data.quickPlan),original);q.requestResultReset();const modal=q.calls.at(-1);assert.equal(modal.cancelText,'取消');assert.equal(modal.confirmText,'重置');modal.success({confirm:false});assert.equal(JSON.stringify(q.data.quickPlan),original);});

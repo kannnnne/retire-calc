@@ -2,11 +2,12 @@
 const {icon} = require('./tool-icons');
 const clone = value => JSON.parse(JSON.stringify(value));
 module.exports = function withResultRecovery(definition, { key, session, wx }) {
-  const page = { ...definition, data: { ...definition.data, resultEditIcon:icon('edit','#576579'), resultResetIcon:icon('reset','#576579'), editingResult: false } };
+  const page = { ...definition, data: { ...definition.data, resultEditIcon:icon('edit','#576579'), editingResult: false } };
   page.beginResultEdit = function () {
-    if (!this.data.result) return;
+    if (!this.data.result && !(this.data.quickPlan && this.data.quickPlan.summary)) return;
     this._resultBackup = clone(this.data);
-    this.edit();
+    if (this.data.quickPlan && this.data.moduleMode) this.moduleEdit();
+    else this.edit();
     this.setData({ editingResult: true });
     session.save(key, this._resultBackup);
   };
@@ -20,11 +21,10 @@ module.exports = function withResultRecovery(definition, { key, session, wx }) {
     wx.pageScrollTo({ scrollTop: 0, duration: 0 });
   };
   page.requestResultReset = function () {
-    if (!this.data.result && !this._resultBackup) { this.reset(); return; }
     wx.showModal({
-      title: '重新填写？',
-      content: '将清空这次填写和测算结果，保留所选地区。',
-      confirmText: '重新填写', cancelText: '保留结果',
+      title: '重置填写？',
+      content: '清空当前填写和测算结果，恢复所选地区的默认值。',
+      confirmText: '重置', cancelText: '取消',
       success: answer => { if (answer.confirm) this.reset(); }
     });
   };
@@ -38,8 +38,9 @@ module.exports = function withResultRecovery(definition, { key, session, wx }) {
     const calculate = page[name];
     if (!calculate) continue;
     page[name] = function (...args) {
+      const previousQuick = this.data.quickPlan;
       const value = calculate.apply(this, args);
-      if (this.data.result) {
+      if (this.data.result || (this.data.quickPlan && this.data.quickPlan.summary && this.data.quickPlan !== previousQuick)) {
         this._resultBackup = null;
         this.setData({ editingResult: false });
         session.save(key, this.data);
