@@ -3,7 +3,8 @@
     "pages/home/home",
     "pages/index/index",
     "pages/help/help",
-    "pages/policy/policy"
+    "pages/policy/policy",
+    "pages/share/share"
   ],
   "subPackages": [
     {
