@@ -19,10 +19,11 @@ function fromPage(kind,data){
  return {...base,personal};
 }
 function open(kind,data,wx){pending=fromPage(kind,data||{});wx.navigateTo({url:'/pages/share/share'});}
+function openComparison(payload,wx){pending={...recommendation('resident'),...payload};wx.navigateTo({url:'/pages/share/share'});}
 function take(){const p=pending;pending=null;return p||recommendation();}
 function share(kind){const p=recommendation(kind);return {title:p.brand+' · '+p.type,path:p.path+'?from=friend'};}
 function model(payload,mode='recommend',reveal=false){
  const p=mode==='personal'?payload.personal:null;
  return {brand:payload.brand,type:payload.type,kind:payload.kind,personal:!!p,title:p?(p.isDemo?['这是一份养老','方案示例。']:['把养老安排，','留给往后的日子。']):payload.title,description:payload.description,region:p?p.region:'按地区选择适用规则',monthly:p?(reveal?money(p.monthly):'••••'):null,receipt:p?p.receipt:'',rows:p?p.rows.map(x=>({...x,value:!reveal&&x.sensitive?'金额已隐藏':x.value})):[],notes:p?p.notes.filter(x=>reveal||!x.includes('回本')):['免费计算 · 无需登录','输入在手机本地计算，不上传、不保存。','各地政策和个人条件不同，结果仅供参考。'],cta:'长按识别小程序码，算算自己的情况'};
 }
-module.exports={recommendation,fromPage,open,take,share,model,routes};
+module.exports={recommendation,fromPage,open,openComparison,take,share,model,routes};

@@ -117,5 +117,5 @@ Page({data:initialData(),...require('../../utils/approved-planner'),...require('
  basicModule(){require('../../utils/module-flow').send(this.data.form);wx.redirectTo({url:'/resident/pages/basic/basic'});},
  help(){wx.navigateTo({url:'/pages/help/help'});},
  sources(){wx.navigateTo({url:'/pages/policy/policy?city='+this.data.form.regionId+'&kind=resident'});},policyDocument(e){const documents=require('../../../utils/policy-documents').concat(require('../../../utils/city-documents')),d=documents.find(x=>x.url===e.currentTarget.dataset.url)||documents.find(x=>x.id===e.currentTarget.dataset.id);wx.navigateTo({url:'/pages/policy/policy'+(d?'?id='+d.id:'')});},query(){wx.setClipboardData({data:'https://ggfw.hrss.gd.gov.cn/gdrsh5/production/pages/resident/'});},
- openShareCard(){require('../../../utils/share-card').open('resident',this.data,wx);},onShareAppMessage(){return {title:brand.name+' · 居民养老',path:'/resident/pages/home/home'};}
+ openTierPK(){require('../../utils/tier-pk').open(this.data,wx);},openShareCard(){require('../../../utils/share-card').open('resident',this.data,wx);},onShareAppMessage(){return {title:brand.name+' · 居民养老',path:'/resident/pages/home/home'};}
 });

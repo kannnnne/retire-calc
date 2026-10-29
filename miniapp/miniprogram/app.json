@@ -19,7 +19,8 @@
         "pages/calc/calc",
         "pages/home/home",
         "pages/basic/basic",
-        "pages/policy/policy"
+        "pages/policy/policy",
+        "pages/compare/compare"
       ]
     },
     {
