@@ -146,3 +146,6 @@ resident/pages/home为居民功能菜单，basic为未参保普通计算，calc?
 
 ## 分享卡（2.34.0，2026-10-29）
 各结果openShareCard经utils/share-card最小摘要一次性内存传给pages/share；个人金额默认隐藏，原始生日/余额不输出，附条件草稿及不足年限只推荐。首页推荐卡、好友工具路径均不携带个人query。utils/card-layout为同一绘图指令源，wx Canvas原生导出，离线SVG/Sharp仅用于视觉核对。images/share-home.png为用户提供的真实首页码，配置utils/share-code；缺码禁保存。生成超时和失败可重试，本地getImageInfo相对路径须转为根路径。1097项测试/编译通过，iPhone 5模拟器已验推荐导出、居民入口及个人金额预览；未手机扫码或上传。详见docs/share-cards-design.md。
+
+## 分享方向修正（2.34.1）
+用户否定泛推荐卡，撤下首页推荐及导出页推荐页签；无个人结果不生成泛推广图片，要求先计算。保留具体个人方案分享。下一步多档PK设计见docs/tier-comparison-design.md，未实现，不宣传已支持。

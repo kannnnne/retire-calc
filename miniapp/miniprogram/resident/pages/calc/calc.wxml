@@ -94,4 +94,4 @@
  <button wx:for="{{result.sources}}" wx:key="url" class="tutorial" data-url="{{item.url}}" bindtap="policyDocument">{{item.name}} ›</button>
 </view></view>
 <view wx:if="{{showNotes}}" class="result-disclaimer">{{result.uncertainty?'按记得的情况先看大概，查到记录后再核对。':'按所选地区、尚未领取养老金的情况计算，金额供参考。'}}</view>
-</block></block></block></block></block><view wx:if="{{result}}" class="share-entry"><button class="secondary" bindtap="openShareCard">保存方案／推荐给家人</button></view></view><tool-nav active="resident" resident-hub/>
+</block></block></block></block></block><view wx:if="{{result}}" class="share-entry"><button class="secondary" bindtap="openShareCard">保存／分享方案</button></view></view><tool-nav active="resident" resident-hub/>
