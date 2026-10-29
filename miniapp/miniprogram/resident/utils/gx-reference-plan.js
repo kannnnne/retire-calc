@@ -24,7 +24,7 @@ function build(original,p){
  for(const tier of p.tiers.filter(v=>[200,500,1000,2000,3000,6000].includes(v))){
   const rows=missing.map(year=>{const allowed=tiersForYear(year).filter(v=>v<=tier);return {mode:'missing',start:String(year),end:String(year),target:allowed[allowed.length-1]};});
   const r=calculate(projectionInput({...f,tier,accountMode:'balance',balance:base.openingAmount,historyMode:'simple',gxMakeupRows:rows,gxScopeReviewed:'yes'})),s=r.chosen;
-  options.push({...split(s,f.asOf),tier,monthly:Math.round(Number(s.low)/10)*10,receipt:s.receiptMonth||String(s.receiptYear),immediate:s.immediateCost||'0.00',total:s.total,normalYears:s.timeline.normalYears,firstYear:s.timeline.firstYear,lastYear:s.timeline.lastYear,future:s.timeline.normalCost,added:missing.length,upgraded:0});
+  options.push({payback:require('./payback').display({...r,pastPaid:base.pastPaid}),...split(s,f.asOf),tier,monthly:Math.round(Number(s.low)/10)*10,receipt:s.receiptMonth||String(s.receiptYear),immediate:s.immediateCost||'0.00',total:s.total,normalYears:s.timeline.normalYears,firstYear:s.timeline.firstYear,lastYear:s.timeline.lastYear,future:s.timeline.normalCost,added:missing.length,upgraded:0});
  }
  return {referenceOnly:true,options,tier:options.some(x=>x.tier===Number(original.tier))?Number(original.tier):options[0].tier,assumption:'先按已交'+count+'年、'+(f.accountMode==='balance'?'账户'+base.openingAmount+'元':'每年'+f.pastAnnual+'元')+'看'+(currentAssumed?'；今年先按已含。':'。'),reason:'以前各年的档次没核清，这里先不算提高旧档。查清后可以再比。',note:canIllustrate&&needed?'假设漏缴的年份可以补，按近期已缴年份推定；只补没交的年，不提高以前的档。':canIllustrate?'以前交的钱不变，只比较以后每年交的档次。':'当前年份不足以安排补漏，先比较以后每年交的档次。',currentAssumed,rough,opening:base.openingAmount};
 }
