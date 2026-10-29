@@ -156,3 +156,7 @@ resident/pages/home为居民功能菜单，basic为未参保普通计算，calc?
 分享复用pages/share，utils/pk-layout统一绘制1000px对比表，金额默认隐藏含年档，不带生日余额；真实码回首页重算，好友路径不含个人结果。1107测试及原生编译通过，本轮明确用户授权下iPhone 5模拟器已验选择/三档上限/横滑/取消/累计切30年/图片生成和金额重绘/返回保留选择；未手机扫码相册或上传。详见docs/tier-comparison-design.md。
 
 2.35.1覆盖前述分享默认值：用户要求金额默认显示，pages/share的reveal初始为true，个人与PK图片均适用，保留主动隐藏开关。未上传。
+
+## 结果页操作降级（2.36.0，2026-10-30）
+职工/灵活/居民basic及calc结果不再悬浮result-actions；修改资料和重新填写为保存分享下方的灰色文字按钮，保留44px触控高度，移除结果页has-submit额外预留。utils/result-recovery包装Page：beginResultEdit捕获独立内存原结果，cancelResultEdit恢复资料与结果；编辑未成功重算时onHide/onUnload存原快照到原session键，重进回原结果，原页继续编辑也能取消。重算成功清快照；requestResultReset须确认才调用原reset，保留既有地区规则。内部edit用于补缴规划不改，用户编辑绑定beginResultEdit。
+1115自动测试及原生编译通过，8项新增真实页面事件覆盖四入口取消、失败、切换恢复、重算替换及清空确认；未新GUI/手机实测、未上传。原“修改离开不复活结果”仅对应内部edit旧路径，用户结果修改现在优先保护原结果。见docs/result-maintenance-2026-10-30.md。
