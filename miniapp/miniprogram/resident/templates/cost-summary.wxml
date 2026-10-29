@@ -1,0 +1,7 @@
+<template name="resident-cost-summary">
+<view class="resident-cost-summary">
+ <view class="resident-cost-row"><text>还需交</text><view class="resident-cost-value">{{payback.futureAmount}}<text>元</text></view></view>
+ <view class="resident-cost-row"><view class="resident-cost-label">{{payback.totalLabel}}<text wx:if="{{payback.totalNote}}">{{payback.totalNote}}</text></view><view class="resident-cost-value">{{payback.totalAmount}}<text>元</text></view></view>
+ <button class="resident-payback" bindtap="recoveryInfo" aria-label="查看回本计算说明"><text>{{payback.label}} ⓘ</text><text>{{payback.text}}</text></button>
+</view>
+</template>
