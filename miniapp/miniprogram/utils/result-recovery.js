@@ -1,7 +1,8 @@
 // Keep the last calculated result recoverable while editing, in memory only.
+const {icon} = require('./tool-icons');
 const clone = value => JSON.parse(JSON.stringify(value));
 module.exports = function withResultRecovery(definition, { key, session, wx }) {
-  const page = { ...definition, data: { ...definition.data, editingResult: false } };
+  const page = { ...definition, data: { ...definition.data, resultEditIcon:icon('edit','#576579'), resultResetIcon:icon('reset','#576579'), editingResult: false } };
   page.beginResultEdit = function () {
     if (!this.data.result) return;
     this._resultBackup = clone(this.data);

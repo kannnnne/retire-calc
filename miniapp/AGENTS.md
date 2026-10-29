@@ -160,3 +160,7 @@ resident/pages/home为居民功能菜单，basic为未参保普通计算，calc?
 ## 结果页操作降级（2.36.0，2026-10-30）
 职工/灵活/居民basic及calc结果不再悬浮result-actions；修改资料和重新填写为保存分享下方的灰色文字按钮，保留44px触控高度，移除结果页has-submit额外预留。utils/result-recovery包装Page：beginResultEdit捕获独立内存原结果，cancelResultEdit恢复资料与结果；编辑未成功重算时onHide/onUnload存原快照到原session键，重进回原结果，原页继续编辑也能取消。重算成功清快照；requestResultReset须确认才调用原reset，保留既有地区规则。内部edit用于补缴规划不改，用户编辑绑定beginResultEdit。
 1115自动测试及原生编译通过，8项新增真实页面事件覆盖四入口取消、失败、切换恢复、重算替换及清空确认；未新GUI/手机实测、未上传。原“修改离开不复活结果”仅对应内部edit旧路径，用户结果修改现在优先保护原结果。见docs/result-maintenance-2026-10-30.md。
+
+## 视觉统一（2.37.0，2026-10-30）
+用户要求次要按钮也有明确形状，覆盖2.36.0纯文字样式：result-maintenance使用浅灰描边胶囊及edit/reset线性图标，仍在保存入口后、不悬浮；恢复和重填确认行为不变。styles/visual-system.wxss由app.wxss末尾引入，主/次按钮999rpx圆角、卡片28rpx、表单/选择20rpx，浅层阴影与白蓝主题；局部WXSS圆角统一同层级，底栏圆角选中块、无多余顶部标记。tool-icons新增edit/reset/calculator/records；居民菜单01/02改功能图标，帮助叹号改问号。
+1115自动测试和原生编译通过，浏览器预览320/375宽已查看首页/表单/结果，320按钮44px高、无横向溢出，812横向同样无溢出。本轮未微信模拟器/手机实测、未上传；浏览器是项目WXSS转换及示例数据的视觉预览，不是原生运行截图。详见docs/visual-polish-2026-10-30.md。
