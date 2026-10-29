@@ -5,7 +5,7 @@ const cities=require('../../../utils/city-policies');
 const session=require('../../../utils/session');
 const brand=require('../../../utils/brand');
 const {forecast,retirement,minimum}=require('../../../utils/forecast');
-const {dates,suggestedFirst,serial}=require('../../../utils/employee-inputs');
+const {dates,suggestedFirst,serial,date}=require('../../../utils/employee-inputs');
 const {contributionRange}=require('../../../utils/input-model');
 const inputs=require('../../../utils/flexible-inputs');
 const categoryRules=require('../../../utils/flexible-category');
@@ -13,14 +13,20 @@ const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
 const planLabels=['按此金额交到退休','最低档交到退休','交够年限就停','自选缴费月数'];
 const duration=n=>(Math.floor(n/12)?Math.floor(n/12)+'年':'')+(n%12?n%12+'个月':'')||(n===0?'0个月':'—');
 const show=s=>({...s,name:planLabels[plans.indexOf(s.plan)],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),years:duration(s.futureMonths),recovery:recoveryYears(s.recoveryMonthsSlow)});
-function defaults(){const bounds=dates();return {dateBounds:bounds,accountOpen:false,paymentOpen:false,advanced:false,compare:false,pendingPlan:null,result:null,error:'',categoryIndex:0,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],planLabels,planIndex:0,accountMode:'estimate',historyModeIndex:0,baseModeIndex:0,baseModeLabels:['最低档','自填每月养老缴费','自填缴费基数'],baseInput:'',form:{regionId:'440100',birthMonth:bounds.defaultBirth,category:'MALE',firstInsuredMonth:suggestedFirst(bounds.defaultBirth,bounds.todayMonth),dataAsOf:bounds.todayMonth,unitYears:10,unitMonths:0,flexYears:2,flexMonths:0,unitPayment:'',flexPayment:'',principal:'',historicalIndex:'',historicalRights:false,pauseMonths:0,customMonths:60,plan:'CURRENT',contributionType:'FLEXIBLE',interest:0}};}
+function defaults(){const bounds=dates();return {dateBounds:bounds,firstAuto:true,accountOpen:false,paymentOpen:false,advanced:false,compare:false,pendingPlan:null,result:null,error:'',categoryIndex:0,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],planLabels,planIndex:0,accountMode:'estimate',historyModeIndex:0,baseModeIndex:0,baseModeLabels:['最低档','自填每月养老缴费','自填缴费基数'],baseInput:'',form:{regionId:'440100',birthMonth:bounds.defaultBirth,category:'MALE',firstInsuredMonth:suggestedFirst(bounds.defaultBirth,bounds.todayMonth),dataAsOf:bounds.todayMonth,unitYears:10,unitMonths:0,flexYears:2,flexMonths:0,unitPayment:'',flexPayment:'',principal:'',historicalIndex:'',historicalRights:false,pauseMonths:0,customMonths:60,plan:'CURRENT',contributionType:'FLEXIBLE',interest:0}};}
 Page({
  data:defaults(),
- onLoad(){this.setData({regionOpen:false});const saved=session.load('flexible');this.setData(saved||defaults());if(saved&&saved.form.regionId==='440300'&&saved.form.szScopeConfirmed!=='yes')this.setData({result:null,compare:false});this.setData({dateBounds:dates()});this.refresh();this.refreshPlanChoices();},
+ onLoad(){this.setData({regionOpen:false});const saved=session.load('flexible');this.setData(saved||defaults());if(saved&&saved.form.regionId==='440300'&&saved.form.szScopeConfirmed!=='yes')this.setData({result:null,compare:false});const bounds=dates(),f=this.data.form;
+  // Older sessions did not record whether the first month was an untouched default.
+  const legacyDefault=f.firstInsuredMonth===suggestedFirst(bounds.defaultBirth,f.dataAsOf),invalidFirst=serial(f.firstInsuredMonth)!==null&&serial(f.birthMonth)!==null&&(serial(f.firstInsuredMonth)<serial(f.birthMonth)+16*12||f.firstInsuredMonth>f.dataAsOf);
+  const firstAuto=saved&&typeof saved.firstAuto==='boolean'?saved.firstAuto:!saved||(legacyDefault&&invalidFirst)||f.firstInsuredMonth===suggestedFirst(f.birthMonth,f.dataAsOf);
+  this.setData({dateBounds:bounds,firstAuto});
+  if(firstAuto){const first=suggestedFirst(f.birthMonth,f.dataAsOf);if(first!==f.firstInsuredMonth)this.setData({'form.firstInsuredMonth':first,result:null,compare:false});}
+  this.refresh();this.refreshPlanChoices();},
  szScope(e){this.setData({'form.szScopeConfirmed':e.detail.value.length?'yes':'unknown',result:null,error:''});this.refresh();},
  regionChanged(e){const id=e.detail.regionId;if(!cities.city(id))return;this.setData({'form.regionId':id,'form.historicalIndex':'','form.szScopeConfirmed':'unknown',result:null,error:'',compare:false,baseInput:'',baseModeIndex:0});this.refresh();session.save('flexible',this.data);},
  onHide(){session.save('flexible',this.data);},onUnload(){session.save('flexible',this.data);},
- refresh(){const f=this.data.form,local=cities.capability(f.regionId||'440100','employee');if(indexRules.stale(this.data.result,local,f.dataAsOf))this.setData({result:null,compare:false,error:'请重新计算，以使用当前参数。'});this.setData({regionReady:!!local&&local.status==='READY'});if(local&&!local.legacy&&f.dataAsOf<local.effectiveFrom){this.setData({result:null,error:'已录入规则从'+local.effectiveFrom+'起使用，请在更多设置修改截至月份'});}if(!local||local.status!=='READY'){this.setData({result:null,baseError:local&&local.reason||'地区暂未开放',futurePayment:'',accountSummary:''});return;}const limits=contributionRange(local.effectiveFrom&&f.dataAsOf<local.effectiveFrom?local.effectiveFrom:f.dataAsOf,f.regionId);let h=null,principal='',accountError='',historyError='',base='',baseError='';
+ refresh(){const f=this.data.form,birth=serial(f.birthMonth);this.setData({firstStart:birth===null?'1998-07':date(Math.max(serial('1998-07'),birth+16*12))});const local=cities.capability(f.regionId||'440100','employee');if(indexRules.stale(this.data.result,local,f.dataAsOf))this.setData({result:null,compare:false,error:'请重新计算，以使用当前参数。'});this.setData({regionReady:!!local&&local.status==='READY'});if(local&&!local.legacy&&f.dataAsOf<local.effectiveFrom){this.setData({result:null,error:'已录入规则从'+local.effectiveFrom+'起使用，请在更多设置修改截至月份'});}if(!local||local.status!=='READY'){this.setData({result:null,baseError:local&&local.reason||'地区暂未开放',futurePayment:'',accountSummary:''});return;}const limits=contributionRange(local.effectiveFrom&&f.dataAsOf<local.effectiveFrom?local.effectiveFrom:f.dataAsOf,f.regionId);let h=null,principal='',accountError='',historyError='',base='',baseError='';
   try{h=inputs.history(f);}catch(e){historyError=e.message;}
   const categories=categoryRules.options(f.regionId,h?h.unit:null),correctCategory=categories.restricted&&f.category==='FEMALE_50',category=correctCategory?'FEMALE_55':f.category;
   if(correctCategory)this.setData({'form.category':category,result:null,compare:false,error:'已按当地规则改为原55岁类别，请重新计算。'});
@@ -31,7 +37,7 @@ Page({
   let missing='';try{if(h)missing=duration(Math.max(0,minimum(Number(retirement(f.birthMonth,category).month.slice(0,4)))-h.total));}catch(e){}
   this.setData({minimumPayment:(limits.min*.2).toFixed(2),maximumPayment:(limits.max*.2).toFixed(2),limits,historySummary:h,historyError,accountError,accountPrincipal:principal,accountSummary:principal===''?'':Math.round(Number(principal)).toLocaleString('en-US'),base,baseError,futureBase:String(effective),futurePayment:effective===''?'':(Number(effective)*.2).toFixed(2),paidDuration:h?duration(h.total):'—',missingDuration:missing});
  },
- input(e){const k=e.currentTarget.dataset.key;if(!Object.prototype.hasOwnProperty.call(this.data.form,k))return;this.setData({['form.'+k]:e.detail.value,error:''});this.refresh();},
+ input(e){const k=e.currentTarget.dataset.key;if(!Object.prototype.hasOwnProperty.call(this.data.form,k))return;this.setData({['form.'+k]:e.detail.value,error:'',result:null,compare:false,pendingPlan:null});if(k==='firstInsuredMonth')this.setData({firstAuto:false});if(['birthMonth','dataAsOf'].includes(k)&&this.data.firstAuto)this.setData({'form.firstInsuredMonth':suggestedFirst(this.data.form.birthMonth,this.data.form.dataAsOf)});this.refresh();},
  category(e){const n=Number(e.detail.value),values=this.data.categoryValues||['MALE','FEMALE_55','FEMALE_50'];if(!values[n])return;this.setData({categoryIndex:n,'form.category':values[n],error:'',result:null});this.refresh();},
  accountMode(e){this.setData({accountMode:e.currentTarget.dataset.value,error:''});this.refresh();},
  historyMode(e){this.setData({historyModeIndex:Number(e.detail.value),error:''});this.refresh();},
