@@ -13,7 +13,7 @@ function layout(table,reveal,hasCode){
  heads.forEach((ls,i)=>{ls.forEach((line,n)=>text(line,pad+labelW+i*cw+12,y+38+n*40,27,'#182c47','bold'));if(table.columns[i].current)text('当前方案',pad+labelW+i*cw+12,y+38+ls.length*40,23,'#506078');});y+=headerH;
  for(const row of table.rows){
   const values=row.values.map(v=>!reveal&&row.label==='每月约领'?'****':v);
-  const cells=[wrap(row.label,27,labelW-24),...values.map(v=>wrap(v,30,cw-24))],height=Math.max(...cells.map(c=>c.length))*46+32;
+  const cells=[wrap(row.label+(row.subtitle?'\n'+row.subtitle:''),27,labelW-24),...values.map(v=>wrap(v,30,cw-24))],height=Math.max(...cells.map(c=>c.length))*46+32;
   rect(pad,y,W-pad*2,height,row.label==='每月约领'?'#edf3ff':row.kind==='balance'?'#f5f8fd':'#ffffff');rect(pad,y,W-pad*2,1,'#dce4ef');
   cells.forEach((ls,i)=>{if(i)rect(pad+labelW+(i-1)*cw,y,1,height,'#e5eaf2');ls.forEach((line,n)=>text(line,i===0?pad+12:pad+labelW+(i-1)*cw+12,y+42+n*46,i===0?27:30,row.label==='每月约领'&&i>0?'#245bc1':i===0?'#506078':row.kind==='balance'?(row.tones[i-1]==='positive'?'#a33736':row.tones[i-1]==='negative'?'#176652':'#506078'):'#182c47',i>0?'bold':'normal'));});y+=height;
  }

@@ -197,3 +197,9 @@ PK snapshot保存payback原始total为recoveryCost，table末行领取N年差额
 用户授权自行判断并实现。仅深圳居民现有ageExtraNextMonth:true且生效时点已核的年龄加发进入receipt-stream；不从其他城市年龄金额推断生效月份。65岁次月+50，80岁次月再+50，总年龄档100不叠加；首次已含的档不重复加。其他地区、广州长缴、职工/灵活未来普调不扩推。深圳本地按入户年限基础额仍未齐，保留省级参考，不宣称完整核定。
 主卡、PK累计/净额/回本共用steps；payback以页面取整起领月额分段，内部精确回收字段按原精确基准同样时点。snapshot保留相对月份及首领月龄，分享不带原始生日。1—50年窗口含首月，offset=240的新档不算进前240个月。主卡小字、PK一行、个人图两行；现行规则并非未来保证。二维码右下及正红负绿不变。
 1131项测试和原生编译通过；生产深圳个人/三档PNG已查看并修窄列断行；未本轮模拟器/手机实测、未上传。研究及已实施范围见docs/pension-increases-research-2026-10-30.md。RTK本机未安装，命令使用原生工具回退。
+
+
+## 图片入口与底部留白（2.45.0）
+showShareImageMenu必须显式needShowEntrance:true、entrancePath=cards.share(kind).path；居民个人/PK回resident/pages/home/home，不默认当前share页。普通onShareAppMessage路径不能替代图片入口。冷进无方案share页直接reLaunch居民菜单，正常内存传递照常。二维码仍用户原首页码，不宣称本轮已改为居民码；入口能力由微信控制。
+PK回本/累计年龄仅整岁，放row.subtitle左侧标题下；右侧只数值/时长，回本方案年龄不同用整岁范围，未知不猜。计算月数保留，未更改累计/净额公式。四正常结果root加result-shell纵向最小一屏，result-tools自动靠底且保留上间隔，padding预留48px+44rpx+safe。长内容随流，不覆盖正文。删除四填写页孤立form-reset-row，不删内部重置/恢复逻辑。
+1133测试和原生编译通过，Playwright浏览器CSS转换预览320/375宽无溢出、按钮下间隙9/10px；15档生产PNG已看。不是原生模拟器或手机实测、未发送好友/上传。详情docs/share-entry-layout-2026-10-30.md。RTK未安装，原生命令回退。

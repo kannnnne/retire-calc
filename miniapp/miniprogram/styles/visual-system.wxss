@@ -28,14 +28,16 @@ button.button-hover{opacity:.82}
 
 .result-region-link{display:inline-flex;align-items:center;gap:8rpx;border:0;border-radius:0;background:transparent;box-shadow:none;width:auto!important;min-width:0;flex:none;padding:8rpx 0;min-height:44px}
 
-/* The result has one action row; reset belongs to the form footer. */
-.result-tools{margin-top:28rpx}
+/* One result action row, with a compact clearance above the bottom navigation. */
+.result-tools{margin-top:40rpx}
+.shell.result-shell{display:flex;flex-direction:column;min-height:100vh;box-sizing:border-box;padding-bottom:calc(48px + 44rpx + env(safe-area-inset-bottom))}
+.result-shell .result-tools{margin-top:auto;padding-top:40rpx}
 .result-action-row{display:flex;align-items:stretch;gap:16rpx}
 .result-action-row .result-save{flex:1;min-width:0;width:auto!important;font-size:29rpx;padding:18rpx 12rpx;min-height:48px}
 .result-action-row .result-edit{flex:none;width:auto!important;padding:16rpx 22rpx;gap:10rpx;border-color:#cdd7e5;background:#fff;color:var(--muted);font-size:27rpx;min-height:48px}
 .compare-entry{width:100%!important;display:flex;align-items:center;justify-content:space-between;gap:20rpx;background:#eaf2ff;border:1rpx solid #c8daf8;border-radius:24rpx;min-height:68px;padding:26rpx 28rpx;margin:24rpx 0;text-align:left;color:#174ba8}
 .compare-entry text{display:block;font-size:25rpx;color:#456389;line-height:1.6;margin-top:8rpx}
-.form-reset-row{text-align:center;margin-top:24rpx}.form-reset-row .form-reset{display:inline-flex;justify-content:center;align-items:center;background:transparent;border:0;box-shadow:none;border-radius:0;width:auto!important;min-height:44px;font-size:26rpx;color:var(--muted);padding:12rpx 24rpx}
+
 
 .mast{align-items:center}.mast .title{flex:1;min-width:0}.navigation-link{display:inline-flex;align-items:center;justify-content:flex-end;flex:none;width:auto!important;min-width:0;min-height:44px;margin:0;padding:8rpx 0;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:27rpx;color:var(--brand)}
 .result-region-link text{white-space:nowrap;font-size:26rpx}.result-region-link text:first-child{color:var(--muted)}.result-region-link text:last-child{color:var(--brand)}
