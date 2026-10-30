@@ -13,7 +13,7 @@ test('贵港60及65岁未交够，直接补往年＋今年缴费后次月领，�
 test('每档补缴重新按历史上限计费，PK费用和个人换档同步，不锁死6000档的补费',()=>{
  const q=basic(),r=q.data.result,low=r.scenarios.find(x=>x.annual===200),high=r.chosen;
  assert.equal(low.immediateCost,'1800.00');assert.equal(low.total,'3000.00');assert.equal(high.immediateCost,'46000.00');assert.equal(high.total,'82000.00');
- const table=pk.table(pk.snapshot(q.data),[200,6000]);assert.deepEqual(table.rows.find(x=>x.label==='现在补交').values,['1,800元\n补9年','46,000元\n补9年']);
+ const table=pk.table(pk.snapshot(q.data),[200,6000]);assert.deepEqual(table.rows.find(x=>x.label==='其中：补缴').values,['1,800元\n补9年','46,000元\n补9年']);
  const c=page('calc');c.onLoad({module:'makeup'});c.regionChoice({detail:{regionId:'450800'}});c.setData({'form.age':'55','form.asOf':'2026-10','form.never':true,'form.years':'0','form.balance':'0','form.paidThisYear':'no','form.tier':6000});c.moduleCalculate();assert.ok(c.data.result,c.data.error);assert.equal(c.data.registrationPlan,false);assert.equal(c.data.quickPlan,null);c.chooseFuture({currentTarget:{dataset:{annual:200}}});assert.equal(c.data.result.makeup.cost,'1800.00');assert.equal(c.data.display.payback.total,'3000.00');assert.equal(c.data.paymentBreakdown.nowCost,'2000.00');
 });
 test('已有分年记录不重复补已交年份，账户不重复加入过去本金，不生成已核记录',()=>{
@@ -36,7 +36,7 @@ test('海南未来延缴5年后自动补足，已交5个60岁后年度的人65�
 });
 test('可主动选不补往年作对照，返回自动方案恢复60岁，历史事实不改',()=>{const q=basic();const cost=q.data.result.chosen.total;q.toggleAutoMakeup();assert.equal(q.data.result.chosen.timeline.receivingAge,69);assert.equal(q.data.result.makeup,null);q.toggleAutoMakeup();assert.equal(q.data.result.chosen.timeline.receivingAge,60);assert.equal(q.data.result.chosen.total,cost);});
 test('回本与累计年龄各归自己的金额单元格，只显示周岁，页面和海报同源',()=>{
- const q=basic(),p=pk.snapshot(q.data),t=pk.table(p,[200,6000],20),recovery=t.rows.find(x=>x.label==='全部缴费回本'),cumulative=t.rows.find(x=>x.label==='领取20年累计');assert.equal(recovery.subtitle,undefined);assert.equal(cumulative.subtitle,undefined);assert.ok(recovery.values.every(x=>/（\d+岁）$/.test(x)));assert.notEqual(recovery.values[0].match(/（.*）/)[0],recovery.values[1].match(/（.*）/)[0]);assert.ok(cumulative.values.every(x=>x.endsWith('（80岁）')));assert.ok(![...recovery.values,...cumulative.values].some(x=>/岁\d+个月/.test(x)));
+ const q=basic(),p=pk.snapshot(q.data),t=pk.table(p,[200,6000],20),recovery=t.rows.find(x=>x.label==='领取后回本'),cumulative=t.rows.find(x=>x.label==='领取20年累计');assert.equal(recovery.subtitle,undefined);assert.equal(cumulative.subtitle,undefined);assert.ok(recovery.values.every(x=>/（\d+岁）$/.test(x)));assert.notEqual(recovery.values[0].match(/（.*）/)[0],recovery.values[1].match(/（.*）/)[0]);assert.ok(cumulative.values.every(x=>x.endsWith('（80岁）')));assert.ok(![...recovery.values,...cumulative.values].some(x=>/岁\d+个月/.test(x)));
  const image=require('../miniprogram/utils/pk-layout').layout(t,true,true);assert.ok(image.ops.some(x=>x.x>234&&/（\d+岁）/.test(x.text||'')));assert.ok(!image.ops.some(x=>x.x<234&&/^（\d+岁）$/.test(x.text||'')));
 });
 

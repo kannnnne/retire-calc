@@ -58,7 +58,7 @@ test('PK与个人图使用新计划，部分年度模型的范围随图片传递
  const f=input('210100',60,5000),r=calculate(f),data={form:f,region:require('../miniprogram/resident/data/regions').getRegion(f.regionId),result:r,display:flow.display(r)};
  const card=require('../miniprogram/utils/share-card').fromPage('resident',data);assert.match(card.personal.planName,/未含更早可补年度/);
  const pk=require('../miniprogram/resident/utils/tier-pk'),t=pk.table(pk.snapshot(data),[200,5000]);
- assert.deepEqual(t.rows.find(x=>x.label==='现在补交').values,['2,400元\n补12年','31,000元\n补12年']);
+ assert.deepEqual(t.rows.find(x=>x.label==='其中：补缴').values,['2,400元\n补12年','31,000元\n补12年']);
 });
 test('2.47旧会话重进按新补缴规则重算，保留年龄和地区；补缴页换档同步补费',()=>{
  const {page}=require('../scripts/resident-module-harness'),q=page('basic');q.onLoad();q.regionChoice({detail:{regionId:'120100'}});q.setData({'form.age':'55','form.asOf':'2026-10'});q.calculate();
