@@ -15,11 +15,11 @@ function layout(table,reveal,hasCode){
   const values=row.values.map(v=>!reveal&&row.label==='每月约领'?'****':v);
   const cells=[wrap(row.label,27,labelW-24),...values.map(v=>wrap(v,30,cw-24))],height=Math.max(...cells.map(c=>c.length))*46+32;
   rect(pad,y,W-pad*2,height,row.label==='每月约领'?'#edf3ff':row.kind==='balance'?'#f5f8fd':'#ffffff');rect(pad,y,W-pad*2,1,'#dce4ef');
-  cells.forEach((ls,i)=>{if(i)rect(pad+labelW+(i-1)*cw,y,1,height,'#e5eaf2');ls.forEach((line,n)=>text(line,i===0?pad+12:pad+labelW+(i-1)*cw+12,y+42+n*46,i===0?27:30,row.label==='每月约领'&&i>0?'#245bc1':i===0?'#506078':row.kind==='balance'?(row.tones[i-1]==='positive'?'#176652':row.tones[i-1]==='negative'?'#a33736':'#506078'):'#182c47',i>0?'bold':'normal'));});y+=height;
+  cells.forEach((ls,i)=>{if(i)rect(pad+labelW+(i-1)*cw,y,1,height,'#e5eaf2');ls.forEach((line,n)=>text(line,i===0?pad+12:pad+labelW+(i-1)*cw+12,y+42+n*46,i===0?27:30,row.label==='每月约领'&&i>0?'#245bc1':i===0?'#506078':row.kind==='balance'?(row.tones[i-1]==='positive'?'#a33736':row.tones[i-1]==='negative'?'#176652':'#506078'):'#182c47',i>0?'bold':'normal'));});y+=height;
  }
  if(table.balanceBasis){text('净额＝'+table.balanceBasis,pad,y+42,24,'#506078');y+=58;}
  y+=36;
- if(hasCode){ops.push({op:'code',x:pad,y,w:200,h:200});text('长按识别小程序码',pad+240,y+78,28);text('算算自己的方案',pad+240,y+122,28);y+=226;}
+ if(hasCode){const codeX=W-pad-200;ops.push({op:'code',x:codeX,y,w:200,h:200});['长按识别小程序码','算算自己的方案'].forEach((s,i)=>{const w=Array.from(s).reduce((n,c)=>n+(c.charCodeAt(0)<128?.56:1)*28,0);text(s,codeX-40-w,y+78+i*44,28);});y+=226;}
  text('结果仅供参考，以社保核定为准。',pad,y+24,25,'#506078');return {width:W,height:Math.ceil(y+68),ops};
 }
 module.exports={layout};

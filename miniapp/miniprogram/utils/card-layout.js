@@ -17,7 +17,7 @@ function layout(m,hasCode){
 
  }else{y=para(m.description,y+16,32,'#182c47');y+=44;}
  y+=24;rect(pad,y,inner,1,'#dce4ef');y+=32;
- if(hasCode){ops.push({op:'code',x:pad,y,w:216,h:216});const label=lines('长按识别小程序码\n算算自己的情况',25,inner-248);label.forEach((s,i)=>text(s,pad+248,y+76+i*42,25));y+=248;}
+ if(hasCode){const codeX=W-pad-216;ops.push({op:'code',x:codeX,y,w:216,h:216});const label=lines('长按识别小程序码\n算算自己的情况',25,inner-248);label.forEach((s,i)=>text(s,codeX-32-width(s,25),y+76+i*42,25));y+=248;}
  else{y=para('预览 · 尚未接入正式小程序码',y+22,24,'#506078');y+=28;}
  text('结果仅供参考，以社保核定为准。',pad,y,21,'#506078');y+=54;
  return {width:W,height:Math.ceil(y),ops};
