@@ -39,5 +39,5 @@ test('粗记用户可以比较和返回，核对按钮才去查记录，未查�
 });
 
 test('主结果单独说明逐年路线，补缴入口贴着缴费安排；参考页无应用或资格勾选按钮',()=>{
- const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8'),start=w.indexOf('<block wx:elif="{{referencePlan}}">'),end=w.indexOf('<block wx:elif="{{quickPlan}}">');const ref=w.slice(start,end);assert.ok(ref.includes('补缴参考 ⓘ'));assert.ok(ref.includes('bindtap="resultInfo"'));assert.equal(ref.includes('bindtap="applyMaxPlan"'),false);assert.equal(ref.includes('quickConfirm'),false);assert.ok(w.includes('只往后每年交的结果'));assert.ok(w.indexOf('data-route="past"')>w.indexOf('payment-card'));assert.ok(w.indexOf('data-route="past"')<w.indexOf('result-tools'));
+ const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8'),start=w.indexOf('<block wx:elif="{{referencePlan}}">'),end=w.indexOf('<block wx:elif="{{quickPlan}}">');const ref=w.slice(start,end);assert.ok(ref.includes('补缴参考 ⓘ'));assert.ok(ref.includes('bindtap="resultInfo"'));assert.equal(ref.includes('bindtap="applyMaxPlan"'),false);assert.equal(ref.includes('quickConfirm'),false);assert.ok(w.includes('{{display.receiptGuide.label}}'));assert.ok(w.indexOf('data-route="past"')>w.indexOf('payment-card'));assert.ok(w.indexOf('data-route="past"')<w.indexOf('result-tools'));
 });

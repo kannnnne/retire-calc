@@ -203,3 +203,9 @@ PK snapshot保存payback原始total为recoveryCost，table末行领取N年差额
 showShareImageMenu必须显式needShowEntrance:true、entrancePath=cards.share(kind).path；居民个人/PK回resident/pages/home/home，不默认当前share页。普通onShareAppMessage路径不能替代图片入口。冷进无方案share页直接reLaunch居民菜单，正常内存传递照常。二维码仍用户原首页码，不宣称本轮已改为居民码；入口能力由微信控制。
 PK回本/累计年龄仅整岁，放row.subtitle左侧标题下；右侧只数值/时长，回本方案年龄不同用整岁范围，未知不猜。计算月数保留，未更改累计/净额公式。四正常结果root加result-shell纵向最小一屏，result-tools自动靠底且保留上间隔，padding预留48px+44rpx+safe。长内容随流，不覆盖正文。删除四填写页孤立form-reset-row，不删内部重置/恢复逻辑。
 1133测试和原生编译通过，Playwright浏览器CSS转换预览320/375宽无溢出、按钮下间隙9/10px；15档生产PNG已看。不是原生模拟器或手机实测、未发送好友/上传。详情docs/share-entry-layout-2026-10-30.md。RTK未安装，原生命令回退。
+
+
+## 逐年起领年龄澄清（2.46.0）
+用户贵港60岁0年示例普通页never=true，只排2026—2040十五次年缴，2040-11即74岁、90000/月领860，不是贵港法定年龄74。receipt-guidance在>60岁且仍正常年缴、无已应用makeup/transition/approvedPlan/lump时标逐年方案，解释年龄与补缴路径；basic/calc和个人/PK共用范围信息。不能把未核补缴当已批准，也不能直接将年龄改60而保留未来15年补贴。
+本轮重读桂人社规2023-2官方全文，普通补漏年与原制度过渡补足分开，历史上限按原年度，贵港全市不能套桂平2012。已登记、核准2012—2025补14年＋2026正常1年的条件用例可60岁起领；不认定用户真实资格。现有never路径仍先登记/核范围，不自动加历史年份。
+1138测试/原生编译通过，贵港60岁个人及三档生产图已看，未本轮GUI/手机/上传。外地只检查既有模型路径，不自动扩全国新政策研究；详情docs/late-receipt-scope-2026-10-30.md。
