@@ -177,3 +177,7 @@ PK selected只要求至少2档、唯一、来自当前引擎结果，无3或10�
 
 ## 分享渲染修正（2.40.0，2026-10-30）
 分享个人/PK图统一白蓝、深色正文、移除大口号。card-layout.draw现在只接受Canvas 2D上下文，不再旧setFillStyle命令队列；share页selector取node、每次设位图宽高、createImage等码加载、canvasToTempFilePath传canvas。导出canvas必须离屏，opacity/z-index不能保证原生层不遮挡；预览padding百分比占位＋aspectFit等比。PK固定行名在横滑区外，左右共用动态行高，不依赖sticky。1119测试与原生编译通过，模拟器验七档横滑固定列、宽图和居民个人图；离线三类个人及十五档图已看。未手机实测/上传，见docs/share-rendering-2026-10-30.md。
+
+
+## 多档差额与交互（2.41.0，2026-10-30）
+PK snapshot保存payback原始total为recoveryCost，table末行领取N年差额＝月领×12×N−该自费本金，正负/零符号及tones，历史未知标未含以前；隐藏金额不得泄露差额符号/颜色。pk-layout共享差额与简短费用范围。领取期限在表上，底部多选面板有收起/全选/完成；删重复其他档次总表。表下仅计算说明与来源折叠卡，分享给朋友先开图片预览。source-link统一块级自适应多行，无胶囊背景或截字；适用居民policy、PK、calc。隐私说明同步默认显示金额。1121测试/原生编译通过，模拟器已验多选、七档差额及PK来源，独立政策页样式编译但未本轮GUI。未手机实测/上传，见docs/pk-balance-2026-10-30.md。
