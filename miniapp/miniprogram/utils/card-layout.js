@@ -10,8 +10,11 @@ function layout(m,hasCode){
  let y=178;
  if(m.personal){y=para(m.region,y,23);y+=16;text('预计每月领取',pad,y,24);y+=86;
  const size=Math.min(78,Math.floor(inner/(Math.max(m.monthly.length,4)*0.6+1)));text(m.monthly,pad,y,size,'#245bc1','bold');text('元／月',pad,y+43,24,'#506078');y+=96;
- y=para(m.receipt+' 起领',y,29,'#182c47');y+=28;
- for(const row of m.rows){rect(pad,y-10,inner,1,'#dce4ef');text(row.label,pad,y+28,23,'#506078');y+=70;for(const line of lines(row.value,32)){text(line,pad,y,32,'#182c47','bold');y+=43;}y+=10;}
+ y=para(m.receipt+' 起领'+(m.receiptAge?'（'+m.receiptAge+'）':''),y,27,'#182c47');y+=18;
+ if(m.facts&&m.facts.length){rect(pad,y,inner,1,'#dce4ef');y+=44;text('已有权益',pad,y,25,'#182c47','bold');y+=38;for(let i=0;i<m.facts.length;i+=2){let h=0;for(let j=0;j<2&&i+j<m.facts.length;j++){const fact=m.facts[i+j],x=pad+j*(inner/2+12),ls=lines(fact.value,25,inner/2-26);text(fact.label,x,y,21,'#506078');ls.forEach((v,k)=>text(v,x,y+37+k*36,25,'#182c47','bold'));h=Math.max(h,ls.length*36+48);}y+=h;}y+=8;}
+ if(m.planName){y=para(m.planName,y+12,23,'#506078');y+=6;}
+ for(const row of m.rows){const values=lines(row.value,27,inner-210),labels=lines(row.label,22,180),h=Math.max(values.length*39,labels.length*33)+32;rect(pad,y-10,inner,1,'#dce4ef');labels.forEach((v,k)=>text(v,pad,y+26+k*33,22,'#506078'));values.forEach((v,k)=>text(v,pad+210,y+26+k*39,27,'#182c47','bold'));y+=h;}
+
  }else{y=para(m.description,y+16,32,'#182c47');y+=44;}
  y+=24;rect(pad,y,inner,1,'#dce4ef');y+=32;
  if(hasCode){ops.push({op:'code',x:pad,y,w:216,h:216});const label=lines('长按识别小程序码\n算算自己的情况',25,inner-248);label.forEach((s,i)=>text(s,pad+248,y+76+i*42,25));y+=248;}
