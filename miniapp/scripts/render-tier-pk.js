@@ -1,7 +1,7 @@
 // Render the production display list, including its real packaged mini-program code.
 const fs=require('node:fs'),path=require('node:path'),sharp=require(process.env.SHARE_SHARP||'sharp');
 const pk=require('../miniprogram/resident/utils/tier-pk'),layout=require('../miniprogram/utils/pk-layout').layout;
-const q=require('./resident-module-harness').page('basic');q.onLoad();const city=process.argv[2]||'440100';q.regionChoice({detail:{regionId:city}});q.setData({'form.age':'55','form.asOf':'2026-10'});q.calculate();if(!q.data.result)throw Error(q.data.error);
+const q=require('./resident-module-harness').page('basic');q.onLoad();const city=process.argv[2]||'440100';q.regionChoice({detail:{regionId:city}});q.setData({'form.age':process.argv[4]||'55','form.asOf':'2026-10'});q.calculate();if(!q.data.result)throw Error(q.data.error);
 const p=pk.snapshot(q.data),count=Number(process.argv[3]||3),ids=p.plans.slice(0,count).map(p=>p.tier),c=layout(pk.table(p,ids),true,true);
 const escape=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${c.width}" height="${c.height}"><rect width="100%" height="100%" fill="white"/>`;
 for(const o of c.ops){if(o.op==='rect')svg+=`<rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" fill="${o.color}"/>`;if(o.op==='text')svg+=`<text x="${o.x}" y="${o.y}" font-family="Microsoft YaHei,sans-serif" font-weight="${o.weight}" font-size="${o.size}" fill="${o.color}">${escape(o.text)}</text>`;}svg+='</svg>';

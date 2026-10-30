@@ -8,7 +8,7 @@ function layout(m,hasCode){
  function para(s,y,size=24,color='#506078',max=inner){for(const line of lines(s,size,max)){text(line,pad,y,size,color);y+=size*1.55;}return y;}
  rect(0,0,W,132,'#edf3ff');text(m.brand,pad,52,26,'#245bc1','bold');text(m.type+(m.asOf?' · '+m.asOf:''),pad,91,22,'#506078');
  let y=178;
- if(m.personal){y=para(m.region,y,23);y+=16;text('预计每月领取',pad,y,24);y+=86;
+ if(m.personal){y=para(m.region,y,23);y+=16;text(m.monthlyLabel||'预计每月领取',pad,y,24);y+=86;
  const size=Math.min(78,Math.floor(inner/(Math.max(m.monthly.length,4)*0.6+1)));text(m.monthly,pad,y,size,'#245bc1','bold');text('元／月',pad,y+43,24,'#506078');y+=96;
  y=para(m.receipt+' 起领'+(m.receiptAge?'（'+m.receiptAge+'）':''),y,27,'#182c47');y+=18;
  if(m.facts&&m.facts.length){rect(pad,y,inner,1,'#dce4ef');y+=44;text('已有权益',pad,y,25,'#182c47','bold');y+=38;for(let i=0;i<m.facts.length;i+=2){let h=0;for(let j=0;j<2&&i+j<m.facts.length;j++){const fact=m.facts[i+j],x=pad+j*(inner/2+12),ls=lines(fact.value,25,inner/2-26);text(fact.label,x,y,21,'#506078');ls.forEach((v,k)=>text(v,x,y+37+k*36,25,'#182c47','bold'));h=Math.max(h,ls.length*36+48);}y+=h;}y+=8;}
