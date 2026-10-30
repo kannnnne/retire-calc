@@ -28,7 +28,7 @@ picker .control::after{content:'';display:block;width:14rpx;height:14rpx;flex:no
 /* Result maintenance is deliberately quiet and stays in normal document flow. */
 
 
-.edit-return{margin-bottom:20rpx;border-bottom:1rpx solid var(--line)}
-.edit-return button{width:100%!important;min-height:44px;padding:12rpx 16rpx;color:var(--muted);font-size:27rpx;background:transparent;text-align:left;display:flex;align-items:center}
+
+
 
 @import "styles/visual-system.wxss";
