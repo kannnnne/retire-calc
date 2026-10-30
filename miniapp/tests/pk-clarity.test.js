@@ -21,7 +21,7 @@ test('历史支出只在公共资料和领取明细中，已交金额不加进�
 test('带今年锁定档和小数年额时，费用明细与真实引擎一致，不隐藏金额差异',()=>{
  for(const id of ['440800','510100']){const q=page('basic');q.onLoad();q.regionChoice({detail:{regionId:id}});q.setData({'form.age':'55','form.asOf':'2026-10'});if(id==='440800')q.currentTier({detail:{value:1}});q.calculate();assert.ok(q.data.result,q.data.error);const p=pk.snapshot(q.data),ids=pk.defaults(p),t=pk.table(p,ids);
   for(let i=0;i<ids.length;i++){const value=id=>number(t.rows.find(r=>r.id===id)?.values[i]||'0');assert.ok(Math.abs(value('future')-value('makeup')-value('normal'))<.01);const s=q.data.result.scenarios.find(s=>s.annual===ids[i]);assert.ok(Math.abs(value('future')-Number(s.total))<.01);}
-  if(id==='440800')assert.ok(t.rows.find(r=>r.id==='normal').values.every(v=>v.includes('今年180元')));
+  if(id==='440800')assert.ok(t.rows.find(r=>r.id==='normal').values.every(v=>v.includes('今年180元')));if(id==='510100')for(const [i,plan] of pk.selected(p,ids).entries()){const line=t.rows.find(r=>r.id==='normal').values[i].split('\n').at(-1),m=line.match(/^([\d,.]+)元×(\d+)年$/);assert.ok(m);assert.equal(Number(m[1].replace(/,/g,'')),plan.annualTotal);}
  }
 });
 test('两列资料、三档一组长图涵盖15档，不将所有档次缩成宽图',()=>{
