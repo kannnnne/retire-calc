@@ -4,7 +4,7 @@ function layout(table,reveal,hasCode){
  const rect=(x,y,w,h,color)=>ops.push({op:'rect',x,y,w,h,color});
  const text=(s,x,y,size=28,color='#182c47',weight='normal')=>ops.push({op:'text',text:String(s),x,y,size,color,weight});
  function wrap(s,size,max){const lines=[];let line='',width=0;for(const c of String(s)){const w=(c.charCodeAt(0)<128?.56:1)*size;if(c==='\n'||width+w>max){lines.push(line);line='';width=0;if(c==='\n')continue;}line+=c;width+=w;}if(line)lines.push(line);return lines;}
- rect(0,0,W,160,'#edf3ff');text('退休算盘 · 居民养老',pad,55,28,'#245bc1','bold');text('岁月有数，未来从容',pad,118,44,'#182c47','bold');
+ rect(0,0,W,160,'#edf3ff');text('退休算盘 · 居民养老',pad,55,28,'#245bc1','bold');text('缴费方案对比',pad,118,32,'#182c47','bold');
  let y=212;for(const line of wrap(table.region+' · '+table.asOf+' · 缴费方案对比',26,W-pad*2)){text(line,pad,y,26,'#506078');y+=38;}y+=24;
  const heads=table.columns.map((c,i)=>wrap(reveal?c.label:'方案'+(i+1),27,cw-24));
  const headerH=Math.max(...heads.map((ls,i)=>ls.length*40+(table.columns[i].current?32:0)))+28;

@@ -7,8 +7,8 @@ function layout(m,hasCode){
  function lines(s,size,max=inner){const out=[];let line='';for(const c of String(s)){if(c==='\n'){out.push(line);line='';continue;}if(line&&width(line+c,size)>max){out.push(line);line='';}line+=c;}if(line)out.push(line);return out;}
  function para(s,y,size=24,color='#506078',max=inner){for(const line of lines(s,size,max)){text(line,pad,y,size,color);y+=size*1.55;}return y;}
  rect(0,0,W,132,'#edf3ff');text(m.brand,pad,52,26,'#245bc1','bold');text(m.type+(m.asOf?' · '+m.asOf:''),pad,91,22,'#506078');
- let y=192;for(const line of m.title){text(line,pad,y,46,'#182c47','bold');y+=62;}y+=12;
- if(m.personal){y=para(m.region,y,23);y+=24;text('预计每月领取',pad,y,24);y+=86;
+ let y=178;
+ if(m.personal){y=para(m.region,y,23);y+=16;text('预计每月领取',pad,y,24);y+=86;
  const size=Math.min(78,Math.floor(inner/(Math.max(m.monthly.length,4)*0.6+1)));text(m.monthly,pad,y,size,'#245bc1','bold');text('元／月',pad,y+43,24,'#506078');y+=96;
  y=para(m.receipt+' 起领',y,29,'#182c47');y+=28;
  for(const row of m.rows){rect(pad,y-10,inner,1,'#dce4ef');text(row.label,pad,y+28,23,'#506078');y+=70;for(const line of lines(row.value,32)){text(line,pad,y,32,'#182c47','bold');y+=43;}y+=10;}
@@ -19,5 +19,13 @@ function layout(m,hasCode){
  text('结果仅供参考，以社保核定为准。',pad,y,21,'#506078');y+=54;
  return {width:W,height:Math.ceil(y),ops};
 }
-function draw(ctx,card,code){ctx.setFillStyle('#ffffff');ctx.fillRect(0,0,card.width,card.height);ctx.setTextBaseline('alphabetic');for(const o of card.ops){if(o.op==='rect'){ctx.setFillStyle(o.color);ctx.fillRect(o.x,o.y,o.w,o.h);}if(o.op==='text'){ctx.setFillStyle(o.color);ctx.font=(o.weight==='bold'?'bold ':'')+o.size+'px sans-serif';ctx.fillText(o.text,o.x,o.y);}if(o.op==='code'&&code)ctx.drawImage(code,o.x,o.y,o.w,o.h);}}
+// Canvas 2D uses immediate drawing and explicit bitmap dimensions on every render.
+function draw(ctx,card,code){
+ ctx.fillStyle='#ffffff';ctx.fillRect(0,0,card.width,card.height);ctx.textBaseline='alphabetic';
+ for(const o of card.ops){
+  if(o.op==='rect'){ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h);}
+  if(o.op==='text'){ctx.fillStyle=o.color;ctx.font=(o.weight==='bold'?'bold ':'')+o.size+'px sans-serif';ctx.fillText(o.text,o.x,o.y);}
+  if(o.op==='code'&&code)ctx.drawImage(code,o.x,o.y,o.w,o.h);
+ }
+}
 module.exports={layout,draw};

@@ -173,3 +173,7 @@ PK selected只要求至少2档、唯一、来自当前引擎结果，无3或10�
 
 ## 界面层级修正（2.39.0，2026-10-30）
 覆盖旧全局胶囊处理：其他计算/养老金计算/地区更换/帮助是文字链接；四页结果左侧小修改、右侧大保存。编辑返回融入标题右侧“返回结果”，不再顶部edit-return整行。居民多档PK核心入口移到月领卡后。PK选择框带边框箭头，全部对比为同排文字操作，已选数量下一行，必须显式width:auto覆盖原生button默认宽度。1117测试及编译通过，本轮用户授权范围内iPhone 5模拟器已验广州居民七档选择、结果操作及恢复、灵活地区链接；未手机实测/上传。详见docs/ui-hierarchy-2026-10-30.md。
+
+
+## 分享渲染修正（2.40.0，2026-10-30）
+分享个人/PK图统一白蓝、深色正文、移除大口号。card-layout.draw现在只接受Canvas 2D上下文，不再旧setFillStyle命令队列；share页selector取node、每次设位图宽高、createImage等码加载、canvasToTempFilePath传canvas。导出canvas必须离屏，opacity/z-index不能保证原生层不遮挡；预览padding百分比占位＋aspectFit等比。PK固定行名在横滑区外，左右共用动态行高，不依赖sticky。1119测试与原生编译通过，模拟器验七档横滑固定列、宽图和居民个人图；离线三类个人及十五档图已看。未手机实测/上传，见docs/share-rendering-2026-10-30.md。
