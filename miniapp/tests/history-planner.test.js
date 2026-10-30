@@ -24,7 +24,7 @@ test('桂平分区只核2012年份，不假填月份或开放无条件60岁补�
  assert.throws(()=>calculate(f({birth:'1960-10',years:'9',gxTransitionEnabled:'yes',gxTransitionStart:'2011-07',gxTransitionYears:'6',gxTransitionReviewed:'yes'})),/年份为2012/);
 });
 test('贵港59岁5年真实页面点选核对10个漏年后，由69岁改为满60岁后领取',()=>{
- const p=page();p.setData({form:{...p.data.form,...f({ageOnly:true,age:'59',gxStartYear:''})}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.result.chosen.timeline.receivingAge,69);
+ const p=page();p.setData({form:{...p.data.form,...f({ageOnly:true,age:'59',gxStartYear:''})}});p.refreshPolicyQuestions();p.setData({'form.makeupStrategy':'ANNUAL_ONLY'});p.calculate();assert.equal(p.data.result.chosen.timeline.receivingAge,69);
  p.openMissingPlan();assert.equal(p.data.form.gxStartYear,'2012');assert.equal(p.data.gxPlan.count,0);
  p.missingStart({detail:{value:'2012'}});for(let year=2012;year<=2021;year++)p.missingYear({currentTarget:{dataset:{year}}});assert.equal(p.data.gxPlan.cost,'2000.00');
  p.applyMissingPlan();assert.match(p.data.error,/未确认/);assert.equal(p.data.result,null);
@@ -32,7 +32,7 @@ test('贵港59岁5年真实页面点选核对10个漏年后，由69岁改为满6
  assert.equal(p.data.form.gxTransitionEnabled,'no');assert.equal(p.data.form.gxTransitionReviewed,'unknown');
 });
 test('60岁路线可核对历史补缴与旧制资格；已有提档记录不会被年份工具覆盖',()=>{
- const p=page();p.setData({form:{...p.data.form,...f({birth:'1966-10'})}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.canGXTransition,true);assert.equal(p.data.result.chosen.timeline.receivingAge,70);
+ const p=page();p.setData({form:{...p.data.form,...f({birth:'1966-10'})}});p.refreshPolicyQuestions();p.setData({'form.makeupStrategy':'ANNUAL_ONLY'});p.calculate();assert.equal(p.data.canGXTransition,true);assert.equal(p.data.result.chosen.timeline.receivingAge,70);
  p.reviewTransition();assert.equal(p.data.planMode,'confirmed');assert.equal(p.data.planRecords,true);assert.equal(p.data.form.gxTransitionEnabled,'no');
  const rows=[{mode:'upgrade',start:'2022',end:'2022',original:200,target:6000}];p.setData({'form.gxMakeupRows':rows});p.openMissingPlan();assert.deepEqual(p.data.form.gxMakeupRows,rows);assert.equal(p.data.gxPlanOpen,true);assert.equal(p.data.gxMakeupOpen,true);
 });

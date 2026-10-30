@@ -1,9 +1,10 @@
+// Manual/annual-only fixtures explicitly opt out of the default automatic plan.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const experience=require('../miniprogram/resident/utils/payment-experience');
 const {calculate}=require('../miniprogram/resident/utils/calculate');
 const {getRegion}=require('../miniprogram/resident/data/regions');
 function browser(){const sessions={};return (relative='resident/pages/calc/calc.js')=>{let def;const file=path.join(__dirname,'../miniprogram',relative),base=path.dirname(file);vm.runInNewContext(fs.readFileSync(file,'utf8'),{Date,JSON,wx:{pageScrollTo(){},showModal(){}},Page:x=>def=x,require:x=>x.endsWith('/session')?{load:k=>sessions[k]?JSON.parse(JSON.stringify(sessions[k])):null,save:(k,v)=>{sessions[k]=JSON.parse(JSON.stringify(v));}}:require(path.resolve(base,x))});const p={...def,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const[k,v]of Object.entries(patch)){const keys=k.split('.');let t=this.data;for(const key of keys.slice(0,-1))t=t[key];t[keys.at(-1)]=v;}}};p.onLoad();return p;};}
-function guiping(open=browser()){const p=open();p.regionChoice({detail:{regionId:'450800'}});p.localArea({detail:{value:1}});p.setData({'form.age':'59','form.years':'5','form.pastAnnual':'360','form.tier':200,'form.asOf':'2026-10','form.paidThisYear':'yes'});return p;}
+function guiping(open=browser()){const p=open();p.regionChoice({detail:{regionId:'450800'}});p.localArea({detail:{value:1}});p.setData({'form.makeupStrategy':'ANNUAL_ONLY','form.age':'59','form.years':'5','form.pastAnnual':'360','form.tier':200,'form.asOf':'2026-10','form.paidThisYear':'yes'});return p;}
 
 test('桂平基本事实可以直接算，不要求用户给自己选择政策类别或假装已获核定',()=>{
  const p=guiping();assert.equal(p.data.form.ordinary,'unknown');assert.equal(p.data.form.eligible,'unknown');p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,69);assert.equal(p.data.result.projectionScope,'PRE_RECEIPT_REFERENCE');

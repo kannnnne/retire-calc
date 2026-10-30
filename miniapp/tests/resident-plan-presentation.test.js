@@ -25,7 +25,7 @@ test('今年未交高档方案拆52000旧费加6000本年，明年6000，账仍�
 test('本年已含不重复收本年正常款，未知则明确保留假设；普通年缴同样拆当前年份',()=>{
  const q=page();q.openSupplementPlans();q.quickChoice({currentTarget:{dataset:{tier:6000}}});assert.equal(q.data.quickPlan.summary.currentCost,'0.00');assert.equal(q.data.quickPlan.summary.nowCost,'58000.00');assert.equal(q.data.quickPlan.summary.laterCost,'6000.00');
  const unknown=page({paidThisYear:'unknown'});unknown.openSupplementPlans();assert.equal(unknown.data.quickPlan.config.currentAssumed,true);assert.equal(unknown.data.quickPlan.summary.currentCost,'0.00');
- const ordinary=page({paidThisYear:'no'});ordinary.calculate();assert.equal(ordinary.data.paymentBreakdown.currentCost,'200.00');assert.equal(ordinary.data.paymentBreakdown.laterCost,'1800.00');assert.equal(ordinary.data.paymentBreakdown.laterYears,9);assert.equal(ordinary.data.result.chosen.total,'2000.00');
+ const ordinary=page({paidThisYear:'no'});ordinary.setData({'form.makeupStrategy':'ANNUAL_ONLY'});ordinary.calculate();assert.equal(ordinary.data.paymentBreakdown.currentCost,'200.00');assert.equal(ordinary.data.paymentBreakdown.laterCost,'1800.00');assert.equal(ordinary.data.paymentBreakdown.laterYears,9);assert.equal(ordinary.data.result.chosen.total,'2000.00');
 });
 
 test('参考比较及年末支出仍可对账，拆分不修改原日程',()=>{

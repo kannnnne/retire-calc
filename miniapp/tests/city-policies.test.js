@@ -345,7 +345,7 @@ test('广西补缴单页只列相应历史档，金额和资格修改后重新�
 });
 
 test('广西补断缴与当前年提档的页面字段区分，删除记录后普通计算不受影响',()=>{
- const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450300'}});p.gxAdd();p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:0}});assert.equal(p.data.form.gxMakeupRows[0].mode,'missing');assert.equal(p.data.gxUiRows[0].currentUpgrade,false);
+ const p=page('resident/pages/calc/calc.js');p.setData({'form.makeupStrategy':'ANNUAL_ONLY'});p.regionChoice({detail:{regionId:'450300'}});p.gxAdd();p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:0}});assert.equal(p.data.form.gxMakeupRows[0].mode,'missing');assert.equal(p.data.gxUiRows[0].currentUpgrade,false);
  p.gxMode({currentTarget:{dataset:{index:0}},detail:{value:1}});p.gxInput({currentTarget:{dataset:{index:0,key:'start'}},detail:{value:'2026'}});p.gxInput({currentTarget:{dataset:{index:0,key:'end'}},detail:{value:'2026'}});assert.equal(p.data.gxUiRows[0].currentUpgrade,true);p.gxRemove({currentTarget:{dataset:{index:0}}});p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.makeup,null);assert.equal(p.data.result.chosen.total,'2000.00');
 });
 
@@ -593,7 +593,7 @@ test('广西灵活旧原50岁结果恢复失效，原55岁结果可恢复，换�
 
 
 test('南宁居民页面选兴宁区才使用本地额，切回省参考清旧结果且不误认广东兴宁市',()=>{
- const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'450100'}});assert.equal(p.data.region.base,186);assert.equal(p.data.areaLabels[1],'兴宁区');
+ const p=page('resident/pages/calc/calc.js');p.setData({'form.makeupStrategy':'ANNUAL_ONLY'});p.regionChoice({detail:{regionId:'450100'}});assert.equal(p.data.region.base,186);assert.equal(p.data.areaLabels[1],'兴宁区');
  p.localArea({detail:{value:1}});assert.equal(p.data.form.localArea,'xingning');assert.equal(p.data.region.base,211);assert.equal(p.data.form.eligible,'unknown');assert.equal(p.data.form.ordinary,'unknown');
  p.setData({'form.eligible':'yes','form.ordinary':'yes'});p.calculate();assert.equal(p.data.error,'');assert.equal(p.data.result.region,'南宁市 · 兴宁区');assert.equal(p.data.result.chosen.base,'226.00');
  p.localArea({detail:{value:0}});assert.equal(p.data.result,null);assert.equal(p.data.baseline,null);assert.equal(p.data.form.localArea,'');assert.equal(p.data.region.base,186);

@@ -47,7 +47,7 @@ test('真实页面预览不改变旧方案，模式及补贴可改，核对后�
 });
 
 test('点年份不用键盘、原年缴额复用、应用失败回到原输入，确认不会由快捷预览自动勾上',()=>{
- const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.form);q.openMaxPlan();assert.equal(q.data.quickPlan.annual,'200');assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.editYears,false);q.quickEditYears();for(const y of [...q.data.quickPlan.selected])q.quickYear({currentTarget:{dataset:{year:y}}});
+ const q=page();q.setData({form:{...q.data.form,...form({historyMode:'simple',segments:[]})}});q.refreshPolicyQuestions();q.setData({'form.makeupStrategy':'ANNUAL_ONLY'});q.calculate();const old=JSON.stringify(q.data.form);q.openMaxPlan();assert.equal(q.data.quickPlan.annual,'200');assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.editYears,false);q.quickEditYears();for(const y of [...q.data.quickPlan.selected])q.quickYear({currentTarget:{dataset:{year:y}}});
  for(const y of [2021,2023,2024,2025,2026])q.quickYear({currentTarget:{dataset:{year:y}}});q.quickGenerate();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(q.data.quickPlan.confirmed,false);
  q.quickConfirm();q.data.quickPlan.draft.form.birth='bad';q.applyMaxPlan();assert.equal(JSON.stringify(q.data.form),old);assert.ok(q.data.quickPlan.error);assert.equal(q.data.result.chosen.timeline.receivingAge,69);
  const w=fs.readFileSync(path.join(__dirname,'../miniprogram/resident/pages/calc/calc.wxml'),'utf8');assert.match(w,/bindtap="quickYear"/);assert.match(w,/confirm-type="done" bindconfirm="quickGenerate"/);assert.match(w,/补缴方案/);assert.match(w,/尚未领养老金/);

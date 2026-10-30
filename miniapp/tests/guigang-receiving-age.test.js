@@ -32,7 +32,7 @@ test('贵港结果可返回核对补缴，保留原输入，只预填申请范�
  let def;const base=path.join(__dirname,'../miniprogram/resident/pages/calc');
  vm.runInNewContext(fs.readFileSync(path.join(base,'calc.js'),'utf8'),{Date,JSON,wx:{pageScrollTo(){}},Page:x=>def=x,require:x=>require(path.resolve(base,x))});
  const p={...def,data:JSON.parse(JSON.stringify(def.data)),setData(patch){for(const [k,v]of Object.entries(patch)){const keys=k.split('.');let t=this.data;for(const key of keys.slice(0,-1))t=t[key];t[keys.at(-1)]=v;}}};
- p.setData({form:{...p.data.form,...form(),ageOnly:true,age:'59'}});p.refreshPolicyQuestions();p.calculate();
+ p.setData({form:{...p.data.form,...form(),ageOnly:true,age:'59'}});p.refreshPolicyQuestions();p.setData({'form.makeupStrategy':'ANNUAL_ONLY'});p.calculate();
  assert.equal(p.data.error,'');assert.equal(p.data.result.chosen.timeline.receivingAge,69);
  p.reviewMakeup();assert.equal(p.data.result,null);assert.equal(p.data.gxMakeupOpen,true);assert.equal(p.data.planRecords,true);
  assert.equal(p.data.form.age,'59');assert.equal(p.data.form.years,'5');assert.equal(p.data.form.tier,200);
