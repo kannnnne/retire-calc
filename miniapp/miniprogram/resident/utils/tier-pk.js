@@ -18,15 +18,15 @@ function table(p,ids,period=20,reveal=true){
  if(!Number.isInteger(period)||period<1||period>50)throw Error('请选择领取年数');
  const list=selected(p,ids),shared=[],row=(id,label,key,kind='detail',section='main')=>({id,label,kind,section,values:list.map(x=>!reveal&&id==='monthly'?'****':String(key(x)))});
  const cash=v=>new D(String(v||0).replace(/,/g,'')),exact=v=>cash(v).toFixed(2).replace(/\.00$/,'').replace(/\B(?=(\d{3})+(?!\d))/g,','),receipt=x=>x.receipt+'\n'+(x.age||'—')+'岁';
- const rows=[row('future','还需交合计',x=>exact(x.futureCost??x.future)+'元','cost'),row('monthly','每月约领',x=>money(x.monthly)+'元','income')];
+ const rows=[row('monthly','每月约领',x=>money(x.monthly)+'元','income'),row('future','还需交合计',x=>exact(x.futureCost??x.future)+'元','cost')];
  if(new Set(list.map(receipt)).size===1)shared.push({label:'开始领取',value:list[0].receipt+' · '+(list[0].age||'—')+'岁'});
- else rows.push(row('receipt','开始领取',receipt));
  if(list.some(x=>cash(x.immediate).plus(cash(x.lump)).gt(0)))rows.push(row('makeup','其中：补缴',x=>{
   const total=cash(x.immediateCost??x.immediate).plus(cash(x.lumpCost??x.lump));if(total.isZero())return '无需补缴';
   const timing=[];if(cash(x.immediate).gt(0))timing.push(x.autoYears?'补'+x.autoYears+'年':'含补缴／补差');
   if(x.lumpYears)timing.push(x.lumpAge+'岁补'+x.lumpYears+'年');return exact(total)+'元'+(timing.length?'\n'+timing.join(' · '):'');
  }));
  if(list.some(x=>x.years>0))rows.push(row('normal','其中：按年交',x=>x.years?exact(x.normalCost??x.normal)+'元\n'+(x.locked!=null&&x.futureYears!=null?'今年'+exact(x.locked)+'元'+(x.futureYears?'\n以后'+exact(x.annualTotal)+'元×'+x.futureYears+'年':''):exact(x.annualTotal)+'元×'+x.years+'年'):'无需按年交'));
+ if(!shared.length)rows.push(row('receipt','开始领取',receipt));
  rows.push(row('recovery','领取后回本',x=>x.recovery==='无需再交'||x.recovery==='无需回本'?x.recovery:x.recovery+(ageAt(x,x.recoveryMonths)?'\n（'+ageAt(x,x.recoveryMonths)+'）':'')));
  if(list[0].totalLabel==='前后总共交'&&list.some(x=>x.total!==x.future))rows.push(row('total','已交＋还需交',x=>exact(x.recoveryCost)+'元','detail','extra'));
  if(list.some(x=>x.ageSteps&&x.ageSteps.length))rows.push(row('ageSteps','到龄加发',x=>x.ageSteps?.length?x.ageSteps.map((s,i)=>s.age+'岁 '+(i?'再':'')+'+'+s.delta+'元').join('\n'):'起领已含或无后续加发','detail','extra'));

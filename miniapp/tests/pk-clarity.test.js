@@ -2,21 +2,21 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const pk=require('../miniprogram/resident/utils/tier-pk'),{page}=require('../scripts/resident-module-harness'),layout=require('../miniprogram/utils/pk-layout').layout;
 function basic(id='450800',age=59){const q=page('basic');q.onLoad();q.regionChoice({detail:{regionId:id}});q.setData({'form.age':String(age),'form.asOf':'2026-10'});q.calculate();assert.ok(q.data.result,q.data.error);return q;}
 const number=s=>Number(String(s).split('\n')[0].replace(/[^\d.-]/g,''));
-test('截图案例首先给还需交与月领，费用拆项相加等于合计，起领相同只写一次',()=>{
- const p=pk.snapshot(basic().data),t=pk.table(p,[200,2000,6000]);assert.deepEqual(t.rows.slice(0,2).map(r=>r.id),['future','monthly']);
- assert.deepEqual(t.rows[0].values,['3,000元','29,000元','65,000元']);assert.deepEqual(t.rows[1].values,['210元','400元','660元']);
+test('月领在前，合计紧邻补缴和按年交明细，费用相加等于合计',()=>{
+ const p=pk.snapshot(basic().data),t=pk.table(p,[200,2000,6000]);assert.deepEqual(t.rows.slice(0,4).map(r=>r.id),['monthly','future','makeup','normal']);
+ assert.deepEqual(t.rows[1].values,['3,000元','29,000元','65,000元']);assert.deepEqual(t.rows[0].values,['210元','400元','660元']);
  assert.equal(t.shared.length,1);assert.match(t.shared[0].value,/2027-11.*60岁/);assert.ok(!t.rows.some(r=>r.id==='receipt'));
- for(let i=0;i<3;i++)assert.equal(number(t.rows.find(r=>r.id==='makeup').values[i])+number(t.rows.find(r=>r.id==='normal').values[i]),number(t.rows[0].values[i]));
+ for(let i=0;i<3;i++)assert.equal(number(t.rows.find(r=>r.id==='makeup').values[i])+number(t.rows.find(r=>r.id==='normal').values[i]),number(t.rows.find(r=>r.id==='future').values[i]));
  assert.equal(t.rows.find(r=>r.id==='normal').values[0],'400元\n200元×2年');assert.ok(t.rows.every(r=>r.section==='main'));
 });
 test('不同起领时间保留逐档；无补缴不多造0元行，未知历史不拿账户当本金',()=>{
- const q=basic(),p=pk.snapshot(q.data),plans=p.plans.slice(0,2).map((x,i)=>({...x,receipt:i?'2028-11':'2027-11'})),t=pk.table({...p,plans},plans.map(x=>x.tier));assert.equal(t.shared.length,0);assert.ok(t.rows.some(r=>r.id==='receipt'));
+ const q=basic(),p=pk.snapshot(q.data),plans=p.plans.slice(0,2).map((x,i)=>({...x,receipt:i?'2028-11':'2027-11'})),t=pk.table({...p,plans},plans.map(x=>x.tier));assert.equal(t.shared.length,0);assert.ok(t.rows.some(r=>r.id==='receipt'));assert.deepEqual(t.rows.slice(0,4).map(r=>r.id),['monthly','future','makeup','normal']);
  const only=basic('450800',30),annual=pk.table(pk.snapshot(only.data),[200,6000]);assert.ok(!annual.rows.some(r=>r.id==='makeup'));
  q.data.result.pastPaid=null;q.data.result.openingAmount='95000';const u=pk.table(pk.snapshot(q.data),[200,6000]);assert.ok(u.facts.some(f=>f.label==='以前个人缴费'&&f.value==='未填写'));assert.ok(!u.rows.some(r=>r.id==='total'));assert.match(u.recoveryBasis,/未含以前/);
 });
 test('历史支出只在公共资料和领取明细中，已交金额不加进还需交合计',()=>{
  const q=page('calc');q.onLoad({module:'makeup'});q.regionChoice({detail:{regionId:'450800'}});q.setData({'form.age':'59','form.asOf':'2026-10','form.years':'5','form.pastAnnual':'200','form.tier':200,'form.paidThisYear':'yes'});q.moduleCalculate();assert.ok(q.data.result,q.data.error);
- const p=pk.snapshot(q.data),t=pk.table(p,[200,6000]);assert.ok(t.facts.some(f=>f.label.includes('以前个人缴费')&&f.value==='1,000 元'));const total=t.rows.find(r=>r.id==='total');assert.equal(total.section,'main');for(let i=0;i<2;i++)assert.equal(number(total.values[i])-number(t.rows[0].values[i]),1000);
+ const p=pk.snapshot(q.data),t=pk.table(p,[200,6000]);assert.ok(t.facts.some(f=>f.label.includes('以前个人缴费')&&f.value==='1,000 元'));const total=t.rows.find(r=>r.id==='total');assert.equal(total.section,'main');for(let i=0;i<2;i++)assert.equal(number(total.values[i])-number(t.rows.find(r=>r.id==='future').values[i]),1000);
 });
 test('带今年锁定档和小数年额时，费用明细与真实引擎一致，不隐藏金额差异',()=>{
  for(const id of ['440800','510100']){const q=page('basic');q.onLoad();q.regionChoice({detail:{regionId:id}});q.setData({'form.age':'55','form.asOf':'2026-10'});if(id==='440800')q.currentTier({detail:{value:1}});q.calculate();assert.ok(q.data.result,q.data.error);const p=pk.snapshot(q.data),ids=pk.defaults(p),t=pk.table(p,ids);

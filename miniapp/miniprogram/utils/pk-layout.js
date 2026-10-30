@@ -13,12 +13,12 @@ function layout(table,reveal,hasCode){
  function grid(group,rows){
   const count=group.columns.length,cw=(inner-labelW)/count,heads=group.columns.map(c=>wrap(c.label,27,cw-24));
   const headerH=Math.max(...heads.map((ls,i)=>ls.length*40+(group.columns[i].current?32:0)))+28;
-  rect(pad,y,inner,headerH,'#f2f5fa');text('以后年缴',pad+12,y+42,27);
-  heads.forEach((ls,i)=>{ls.forEach((line,n)=>text(line,pad+labelW+i*cw+12,y+38+n*40,27,'#182c47','bold'));if(group.columns[i].current)text('当前方案',pad+labelW+i*cw+12,y+38+ls.length*40,23,'#506078');});y+=headerH;
+  rect(pad,y,inner,headerH,'#fff');text('以后年缴',pad+12,y+42,27,'#506078');
+  heads.forEach((ls,i)=>{ls.forEach((line,n)=>text(line,pad+labelW+i*cw+12,y+38+n*40,27,'#506078'));if(group.columns[i].current)text('当前方案',pad+labelW+i*cw+12,y+38+ls.length*40,23,'#506078');});y+=headerH;
   for(const row of rows){const values=row.values.slice(group.start,group.start+count).map(v=>!reveal&&row.id==='monthly'?'****':v),emphasis=['cost','income'].includes(row.kind),size=emphasis?40:32;
    const cells=[wrap(row.label,30,labelW-24),...values.map(v=>wrap(v,size,cw-24))],height=Math.max(...cells.map(c=>c.length))*52+32;
-   rect(pad,y,inner,height,row.kind==='income'?'#edf3ff':row.kind==='cost'?'#f5f8fd':row.kind==='balance'?'#f7f9fc':'#fff');rect(pad,y,inner,1,'#dce4ef');
-   cells.forEach((ls,i)=>{if(i)rect(pad+labelW+(i-1)*cw,y,1,height,'#e5eaf2');const tone=row.tones?.[group.start+i-1];ls.forEach((line,n)=>text(line,i===0?pad+12:pad+labelW+(i-1)*cw+12,y+45+n*52,i===0?30:size,i===0?'#506078':row.kind==='income'?'#245bc1':row.kind==='balance'?(tone==='positive'?'#a33736':tone==='negative'?'#176652':'#506078'):'#182c47',emphasis&&i>0||row.kind==='balance'&&i>0?'bold':'normal'));});y+=height;
+   rect(pad,y,inner,height,row.kind==='income'?'#edf3ff':row.kind==='cost'?'#fff4e7':row.kind==='balance'?'#f7f9fc':'#fff');rect(pad,y,inner,1,'#dce4ef');
+   cells.forEach((ls,i)=>{if(i)rect(pad+labelW+(i-1)*cw,y,1,height,'#e5eaf2');const tone=row.tones?.[group.start+i-1];ls.forEach((line,n)=>text(line,i===0?pad+12:pad+labelW+(i-1)*cw+12,y+45+n*52,i===0?30:size,i===0?'#506078':row.kind==='income'?'#245bc1':row.kind==='cost'?'#70451f':row.kind==='balance'?(tone==='positive'?'#a33736':tone==='negative'?'#176652':'#506078'):'#182c47',emphasis&&i>0||row.kind==='balance'&&i>0?'bold':'normal'));});y+=height;
   }
  }
  grid(group,table.rows);
