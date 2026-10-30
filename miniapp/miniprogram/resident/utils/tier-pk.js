@@ -33,6 +33,7 @@ function table(p,ids,period=20,reveal=true){
  rows.push(row('cumulative','领取'+period+'年累计',x=>money(receipts.cumulative(x.monthly,x.ageSteps,period*12))+'元'+(ageAt(x,period*12)?'\n（'+ageAt(x,period*12)+'）':''),'detail','extra'));
  const deltas=list.map(x=>receipts.cumulative(x.monthly,x.ageSteps,period*12).minus(x.recoveryCost).toDecimalPlaces(0));
  rows.push({id:'balance',label:'扣除缴费后',kind:'balance',section:'extra',values:deltas.map(v=>(v.gt(0)?'+':v.lt(0)?'−':'')+money(v.abs())+'元'),tones:deltas.map(v=>v.gt(0)?'positive':v.lt(0)?'negative':'neutral')});
+ for(const r of rows)r.section='main';
  return {columns:list.map(x=>({tier:x.tier,label:String(x.tier).replace(/\B(?=(\d{3})+(?!\d))/g,',')+'元／年',current:x.current})),rows,shared,facts:(p.facts||[]).filter(f=>!(['当前账户','历史自费'].includes(f.label)&&f.value==='0 元')),period,recoveryBasis:list[0].recoveryScope==='all'?'回本按以前个人缴费＋还需交合计计算。':'回本只计还需交合计，未含以前缴费。',balanceBasis:list[0].recoveryScope==='all'?'累计领取 − 全部个人缴费':'累计领取 − 还需交合计（未含以前）',notes:[...p.notes,list[0].totalNote||'','还需交合计＝补缴费用＋从现在起的按年缴费。','回本从开始领取起算，按月领抵回个人缴费，不是投资收益。','累计领取按各自起领后'+period+'年计算，未计未来普调。'].filter(Boolean),region:p.region,asOf:p.asOf};
 }
 module.exports={snapshot,open,take,defaults,selected,table};
