@@ -13,6 +13,7 @@ foreach ($folder in @('miniprogram', 'scripts', 'tests')) {
     $files += Get-ChildItem -LiteralPath (Join-Path $sourceRoot $folder) -File -Recurse | ForEach-Object { [IO.Path]::GetRelativePath($sourceRoot, $_.FullName) }
 }
 $files += Get-ChildItem -LiteralPath (Join-Path $sourceRoot 'docs') -Filter '*.md' -File | ForEach-Object { [IO.Path]::GetRelativePath($sourceRoot, $_.FullName) }
+$files += 'docs\default-makeup-coverage.csv'
 $files += 'branding\avatar-v1.png'
 $files += @('branding\avatar-v2-blue-abacus.png', 'branding\identity.md')
 foreach ($relative in $files) {

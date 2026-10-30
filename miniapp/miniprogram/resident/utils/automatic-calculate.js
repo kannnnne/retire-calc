@@ -1,5 +1,5 @@
 const raw=require('./calculate');
-const VERSION='AUTO_MAKEUP_V1';
+const VERSION='AUTO_MAKEUP_V2';
 function calculate(form){
  // The tool assumes applicable handling conditions for a scenario; no approval is recorded.
  const explicit=!!(form.makeupStrategy==='ANNUAL_ONLY'||form.approvedPlan||form.gxTransitionEnabled==='yes'||(form.gxMakeupRows||[]).length);

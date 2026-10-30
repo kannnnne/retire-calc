@@ -1,21 +1,30 @@
 // Default calculation scenarios, not persisted payment records or approval records.
 const D=require('../../vendor/decimal'),rules=require('../../utils/resident-makeup-policies');
 const {tiersForYear}=require('./gx-makeup');
+const defaults=require('./default-makeup-policies');
+function missingPlan(f,p,{birth,asOf,years},config){
+ const nowYear=Math.floor(asOf/12),birthYear=Math.floor(birth/12),first=nowYear+(f.paidThisYear==='yes'?1:0);
+ const normal=Math.max(0,Math.max(nowYear,birthYear+60)-first+1),needed=Math.max(0,15-years-normal);
+ if(!needed)return null;
+ const start=Math.max(config.start,birthYear+16,p.rule==='GUANGXI_ORDINARY'?Number(f.gxStartYear)||0:0),paid=new Set();
+ if(f.historyMode==='segments')for(const row of f.segments||[])for(let y=Number(row.start);y<=Number(row.end);y++)paid.add(y);
+ let count=Math.max(0,years-(f.paidThisYear==='yes'?1:0)-[...paid].filter(y=>y<nowYear).length);
+ for(let y=nowYear-1;y>=start&&count;y--)if(!paid.has(y)){paid.add(y);count--;}
+ const selected=[];for(let y=nowYear-1;y>=start&&selected.length<needed;y--)if(!paid.has(y))selected.push(y);
+ if(!selected.length)return null;selected.sort((a,b)=>a-b);
+ return {sources:config.sources,route:config.route||'HISTORICAL_MISSING',limited:selected.length<needed,addedYears:selected.length,title:'补往年＋正常缴费',summary:config.note,years:selected,
+  entries(annual){return selected.map(year=>{const tiers=config.tiers(year,p),options=tiers.filter(v=>v<=annual),target=options[options.length-1]||tiers[0];if(!target)throw Error('缺少'+year+'年可补档次');return {year,mode:'missing',cost:new D(target).toFixed(2),target:new D(target).toFixed(2),original:'0.00',subsidy:'0.00'};});}};
+}
 function build(f,p,{birth,asOf,years}){
  if(f.autoMakeup!=='yes'||f.approvedPlan||f.gxTransitionEnabled==='yes'||(f.gxMakeupRows||[]).length||years>=15)return null;
  const nowYear=Math.floor(asOf/12),birthYear=Math.floor(birth/12),first=nowYear+(f.paidThisYear==='yes'?1:0);
  if(p.rule==='GUANGXI_ORDINARY'){
-  const normal=Math.max(0,Math.max(nowYear,birthYear+60)-first+1),needed=Math.max(0,15-years-normal);
-  if(!needed)return null;
-  const start=Math.max(2012,p.gxSchemeYear||0,Number(f.gxStartYear)||0,birthYear+16),paid=new Set();
-  if(f.historyMode==='segments')for(const row of f.segments||[])for(let y=Number(row.start);y<=Number(row.end);y++)paid.add(y);
-  let missingRecords=Math.max(0,years-(f.paidThisYear==='yes'?1:0)-[...paid].filter(y=>y<nowYear).length);
-  for(let y=nowYear-1;y>=start&&missingRecords;y--)if(!paid.has(y)){paid.add(y);missingRecords--;}
-  const selected=[];for(let y=nowYear-1;y>=start&&selected.length<needed;y--)if(!paid.has(y))selected.push(y);
-  if(!selected.length)return null;
-  selected.sort((a,b)=>a-b);
-  return {route:'GX_MISSING',addedYears:selected.length,title:'补往年＋正常缴费',summary:'已按可补往年配好，历史年度按各年档次上限计算。',years:selected,
-   entries(annual){return selected.map(year=>{const tiers=tiersForYear(year),options=tiers.filter(v=>v<=annual),target=options[options.length-1]||tiers[0];return {year,mode:'missing',cost:new D(target).toFixed(2),target:new D(target).toFixed(2),original:'0.00',subsidy:'0.00'};});}};
+  return missingPlan(f,p,{birth,asOf,years},{start:Math.max(2012,p.gxSchemeYear||0),route:'GX_MISSING',tiers:tiersForYear,note:'已按可补往年配好，历史年度按各年档次上限计算。'});
+ }
+ const reviewed=defaults.get(f.regionId);
+ if(reviewed&&(!reviewed.applies||reviewed.applies({birth,asOf,years,f}))&&(!reviewed.validThrough||nowYear*100+asOf%12+1<=Number(reviewed.validThrough.replace('-','')))){
+  if(reviewed.mode==='MISSING')return missingPlan(f,p,{birth,asOf,years},reviewed);
+  if(reviewed.mode==='AT60')return {sources:reviewed.sources,route:'AT60',addedYears:0,title:'到龄补足方案',summary:reviewed.note||'按符合当地补缴条件测算，到龄不足15年补足；费用按所选年档参考。',policyPatch:{lumpAt60:true,lumpAt65:false},entries:()=>[]};
  }
  const rule=rules.get(f.regionId,p.rule);if(!rule||p.lumpAt60||p.lumpAt65)return null;
  if(rule.modes.includes('lump')){

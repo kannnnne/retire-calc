@@ -43,7 +43,7 @@ test('回本与累计年龄各归自己的金额单元格，只显示周岁，�
 
 test('旧会话中的69岁逐年结果重进即按新规则重算，不必重置填写',()=>{
  const q=basic(),f=flow.input(q.data.form),old=require('../miniprogram/resident/utils/calculate').calculate(f);assert.equal(old.chosen.timeline.receivingAge,69);
- const saved={...q.data,result:old,display:flow.display(old)},next=page('basic',{'resident-basic':saved});next.onLoad();assert.equal(next.data.result.chosen.timeline.receivingAge,60);assert.equal(next.data.result.calculationVersion,'AUTO_MAKEUP_V1');assert.equal(next.data.form.age,'55');
+ const saved={...q.data,result:old,display:flow.display(old)},next=page('basic',{'resident-basic':saved});next.onLoad();assert.equal(next.data.result.chosen.timeline.receivingAge,60);assert.equal(next.data.result.calculationVersion,'AUTO_MAKEUP_V2');assert.equal(next.data.form.age,'55');
 });
 test('四川期限之外不假设政策续期，普通年轻人已有足够正常年度时不额外补钱',()=>{
  const build=require('../miniprogram/resident/utils/automatic-makeup').build,policy={rule:'SICHUAN_ORDINARY'};
