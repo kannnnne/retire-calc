@@ -1,3 +1,4 @@
+const paymentSummary=require('../../../utils/payment-summary');
 const {choices:scenarioChoices}=require('../../../utils/scenario-choices');
 const {recoveryYears}=require('../../../utils/recovery-display');
 const indexRules=require('../../../utils/employee-index');
@@ -12,7 +13,7 @@ const categoryRules=require('../../../utils/flexible-category');
 const plans=['CURRENT','MINIMUM','MINIMUM_STOP','CUSTOM'];
 const planLabels=['按此金额交到退休','最低档交到退休','交够年限就停','自选缴费月数'];
 const duration=n=>(Math.floor(n/12)?Math.floor(n/12)+'年':'')+(n%12?n%12+'个月':'')||(n===0?'0个月':'—');
-const show=s=>({...s,name:planLabels[plans.indexOf(s.plan)],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),years:duration(s.futureMonths),recovery:recoveryYears(s.recoveryMonthsSlow)});
+const show=(s,birth,retirementMonth)=>({...s,...paymentSummary.summary(s,birth,retirementMonth),name:planLabels[plans.indexOf(s.plan)],monthly:s.totalLow==null?'—':String(Math.round((Number(s.totalLow)+Number(s.totalHigh))/20)*10),years:duration(s.futureMonths),recovery:recoveryYears(s.recoveryMonthsSlow)});
 function defaults(){const bounds=dates();return {dateBounds:bounds,firstAuto:true,accountOpen:false,paymentOpen:false,advanced:false,compare:false,pendingPlan:null,result:null,error:'',categoryIndex:0,categoryLabels:['男性（原60岁）','女性（原55岁）','女性（原50岁）'],planLabels,planIndex:0,accountMode:'estimate',historyModeIndex:0,baseModeIndex:0,baseModeLabels:['最低档','自填每月养老缴费','自填缴费基数'],baseInput:'',form:{regionId:'440100',birthMonth:bounds.defaultBirth,category:'MALE',firstInsuredMonth:suggestedFirst(bounds.defaultBirth,bounds.todayMonth),dataAsOf:bounds.todayMonth,unitYears:10,unitMonths:0,flexYears:2,flexMonths:0,unitPayment:'',flexPayment:'',principal:'',historicalIndex:'',historicalRights:false,pauseMonths:0,customMonths:60,plan:'CURRENT',contributionType:'FLEXIBLE',interest:0}};}
 Page(require('../../../utils/result-recovery')({
  data:defaults(),
@@ -22,7 +23,7 @@ Page(require('../../../utils/result-recovery')({
   const firstAuto=saved&&typeof saved.firstAuto==='boolean'?saved.firstAuto:!saved||(legacyDefault&&invalidFirst)||f.firstInsuredMonth===suggestedFirst(f.birthMonth,f.dataAsOf);
   this.setData({dateBounds:bounds,firstAuto});
   if(firstAuto){const first=suggestedFirst(f.birthMonth,f.dataAsOf);if(first!==f.firstInsuredMonth)this.setData({'form.firstInsuredMonth':first,result:null,compare:false});}
-  this.refresh();this.refreshPlanChoices();},
+  if(this.data.result){const r=this.data.result,scenarios=r.scenarios.map(s=>show(s,f.birthMonth,r.retirement.month));this.setData({'result.scenarios':scenarios,'result.chosen':scenarios.find(s=>s.plan===f.plan)});}this.refresh();this.refreshPlanChoices();},
  szScope(e){this.setData({'form.szScopeConfirmed':e.detail.value.length?'yes':'unknown',result:null,error:''});this.refresh();},
  regionChanged(e){const id=e.detail.regionId;if(!cities.city(id))return;this.setData({'form.regionId':id,'form.historicalIndex':'','form.szScopeConfirmed':'unknown',result:null,error:'',compare:false,baseInput:'',baseModeIndex:0});this.refresh();session.save('flexible',this.data);},
  onHide(){session.save('flexible',this.data);},onUnload(){session.save('flexible',this.data);},
@@ -56,7 +57,7 @@ Page(require('../../../utils/result-recovery')({
   if(d.accountError){this.setData({accountOpen:true});throw Error(d.accountError);}
   if(d.baseError&&d.planIndex!==1&&d.planIndex!==2){this.setData({paymentOpen:true});throw Error(d.baseError);}
   const payload={...f,paidMonths:d.historySummary.total,pastEmployeeMonths:d.historySummary.unit,principal:d.accountPrincipal,currentBase:d.planIndex===1||d.planIndex===2?String(d.limits.min):d.base,contributionType:'FLEXIBLE'};
-  const r=forecast(payload),scenarios=r.scenarios.map(show);this.setData({result:{...r,scenarios,chosen:scenarios.find(s=>s.plan===f.plan),estimatedAccount:d.accountMode==='estimate',accountPrincipal:d.accountPrincipal,history:{...d.historySummary}},error:'',compare:false,pendingPlan:null,advanced:false,regionOpen:false});this.refreshPlanChoices();session.save('flexible',this.data);wx.pageScrollTo({scrollTop:0,duration:200});
+  const r=forecast(payload),scenarios=r.scenarios.map(s=>show(s,f.birthMonth,r.retirement.month));this.setData({result:{...r,scenarios,chosen:scenarios.find(s=>s.plan===f.plan),estimatedAccount:d.accountMode==='estimate',accountPrincipal:d.accountPrincipal,history:{...d.historySummary}},error:'',compare:false,pendingPlan:null,advanced:false,regionOpen:false});this.refreshPlanChoices();session.save('flexible',this.data);wx.pageScrollTo({scrollTop:0,duration:200});
  }catch(e){this.setData({error:e.message,advanced:/首次|开始参保|最多|历史|特殊/.test(e.message)?true:this.data.advanced});wx.pageScrollTo({scrollTop:0,duration:200});}},
  refreshPlanChoices(){this.setData({planChoices:this.data.result?scenarioChoices(this.data.result.scenarios,this.data.form.plan):[]});},
  selectPlan(e){const plan=e.currentTarget.dataset.plan;if(this.data.result&&this.data.result.scenarios.some(s=>s.plan===plan))this.setData({pendingPlan:plan});},
