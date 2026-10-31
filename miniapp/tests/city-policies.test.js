@@ -382,7 +382,7 @@ test('清远页面交足后继续缴费可选，改未来档并切走保留方�
  const store={},p=page('resident/pages/calc/calc.js',store);p.regionChoice({detail:{regionId:'441800'}});
  p.setData({'form.ageOnly':false,'form.birth':'1971-10','form.asOf':'2026-10','form.years':'15','form.balance':'30000','form.accountMode':'balance','form.tier':360,'form.eligible':'yes','form.ordinary':'yes','form.paidThisYear':'yes'});p.refreshPolicyQuestions();assert.equal(p.data.canContinueTo60,true);p.calculate();assert.equal(p.data.result.chosen.total,'0.00');
  p.payUntil({detail:{value:1}});assert.equal(p.data.error,'');assert.equal(p.data.form.payUntil,'SIXTY');assert.equal(p.data.result.chosen.total,'1440.00');assert.equal(p.data.result.chosen.timeline.finalYears,19);assert.equal(p.data.result.chosen.base,'252.00');
- p.chooseFuture({currentTarget:{dataset:{annual:4800}}});assert.equal(p.data.result.openingAmount,'30000.00');assert.equal(p.data.result.chosen.total,'19200.00');assert.equal(p.data.result.chosen.subsidy,'240.00');assert.equal(p.data.result.chosen.low,(252+49440/139).toFixed(2));p.onHide();
+ p.chooseFuture({currentTarget:{dataset:{annual:4800}}});assert.equal(p.data.result.openingAmount,'30000.00');assert.equal(p.data.result.chosen.total,'19200.00');assert.equal(p.data.result.chosen.subsidy,'240.00');assert.equal(p.data.result.chosen.interest.accountWithoutInterest,'49440.00');p.onHide();
  const next=page('resident/pages/calc/calc.js',store);assert.equal(next.data.form.payUntil,'SIXTY');assert.equal(next.data.result.chosen.total,'19200.00');assert.equal(next.data.region.provincial,false);assert.equal(next.data.result.ageDivisor,true);
 });
 

@@ -1,6 +1,6 @@
 const session=require('../../utils/session');
 const {getRegion}=require('../data/regions');
-const keys=['makeupStrategy','regionId','localArea','ageOnly','age','birth','asOf','tier','cdResidence','currentYearTier'];
+const keys=['interestMode','makeupStrategy','regionId','localArea','ageOnly','age','birth','asOf','tier','cdResidence','currentYearTier'];
 function context(form){const f={};for(const k of keys)if(form[k]!==undefined)f[k]=form[k];return f;}
 function send(form){session.save('resident-transfer',context(form));}
 function take(){const f=session.load('resident-transfer');session.save('resident-transfer',null);return f;}

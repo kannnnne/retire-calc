@@ -4,7 +4,7 @@ function basic(id='450800',age=59){const q=page('basic');q.onLoad();q.regionChoi
 const number=s=>Number(String(s).split('\n')[0].replace(/[^\d.-]/g,''));
 test('月领在前，合计紧邻补缴和按年交明细，费用相加等于合计',()=>{
  const p=pk.snapshot(basic().data),t=pk.table(p,[200,2000,6000]);assert.deepEqual(t.rows.slice(0,4).map(r=>r.id),['monthly','future','makeup','normal']);
- assert.deepEqual(t.rows[1].values,['3,000元','29,000元','65,000元']);assert.deepEqual(t.rows[0].values,['210元','400元','660元']);
+ assert.deepEqual(t.rows[1].values,['3,000元','29,000元','65,000元']);assert.deepEqual(t.rows[0].values,['210元','400元','670元']);
  assert.equal(t.shared.length,1);assert.match(t.shared[0].value,/2027-11.*60岁/);assert.ok(!t.rows.some(r=>r.id==='receipt'));
  for(let i=0;i<3;i++)assert.equal(number(t.rows.find(r=>r.id==='makeup').values[i])+number(t.rows.find(r=>r.id==='normal').values[i]),number(t.rows.find(r=>r.id==='future').values[i]));
  assert.equal(t.rows.find(r=>r.id==='normal').values[0],'400元\n200元×2年');assert.ok(t.rows.every(r=>r.section==='main'));

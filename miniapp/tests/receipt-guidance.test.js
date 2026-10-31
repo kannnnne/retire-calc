@@ -5,7 +5,7 @@ const {guidance}=require('../miniprogram/resident/utils/receipt-guidance');
 const engine=require('../miniprogram/resident/utils/calculate');
 function basic(id='450800'){const q=page('basic');q.onLoad();q.setData({'form.makeupStrategy':'ANNUAL_ONLY'});q.regionChoice({detail:{regionId:id}});if(id==='330100'){q.localArea({detail:{value:1}});q.setData({'form.tier':5000});}q.setData({'form.age':'60','form.asOf':'2026-10'});q.calculate();assert.ok(q.data.result,q.data.error);return q;}
 test('主动不补往年时贵港60岁0年复现74岁逐年方案，明确不是领取年龄规定且不自动审批补缴',()=>{
- const q=basic(),s=q.data.result.chosen;assert.equal(s.timeline.receivingAge,74);assert.equal(s.receiptMonth,'2040-11');assert.equal(s.total,'90000.00');assert.equal(q.data.display.monthly,860);
+ const q=basic(),s=q.data.result.chosen;assert.equal(s.timeline.receivingAge,74);assert.equal(s.receiptMonth,'2040-11');assert.equal(s.total,'90000.00');assert.equal(q.data.display.monthly,1070);
  assert.match(q.data.display.receiptGuide.text,/不是当地规定/);assert.equal(q.data.result.makeup,null);
  q.makeup();const session=q.sessions,calc=page('calc',session);calc.onLoad({module:'makeup',transfer:'1'});assert.equal(calc.data.form.age,'60');assert.equal(calc.data.form.years,'0');calc.moduleCalculate();assert.equal(calc.data.registrationPlan,false);assert.equal(calc.data.form.gxScopeReviewed,'unknown');assert.ok(calc.data.result);assert.equal(calc.data.result.chosen.timeline.receivingAge,60);
 });

@@ -36,7 +36,7 @@ test('同19例全链路均可执行：未来修改不动过去，补缴未核不
 
 test('南宁47岁已交12年可连续比较，不强制跳页；主动查看结果才滚回顶部',()=>{
  const q=page({regionId:'450100',age:'47',years:'12',paidThisYear:'unknown'});q.calculate();q.fold({currentTarget:{dataset:{key:'compare'}}});q.scrolls.length=0;const past=q.data.form.pastAnnual;
- for(const [annual,monthly]of [[2000,'250'],[6000,'340'],[200,'210']]){q.chooseFuture({currentTarget:{dataset:{annual}}});assert.equal(q.data.display.monthly,monthly);assert.equal(q.data.compare,true);assert.equal(q.data.form.pastAnnual,past);assert.equal(q.scrolls.length,0);}
+ for(const [annual,monthly]of [[2000,'290'],[6000,'420'],[200,'220']]){q.chooseFuture({currentTarget:{dataset:{annual}}});assert.equal(q.data.display.monthly,monthly);assert.equal(q.data.compare,true);assert.equal(q.data.form.pastAnnual,past);assert.equal(q.scrolls.length,0);}
  q.scrollTop();assert.equal(q.scrolls.length,1);assert.equal(q.scrolls[0].scrollTop,0);
 });
 

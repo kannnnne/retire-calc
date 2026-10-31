@@ -42,7 +42,7 @@ test('真实页面预览不改变旧方案，模式及补贴可改，核对后�
  const store={},q=page(store);q.setData({form:{...q.data.form,...form()}});q.refreshPolicyQuestions();q.calculate();const old=JSON.stringify(q.data.form),age=q.data.result.chosen.timeline.receivingAge;
  q.openMaxPlan();assert.equal(q.data.quickPlan.summary.monthly,660);assert.equal(JSON.stringify(q.data.form),old);assert.equal(q.data.result.chosen.timeline.receivingAge,age);q.applyMaxPlan();assert.match(q.data.quickPlan.error,/核对/);assert.equal(JSON.stringify(q.data.form),old);
  q.quickMode({currentTarget:{dataset:{mode:'NOW'}}});assert.equal(q.data.quickPlan.summary.total,'59000.00');q.quickSubsidy({detail:{value:'0'}});assert.equal(q.data.quickPlan.summary,null);assert.equal(q.data.quickPlan.subsidyInputVisible,true);q.quickGenerate();assert.equal(q.data.quickPlan.summary.subsidyUsed,0);
- q.quickConfirm();q.applyMaxPlan();assert.equal(q.data.quickPlan,null);assert.equal(q.data.result.chosen.timeline.normalYears,0);assert.equal(q.data.result.chosen.total,'59000.00');assert.equal(q.data.display.monthly,'620');
+ q.quickConfirm();q.applyMaxPlan();assert.equal(q.data.quickPlan,null);assert.equal(q.data.result.chosen.timeline.normalYears,0);assert.equal(q.data.result.chosen.total,'59000.00');assert.equal(q.data.display.monthly,'640');
  q.onHide();const next=page(store);next.onLoad();assert.equal(next.data.result.chosen.total,'59000.00');next.openMaxPlan();next.cancelMaxPlan();assert.equal(next.data.result.chosen.total,'59000.00');next.openMaxPlan();next.regionChoice({detail:{regionId:'440100'}});assert.equal(next.data.quickPlan,null);assert.equal(next.data.form.gxMakeupRows.length,0);
 });
 

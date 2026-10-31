@@ -38,7 +38,7 @@ test('真实页面事件保留已交记录和提档，漏年草稿需确认，�
  const store={},p=page(store);p.setData({form:{...p.data.form,...form({gxStartYear:'2012',gxMakeupRows:[...upgrades],gxScopeReviewed:'yes'})}});p.refreshPolicyQuestions();p.calculate();assert.equal(p.data.error,'');
  p.openMissingPlan();assert.equal(p.data.form.gxStartYear,'2012');assert.equal(p.data.form.firstPaidYear,'2021');assert.ok(p.data.gxPlan.years.some(y=>y.year===2013));assert.equal(p.data.gxPlan.years.find(y=>y.year===2021).paid,true);
  p.suggestMissing();assert.equal(p.data.gxPlan.count,9);const max=p.data.gxPlan.values.indexOf('MAX');p.missingTier({detail:{value:String(max)}});assert.equal(p.data.gxPlan.cost,'29000.00');
- p.applyMissingPlan();assert.match(p.data.error,/未确认/);p.missingConfirm();p.applyMissingPlan();assert.equal(p.data.error,'');assert.equal(p.data.display.monthly,'660');assert.equal(p.data.result.chosen.timeline.receivingAge,60);assert.equal(p.data.result.chosen.total,'64000.00');assert.equal(p.data.result.paidYears,5);
+ p.applyMissingPlan();assert.match(p.data.error,/未确认/);p.missingConfirm();p.applyMissingPlan();assert.equal(p.data.error,'');assert.equal(p.data.display.monthly,'670');assert.equal(p.data.result.chosen.timeline.receivingAge,60);assert.equal(p.data.result.chosen.total,'64000.00');assert.equal(p.data.result.paidYears,5);
  p.onHide();const q=page(store);q.onLoad();assert.equal(q.data.result.chosen.receiptMonth,'2027-12');q.edit();assert.equal(q.data.form.segments.length,2);q.regionChoice({detail:{regionId:'440100'}});assert.equal(q.data.form.gxMakeupRows.length,0);assert.equal(q.data.form.gxStartYear,'');
 });
 

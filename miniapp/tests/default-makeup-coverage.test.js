@@ -11,7 +11,7 @@ test('新增默认路径逐地区复核55/60/65岁；补费入账、补足年数
   const f=input(c.id,age,c.resident.annualInput?500:undefined),before=JSON.stringify(f),r=calculate(f),s=r.chosen,p=rules.get(c.id);
   const expected=p.mode==='MISSING'&&age>=60?age+2:Math.max(age,60);
   assert.equal(s.timeline.receivingAge,expected,c.id+'/'+age);assert.equal(s.timeline.finalYears,15,c.id);
-  assert.equal(JSON.stringify(f),before);assert.equal(Number(s.account),Number(s.total)+Number(s.subsidy));
+  assert.equal(JSON.stringify(f),before);assert.equal(Number(s.interest?s.interest.accountWithoutInterest:s.account),Number(s.total)+Number(s.subsidy));
   if(p.mode==='MISSING'){assert.equal(r.makeup.addedYears,age===55?9:12);assert.equal(r.autoPlan.limited,age>=60);assert.ok(r.makeup.entries.every(e=>e.year>=2014&&e.year<2026&&e.subsidy==='0.00'));}
   else {assert.equal(s.lumpYears,age===55?10:15);assert.equal(s.timeline.normalYears,age===55?5:0);}
   assert.ok(r.sources.some(s=>s.checkedAt==='2026-10-30'));
