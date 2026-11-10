@@ -39,6 +39,6 @@ function take(){const p=pending;pending=null;return p||recommendation();}
 function share(kind){const p=recommendation(kind);return {title:p.brand+' · '+p.type,path:p.path+'?from=friend'};}
 function model(payload,mode='recommend',reveal=false){
  const p=mode==='personal'?payload.personal:null;
- return {brand:payload.brand,type:payload.type,kind:payload.kind,personal:!!p,asOf:p?p.asOf:'',title:p?(p.isDemo?['这是一份养老','方案示例。']:['岁月有数，','未来从容。']):payload.title,description:payload.description,region:p?p.region:'按地区选择适用规则',monthly:p?(reveal?money(p.monthly):'****'):null,monthlyLabel:p&&p.rows.some(x=>x.label==='到龄加发')?'起领时每月领取':'预计每月领取',receipt:p?p.receipt:'',receiptAge:p?p.receiptAge:'',facts:p?p.facts||[]:[],planName:p?p.planName:'',rows:p?p.rows.map(x=>({...x})):[],notes:p?p.notes.filter(x=>reveal||!x.includes('回本')):['免费计算 · 无需登录','输入在手机本地计算，不上传、不保存。','各地政策和个人条件不同，结果仅供参考。'],cta:'长按识别小程序码，算算自己的情况'};
+ return {brand:payload.brand,type:payload.type,kind:payload.kind,personal:!!p,asOf:p?p.asOf:'',title:p?(p.isDemo?['这是一份养老','方案示例。']:['岁月有数，','未来从容。']):payload.title,description:payload.description,region:p?p.region:'按地区选择适用规则',monthly:p?(reveal?money(p.monthly):'****'):null,monthlyLabel:p&&p.rows.some(x=>x.label==='到龄加发')?'起领时每月领取':'预计每月领取',receipt:p?p.receipt:'',receiptAge:p?p.receiptAge:'',facts:p?p.facts||[]:[],planName:p?p.planName:'',rows:p?p.rows.map(x=>({...x})):[],notes:p?p.notes.filter(x=>reveal||!x.includes('回本')):['各地政策和个人条件不同，结果仅供参考。'],cta:'长按识别小程序码，算算自己的情况'};
 }
 module.exports={recommendation,fromPage,open,openComparison,take,share,model,routes};

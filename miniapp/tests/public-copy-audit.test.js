@@ -7,3 +7,11 @@ test('离职续交说明跳转现有灵活入口；广东图解标明示例范�
 test('灵活政策页使用职工能力范围，不误用居民已开放状态',()=>{for(const kind of ['employee','flexible']){const q=page('pages/policy/policy.js');q.onLoad({city:'659001',kind});assert.ok(q.data.pending);if(kind==='employee')assert.match(q.data.pending,/兵团/);}const q=page('pages/policy/policy.js');q.onLoad({});assert.equal(q.data.title,'广州政策文件');});
 test('补缴结果说明不能同时宣称没计算补缴；金额和记录不受文案修改影响',()=>{const {calculate}=require('../miniprogram/resident/utils/calculate');const r=calculate({regionId:'450800',birth:'1967-11',asOf:'2026-10',years:'5',pastAnnual:'200',accountMode:'estimate',historyMode:'simple',tier:200,paidThisYear:'no',eligible:'yes',ordinary:'yes',gxStartYear:'2012',gxScopeReviewed:'yes',gxMakeupRows:[{mode:'upgrade',start:'2021',end:'2025',original:200,target:6000}]});assert.equal(r.makeup.cost,'29000.00');assert.match(r.warnings.join(''),/本次已计入/);assert.doesNotMatch(r.warnings.join(''),/不包含历史补缴、提档/);});
 test('来源说明无开发过程叙述，缺核对日期时不凭空补日期',()=>{const docs=require('../miniprogram/utils/city-documents');for(const d of docs){assert.doesNotMatch(d.sections.map(s=>s.text).join(''),/搜索工具|系统HTTP|普通HTTP|本轮只开放/);assert.ok(d.date===''||d.date.startsWith('资料核对日期：'));}});
+
+
+test('所有运行页面和备用分享文案移除无广告及无数据宣传，保留保存相册用途说明',()=>{
+ const banned=/不接入广告|无广告|免费计算|无需登录|不上传|不保存|不收集|不采集/;
+ function walk(dir){for(const item of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,item.name);if(item.isDirectory())walk(full);else if(/\.(js|wxml|json)$/.test(item.name))assert.doesNotMatch(fs.readFileSync(full,'utf8'),banned,path.relative(root,full));}}
+ walk(root);
+ const help=fs.readFileSync(path.join(root,'guide/pages/help/help.wxml'),'utf8');assert.match(help,/将生成的卡片写入设备相册/);
+});

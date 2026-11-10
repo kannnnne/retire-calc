@@ -202,7 +202,7 @@ test('中山老制度边界必须核对，不直接安排普通延缴付款',()=
  assert.throws(()=>resident(form({regionId:'442000',birth:'1966-10',tier:360})),/2011年11月/);
  const r=resident(form({regionId:'442000',birth:'1966-10',tier:360,transition:'no'}));assert.ok(r.chosen);
  assert.ok(resident(form({regionId:'442000',birth:'1966-11',tier:360})).chosen);
- const p=page('resident/pages/calc/calc.js');p.regionChoice({detail:{regionId:'442000'}});p.input({currentTarget:{dataset:{key:'age'}},detail:{value:'60'}});assert.equal(p.data.needsTransition,true);
+ const p=page('resident/pages/calc/calc.js');p.input({currentTarget:{dataset:{key:'asOf'}},detail:{value:'2026-10'}});p.regionChoice({detail:{regionId:'442000'}});p.input({currentTarget:{dataset:{key:'age'}},detail:{value:'60'}});assert.equal(p.data.needsTransition,true);
 });
 
 test('深圳不能把今年已过的1月当成已缴，也不重复发补贴',()=>{
